@@ -1,0 +1,19 @@
+<table class="std">
+  <tr>
+    <th>Detail</th>
+    <th>State</th>
+    <th>Classification</th>
+    <th>Schedule</th>
+  </tr>
+
+<% @issues.each do |issue| %>
+  <tr>
+    <td width="40%"><%= link_to issue.name, [@project,issue] %></td>
+    <td width="10%" align="center"><%= issue.state.titleize %></td>
+    <td width="12%" align="center"><%= issue.issue_type == nil ? "Unclassified" : issue.issue_type.name %></td>
+    <td width="12%" align="center"><%= issue.schedule == nil ? "Unschedule" : issue.schedule.name %></td>
+  </tr>
+<% end %>
+</table>
+
+

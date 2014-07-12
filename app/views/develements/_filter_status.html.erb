@@ -1,0 +1,21 @@
+
+<table class="std">
+  <tr>
+    <th>Detail</th>
+    <th>State</th>
+    <th>Classification</th>
+    <th>Schedule</th>
+    <th>Variance</th>
+  </tr>
+
+<% @develements.each do |develement| %>
+  <tr>
+    <td width="50%"><%= link_to develement.name, [@project,develement] %></td>
+    <td width="10%" align="center"><%= develement.state.titleize %></td>
+    <td width="12%" align="center"><%= develement.develement_type == nil ? "Unclassified" : develement.develement_type.name %></td>
+    <td align="center"><%= develement.schedule == nil ? "Unschedule" : develement.schedule.name %></td>
+		<td align="center"><%= develement.variance_children.length > 0 ? develement.variance_children.collect { |d| d.variance.name }.join(",") : develement.variance == nil ? "-" : develement.variance.name %></td>
+  </tr>
+<% end %>
+</table>
+

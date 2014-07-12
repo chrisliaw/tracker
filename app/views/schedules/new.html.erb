@@ -1,0 +1,50 @@
+<% content_for :page_title do -%>
+  New Production Schedule
+<% end -%>
+<div class="parent_info">
+  Project : <%= link_to @project.name, @project %><br/>
+  <% if @variance != nil %>
+    Variance : <%= link_to @variance.name, [@project,@variance] %>
+  <% end %>
+</div>
+
+<%= form_for(@schedule, :url => (@variance == nil ? project_schedules_path(@project) : project_variance_schedules_path(@project,@variance))) do |f| %>
+  <% if @schedule.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(@schedule.errors.count, "error") %> prohibited this schedule from being saved:</h2>
+
+      <ul>
+      <% @schedule.errors.full_messages.each do |msg| %>
+        <li><%= msg %></li>
+      <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <%= f.hidden_field :req_src, :value => params[:src] -%>
+
+  <table class="std">
+    <tr>
+      <td class="field"><%= f.label :name %></td>
+      <td><%= f.text_field :name %></td>
+    </tr>
+    <tr>
+      <td class="field"><%= f.label :desc, "Description" %></td>
+      <td><%= f.text_area :desc, :cols => 48, :rows => 8 %></td>
+    </tr>
+    <tr>
+      <td class="field"></td>
+      <td><%= f.submit "Create" %></td>
+    </tr>
+  </table>
+<% end %>
+
+<% if params[:src] != nil and !params[:src].empty? %>
+  <%= link_to 'Back', params[:src] %>
+<% else %>
+  <% if @variance != nil %>
+    <%= link_to 'Back', project_variance_schedules_path(@project,@variance) %>
+  <% else %>
+    <%= link_to 'Back', project_schedules_path(@project) %>
+  <% end %>
+<% end %>

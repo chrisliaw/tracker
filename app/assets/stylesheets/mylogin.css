@@ -1,0 +1,43 @@
+#header {
+	height: 100px;
+	border-bottom-color: #CCCCCC;
+}
+#content {
+	padding-left: 20%;
+	padding-right: 10%;
+	/* width: 80%; */
+	height: 80%;
+	padding-bottom: 20%;
+	padding-top: 10%;
+}
+#footer {
+	border-top-color: #CCCCCC;
+	display: block;
+	clear: both;
+	border-top-style: solid;
+	border-top-width: thin;
+	text-align: center;
+	width: 80%;
+	margin-left: 10%;
+	margin-right: 10%;
+	font-size: x-small;
+}
+#content #leftPanel {
+	display: block;
+	float: left;
+	border-right-color: #CCCCCC;
+	border-right-style: solid;
+	border-right-width: thin;
+	width: 40%;
+	height: 20%;
+}
+#content #rightPanel {
+	display: block;
+	float: left;
+	padding-left: 30px;
+	width: 40%;
+}
+body {
+	font-family: Arial, sans-serif;
+	font-size: 88%;
+}

@@ -1,0 +1,48 @@
+<%= form_for(@version_control, :url => project_version_controls_path(@project)) do |f| %>
+  <% if @version_control.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(@version_control.errors.count, "error") %> prohibited this version_control from being saved:</h2>
+
+      <ul>
+      <% @version_control.errors.full_messages.each do |msg| %>
+        <li><%= msg %></li>
+      <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <table class="std">
+    <tr>
+      <td class="field"><%= @version_control.versionable_type.titleize %></td>
+      <td><%= link_to @version_control.versionable.name, @version_control.versionable %></td>
+    </tr>
+    <tr>
+      <td class="field"><%= f.label :name %></td>
+      <td><%= f.text_field :name %></td>
+    </tr>
+    <tr>
+      <td class="field"><%= f.label :upstream_vcs_class, "Parent VCS Type" %></td>
+      <td><%= f.select :upstream_vcs_class, VCS_CLASS.collect { |p| [p[1],p[0]] }, :include_blank => true %></td>
+    </tr>
+    <tr>
+      <td class="field"><%= f.label :upstream_vcs_path, "Parent VCS Path" %></td>
+      <td><%= f.text_field :upstream_vcs_path %></td>
+    </tr>
+    <tr>
+      <td class="field"><%= f.label :pushable_repo, "Create Local Pushable Repository?" %></td>
+      <td><%= f.check_box :pushable_repo %></td>
+    </tr>
+    <tr>
+      <td class="field"><%= f.label :vcs_class, "Local VCS Type" %></td>
+      <td><%= f.select :vcs_class, VCS_CLASS.collect { |p| [p[1],p[0]]}, :include_blank => true %></td>
+    </tr>
+    <tr>
+      <td class="field"><%= f.label :vcs_path, "Local VCS Path" %></td>
+      <td><%= f.text_field :vcs_path %></td>
+    </tr>
+    <tr>
+      <td class="field"></td>
+      <td><%= f.submit %></td>
+    </tr>
+  </table>
+<% end %>

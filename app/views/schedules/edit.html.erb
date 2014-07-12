@@ -1,0 +1,33 @@
+<h1>Editing schedule</h1>
+
+<%= form_for(@schedule, :url => project_schedule_path(@project,@schedule)) do |f| %>
+  <% if @schedule.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(@schedule.errors.count, "error") %> prohibited this schedule from being saved:</h2>
+
+      <ul>
+      <% @schedule.errors.full_messages.each do |msg| %>
+        <li><%= msg %></li>
+      <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <table class="std">
+    <tr>
+      <td class="field"><%= f.label :name %></td>
+      <td><%= f.text_field :name %></td>
+    </tr>
+    <tr>
+      <td class="field"><%= f.label :desc, "Description" %></td>
+      <td><%= f.text_area :desc, :cols => 48, :rows => 8 %></td>
+    </tr>
+    <tr>
+      <td class="field"></td>
+      <td><%= f.submit "Update" %></td>
+    </tr>
+  </table>
+<% end %>
+
+<%= link_to 'Show', project_schedule_path(@project,@schedule) %> |
+<%= link_to 'Back', project_schedules_path(@project) %>

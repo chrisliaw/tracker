@@ -1,0 +1,20 @@
+<p id="notice"><%= notice %></p>
+
+<p>
+  <b>Name:</b>
+  <%= @develement_type.name %>
+</p>
+
+<p>
+  <b>Desc:</b>
+  <%= @develement_type.desc %>
+</p>
+
+<p>
+  <b>State:</b>
+  <%= @develement_type.state %>
+</p>
+
+
+<%= link_to 'Edit', edit_develement_type_path(@develement_type) %> |
+<%= link_to 'Back', develement_types_path %>

@@ -1,0 +1,58 @@
+<table class="std" width="80%">
+  <tr>
+		<th colspan="<%= 2+Issue.states.size %>">
+			<%= link_to "Issues", project_issues_path(@project) %></br/>
+			<%= select_tag "vars2" , option_groups_from_collection_for_select(@variances,:options,:name,:id,:name, @var2) %>
+		</th>
+  </tr>
+  <tr>
+    <th>Classification</th>
+    <th>Total</th>
+    <% Issue.states.each do |st| -%>
+      <th><%= link_to st.to_s.titleize, project_issues_path(@project,:state => st.to_s) %></th>
+    <% end -%>
+  </tr>
+  <% @stat2.each do |k,v| -%>
+    <tr>
+      <td><%= link_to k, project_issues_path(@project,:class => v[:id]) %></td>
+      <td align="right"><%= v[:stat] %></td>
+      <% Issue.states.each do |st| -%>
+        <% if v[st].to_i > 0 %>
+          <td align="right"><%= link_to v[st], project_issues_path(@project,:class => v[:id], :state => st) %></td>
+        <% else %>
+          <td align="right"><%= v[st] %></td>
+        <% end %>
+      <% end -%>
+    </tr>
+  <% end -%>
+  <tr>
+    <td align="right">Total : </td>
+    <td align="right"><%= @project.issues.size %></td>
+    <% Issue.states.each do |st| -%>
+      <% if @ttl_stat2[st][:total].to_i > 0 %>
+        <td align="right"><%= link_to @ttl_stat2[st][:total], project_issues_path(@project,:state => st) %></td>
+      <% else %>
+        <td align="right"><%= @ttl_stat2[st][:total] %></td>
+      <% end %>
+    <% end -%>
+  </tr>
+</table>
+
+  <script>
+    jQuery(function($) {
+      // when the #var field changes
+      $("#vars2").change(function(e) {
+        //alert(e.target.value);
+        varf = document.getElementById("vars2")
+        //alert(o);
+        // make a POST call and replace the content
+        $.get("<%= url_for(:only_path => true, :controller => "projects", :action => "issue_stat", :id => @project.id) %>", {vars2 : varf.value})
+				.done(function(data) {
+          $("#issue_stat").html(data);
+        });
+      });
+    })
+
+  </script>
+
+

@@ -1,0 +1,19 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/Fixtures.html
+
+one:
+  committable_type: MyString
+  committable_id: MyString
+  identifier: MyString
+  vcs_reference: MyString
+  vcs_diff: MyString
+  vcs_info: MyString
+  vcs_affected_files: MyString
+
+two:
+  committable_type: MyString
+  committable_id: MyString
+  identifier: MyString
+  vcs_reference: MyString
+  vcs_diff: MyString
+  vcs_info: MyString
+  vcs_affected_files: MyString

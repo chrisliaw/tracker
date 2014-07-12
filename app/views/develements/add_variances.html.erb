@@ -1,0 +1,67 @@
+
+<% content_for :page_title do -%>
+  Add Variances for Development Item
+<% end -%>
+
+<p id="notice"><%= notice %></p>
+
+<table class="std">
+  <tr>
+    <td class="field">Project : </td>
+    <td colspan="3"><%= @project.name %></td>
+  </tr>
+  <tr>
+    <td class="field">Identifier : </td>
+    <td><%= @develement.identifier %></td>
+  </tr>
+  <tr>
+    <td class="field">State : </td>
+    <td><%= @develement.state.titleize %></td>
+  </tr>
+  <tr>
+    <td class="field">Detail : </td>
+    <td><%= @develement.name %></td>
+  </tr>
+  <tr>
+    <td class="field">Description : </td>
+    <td><%= @develement.desc %></td>
+  </tr>
+  <tr>
+    <td class="field">Classification : </td>
+    <td><%= @develement.develement_type == nil ? "Unclassified" : @develement.develement_type.name %></td>
+  </tr>
+  <tr>
+    <td class="field">Schedule : </td>
+    <td><%= @develement.schedule == nil ? "Unschedule" : @develement.schedule.name %></td>
+  </tr>
+</table>
+
+<h4>Variances</h4>
+<%= form_for(@develement,:url => update_variances_project_develement_path(@project,@develement)) do |f| -%>
+   <% if @develement.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(@develement.errors.count, "error") %> prohibited this item from being saved:</h2>
+
+      <ul>
+      <% @develement.errors.full_messages.each do |msg| %>
+        <li><%= msg %></li>
+      <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+ <table class="std">
+    <% @availVars.each do |v| -%>
+    <tr>
+      <td><%= check_box_tag "develement[variance_id][]", v.identifier %></td>
+      <td><%= v.name %></td>
+    </tr>
+  <% end -%>
+  <tr>
+    <td></td>
+    <td><%= f.submit "Add Variances" %></td>
+  </tr>
+  </table>
+<% end -%>
+
+<%= link_to 'Back', [@project,@develement] %>

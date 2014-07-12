@@ -1,0 +1,11 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/Fixtures.html
+
+one:
+  name: X-Files
+  short_name: XF
+  desc: X-Files Project
+
+two:
+  name: Peeping
+  short_name: PEP
+  desc: Peeping project

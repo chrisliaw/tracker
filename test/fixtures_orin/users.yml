@@ -1,0 +1,13 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/Fixtures.html
+
+one:
+  login: john
+  name: John the Ripple
+  pass: password
+  status: 1
+
+two:
+  login: jack
+  name: Jack the junk food
+  pass: password
+  status: 1

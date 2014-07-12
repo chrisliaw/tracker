@@ -1,0 +1,45 @@
+<%= form_for(@commit) do |f| %>
+  <% if @commit.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(@commit.errors.count, "error") %> prohibited this commit from being saved:</h2>
+
+      <ul>
+      <% @commit.errors.full_messages.each do |msg| %>
+        <li><%= msg %></li>
+      <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="field">
+    <%= f.label :committable_type %><br />
+    <%= f.text_field :committable_type %>
+  </div>
+  <div class="field">
+    <%= f.label :committable_id %><br />
+    <%= f.text_field :committable_id %>
+  </div>
+  <div class="field">
+    <%= f.label :identifier %><br />
+    <%= f.text_field :identifier %>
+  </div>
+  <div class="field">
+    <%= f.label :vcs_reference %><br />
+    <%= f.text_field :vcs_reference %>
+  </div>
+  <div class="field">
+    <%= f.label :vcs_diff %><br />
+    <%= f.text_field :vcs_diff %>
+  </div>
+  <div class="field">
+    <%= f.label :vcs_info %><br />
+    <%= f.text_field :vcs_info %>
+  </div>
+  <div class="field">
+    <%= f.label :vcs_affected_files %><br />
+    <%= f.text_field :vcs_affected_files %>
+  </div>
+  <div class="actions">
+    <%= f.submit %>
+  </div>
+<% end %>

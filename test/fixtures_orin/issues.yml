@@ -1,0 +1,17 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/Fixtures.html
+
+one:
+  code: MyString
+  name: MyString
+  desc: MyText
+  issue_type_id: 1
+  project_id: 1
+  state: MyString
+
+two:
+  code: MyString
+  name: MyString
+  desc: MyText
+  issue_type_id: 1
+  project_id: 1
+  state: MyString

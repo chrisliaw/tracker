@@ -1,0 +1,49 @@
+<% content_for :page_title do -%>
+  Issue Detail
+<% end -%>
+
+<p id="notice"><%= notice %></p>
+
+<table class="std">
+  <tr>
+    <td class="field">Project : </td>
+    <td width="80%"><%= @project.name %></td>
+  </tr>
+  <tr>
+    <td class="field">Identifier : </td>
+    <td><%= @issue.identifier %></td>
+  </tr>
+  <tr>
+    <td class="field">State : </td>
+    <td><%= @issue.state.titleize %>
+      <% if @actions.length > 0 %>
+        [
+        <% @actions.each do |act| -%>
+          <%= link_to "#{act.titleize}, " , update_status_project_issue_path(@project,@issue,:event => act), :method => :post, :confirm => "Change the status to #{act.titleize}?" %>
+        <% end -%>
+        ]
+      <% end %>
+    </td>
+  </tr>
+  <tr>
+    <td class="field">Detail : </td>
+    <td><%= @issue.name %></td>
+  </tr>
+  <tr>
+    <td class="field">Description : </td>
+    <td><%= @issue.desc.html_safe %></td>
+  </tr>
+  <tr>
+    <td class="field">Classification : </td>
+    <td><%= @issue.issue_type == nil ? "Unclassified" : @issue.issue_type.name %></td>
+  </tr>
+  <tr>
+    <td class="field">Schedule : </td>
+    <td><%= @issue.schedule == nil ? "Unschedule" : @issue.schedule.name %></td>
+  </tr>
+</table>
+
+
+<%= link_to 'Edit', edit_project_issue_path(@project,@issue) %> |
+<%= link_to 'Back', project_issues_path(@project) %>
+

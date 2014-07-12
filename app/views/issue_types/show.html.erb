@@ -1,0 +1,20 @@
+<p id="notice"><%= notice %></p>
+
+<p>
+  <b>Name:</b>
+  <%= @issue_type.name %>
+</p>
+
+<p>
+  <b>Desc:</b>
+  <%= @issue_type.desc %>
+</p>
+
+<p>
+  <b>State:</b>
+  <%= @issue_type.state %>
+</p>
+
+
+<%= link_to 'Edit', edit_issue_type_path(@issue_type) %> |
+<%= link_to 'Back', issue_types_path %>

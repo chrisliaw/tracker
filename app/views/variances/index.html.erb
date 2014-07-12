@@ -1,0 +1,30 @@
+<% content_for :page_title do -%>
+  Project Variances
+<% end -%>
+<div class="parent_info">
+  Project : <%= link_to @project.name, @project %>
+</div>
+
+<div class="help" style="width:80%; margin-left:auto; margin-right:auto; margin-top: 10px; margin-bottom: 20px ">
+  Variance is kind of sub projects, which is sometime just a variance of main project. E.g. same software but for Windows version, Android version, iOS version etc.<br/>
+  Althought the code base might not be the same (Android &amp iOS for example), the feature set and issue might still be same. Therefore variance concept was created.<br/>
+  Variance typically has module such as Schedule and Version Control in its own.
+</div>
+
+<table class="std">
+  <tr>
+    <th width="40%">Name</th>
+    <th >Status</th>
+  </tr>
+
+<% @variances.each do |variance| %>
+  <tr>
+    <td><%= link_to variance.name, [@project,variance] %></td>
+    <td><%= variance.state.titleize %></td>
+  </tr>
+<% end %>
+</table>
+
+<br />
+
+<%= link_to 'New Variance', new_project_variance_path(@project) %>

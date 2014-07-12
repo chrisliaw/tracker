@@ -1,0 +1,69 @@
+
+<% content_for :page_title do -%>
+  Development Related
+<% end -%>
+
+<%= form_for(@develement,:url => project_develements_path(@project)) do |f| %>
+  <% if @develement.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(@develement.errors.count, "error") %> prohibited this item from being saved:</h2>
+
+      <ul>
+      <% @develement.errors.full_messages.each do |msg| %>
+        <li><%= msg %></li>
+      <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <table class="std">
+    <tr>
+      <td class="field">Project : </td>
+      <td><%= @project.name %></td>
+    </tr>
+    <tr>
+      <td class="field">Short Description : </td>
+      <td><%= f.text_field :name, :size => 48 %></td>
+    </tr>
+    <tr>
+      <td class="field">Description :</td>
+      <td><%= f.text_area :desc, :class => "tinymce", :cols => 38, :rows => 8 %></td>
+    </tr>
+    <tr>
+      <td class="field">Classification : </td>
+      <td><%= f.select :develement_type_id, @devType.collect { |p| [p.name,p.id]}, :include_blank => true %></td>
+    </tr>
+    <tr>
+      <td class="field">Advanced :</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td class="field">Schedule : </td>
+      <td><%= f.select :schedule_id, @project.schedules.collect { |s| [s.name,s.id]} , :include_blank => true %> 
+        <%= link_to "Add Schedule", new_project_schedule_path(@project,:src => new_project_develement_path(@project)) %>
+      </td>
+    </tr>
+
+    <% if @project.variances.size > 0 %>
+      <tr>
+        <td class="field">Variance : </td>
+        <td>
+          <% @cnt = 0 %>
+          <% @project.variances.each do |var| -%>
+            <%= check_box_tag "develement[variance_id][]", var.identifier %>
+            <%= var.name %>
+            <% @cnt += 1 -%>
+            <%= "<br/>" if @cnt % 3 == 0 %>
+          <% end -%>
+        </td>
+      </tr>
+    <% end %>
+
+    <tr>
+      <td></td>
+      <td><%= f.submit "Create" %></td>
+    </tr>
+  </table>
+<% end %>
+
+<%= link_to 'Back', project_develements_path(@project) %>

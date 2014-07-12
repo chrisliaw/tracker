@@ -1,0 +1,60 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+<title>Login</title>
+<%= javascript_include_tag 'sha256' %>
+<%= stylesheet_link_tag 'mylogin' %>
+</head>
+
+<body>
+
+<div id="header">
+</div>
+
+<div id="content">
+
+<div id="leftPanel">
+<div id="loginPanel">
+<p style="color: red"><%= flash[:error] %></p>
+<p style="color: green"><%= flash[:info] %></p>
+<%= form_for :user, :url => {:controller => "users",:action => 'authenticate'} do |f| %>
+<table>
+  <tr>
+    <td style="text-align:right"><%= f.label :login %></th>
+    <td><%= f.text_field :login %></td>
+  </tr>
+  <tr>
+    <td style="text-align:right"><%= f.label :password %></th>
+
+    <td><%= f.password_field :password%></td>
+  </tr>
+  <tr>
+    <th scope="row">&nbsp;</th>
+    <td><%= f.submit "Login" %></td>
+  </tr>
+</table>
+<% end %>
+
+</div>
+</div>
+
+<span class="style1"></span>
+<div id="rightPanel">
+<div id="info">
+<h3>Tracker</h3>
+<p>
+Tracker<br/><br/>
+My Gen-X Issue Tracking System
+</p>
+</div>
+</div>
+
+</div>
+
+<div id="footer">
+Copyrighted by Antrapolation Technology Sdn Bhd 2009-<%= Time.now.strftime("%Y") %>. 
+</div>
+
+</body>
+</html>

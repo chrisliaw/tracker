@@ -1,0 +1,81 @@
+
+<% content_for :page_title do -%>
+  Develement Detail
+<% end -%>
+
+<p id="notice"><%= notice %></p>
+
+<table class="std">
+  <tr>
+    <td class="field">Project : </td>
+    <td colspan="3"><%= @project.name %></td>
+  </tr>
+  <tr>
+    <td class="field">Identifier : </td>
+    <td><%= @develement.identifier %></td>
+  </tr>
+  <tr>
+    <td class="field">State : </td>
+    <td><%= @develement.state.titleize %>
+      <% if @actions.length > 0 %>
+				[
+				<% @actionCnt = 0 %>
+        <% @actions.each do |act| -%>
+					<%= link_to "#{act.titleize}#{@actions.size == (@actionCnt+1) ? "" : ","}", update_status_project_develement_path(@project,@develement, :event => act), :method => :post, :confirm => "Change status to #{act.titleize}" %>
+					<% @actionCnt += 1 %>
+        <% end -%>
+        ]
+      <% end %>
+    </td>
+  </tr>
+  <% if @develement.variance != nil %>
+  <tr>
+    <td class="field">Variance : </td>
+    <td><%= @develement.variance.name %></td>
+  </tr>
+  <% end %>
+  <tr>
+    <td class="field">Detail : </td>
+    <td><%= @develement.name %><%= @develement.variance == nil ? "" : " (#{@develement.variance.name})" %></td>
+  </tr>
+  <tr>
+    <td class="field">Description : </td>
+    <td><%= @develement.desc %></td>
+  </tr>
+  <tr>
+    <td class="field">Classification : </td>
+    <td><%= @develement.develement_type == nil ? "Unclassified" : @develement.develement_type.name %></td>
+  </tr>
+  <tr>
+    <td class="field">Schedule : </td>
+    <td><%= @develement.schedule == nil ? "Unschedule" : @develement.schedule.name %>
+      <%= @develement.schedule == nil ? "" : "[#{@develement.schedule.state.titleize}]" %>
+    </td>
+  </tr>
+</table>
+
+<%= link_to 'Edit', edit_project_develement_path(@project,@develement) %> |
+<% if @develement.variance_parent_id == nil %>
+  <%= link_to 'Back', project_develements_path(@project) %>
+<% else %>
+  <%= link_to 'Back', [@project,@develement.variance_parent] %>
+<% end %>
+
+<% if @develement.variance_parent_id == nil %>
+  <h4>Variances</h4>
+  <%= link_to "Add Variance", add_variances_project_develement_path(@project,@develement) %>
+  <table class="std">
+    <tr>
+      <th>Variance</th>
+      <th></th>
+    </tr>
+    <% @develement.variance_children.each do |c| -%>
+      <tr>
+        <td><%= link_to c.variance.name, [@project,c] %></td>
+        <td><%= link_to "Remove Variance", [@project,c], :method => :delete, :confirm => "Are you sure to remove this variance of this development item?" %></td>
+      </tr>
+    <% end -%>
+  </table>
+<% end %>
+
+

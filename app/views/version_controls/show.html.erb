@@ -1,0 +1,63 @@
+<% content_for :page_title do -%>
+  Version Control
+<% end -%>
+<p id="notice"><%= notice %></p>
+
+<table class="std">
+  <tr>
+    <td class="field"><%= @version_control.versionable_type %></td>
+    <td><%= @version_control.versionable.name %></td>
+  </tr>
+  <tr>
+    <td class="field">Name : </td>
+    <td><%= @version_control.name %></td>
+  </tr>
+  <tr>
+    <td class="sub-heading">Remote Detail : </td>
+    <td></td>
+  </tr>
+  <tr>
+    <td class="field">Remote VCS Type</td>
+    <td><%= VCS_CLASS[@version_control.upstream_vcs_class] %></td>
+  </tr>
+  <tr>
+    <td class="field">Remote VCS Path</td>
+    <td><%= @version_control.upstream_vcs_path %></td>
+  </tr>
+  <tr>
+    <td class="field">Remote VCS Branch</td>
+    <td><%= @version_control.upstream_vcs_branch %></td>
+  </tr>
+  <tr>
+    <td class="sub-heading">Local Detail : </td>
+    <td></td>
+  </tr>
+  <tr>
+    <td class="field">Pushable Repository?</td>
+    <td><%= @version_control.pushable_repo == 1 ? "Yes" : "No" %></td>
+  </tr>
+  <tr>
+    <td class="field">Local VCS Type</td>
+    <td><%= VCS_CLASS[@version_control.vcs_class] %></td>
+  </tr>
+  <tr>
+    <td class="field">Local VCS Path</td>
+    <td><%= @version_control.vcs_path %></td>
+  </tr>
+  <tr>
+    <td class="field">Local VCS Branch</td>
+    <td><%= @version_control.vcs_branch %></td>
+  </tr>
+  <tr>
+    <td class="field"></td>
+    <td></td>
+  </tr>
+</table>
+
+<% if @variance != nil %>
+  <%= link_to 'Edit', edit_project_variance_version_control_path(@project,@variance,@version_control) %> |
+  <%= link_to 'Back', project_variance_version_controls_path(@project,@variance) %>
+<% else %>
+  <%= link_to 'Edit', edit_project_version_control_path(@project,@version_control) %> |
+  <%= link_to 'Back', project_version_controls_path(@project) %>
+<% end %>

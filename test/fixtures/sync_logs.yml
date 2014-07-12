@@ -1,0 +1,11 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/Fixtures.html
+
+one:
+  node_id: MyString
+  last_change_log_id: 1
+  direction: 1
+
+two:
+  node_id: MyString
+  last_change_log_id: 1
+  direction: 1

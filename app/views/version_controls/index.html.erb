@@ -1,0 +1,38 @@
+<% content_for :page_title do -%>
+  Version Control
+<% end -%>
+
+<div class="parent_info">
+  Project : <%= link_to @project.name, @project %><br/>
+  <% if @variance != nil %>
+    Variance : <%= link_to @variance.name, [@project,@variance] %>
+  <% end %>
+</div>
+
+<table class="std">
+  <tr>
+    <th width="50%">Name</th>
+    <th>Pushable Repository?</th>
+    <th width="20%">Status</th>
+  </tr>
+
+<% @version_controls.each do |version_control| %>
+  <tr>
+    <% if @variance != nil %>
+      <td><%= link_to version_control.name, [@project,@variance,version_control] %></td>
+    <% else  -%>
+      <td><%= link_to version_control.name, [@project,version_control] %></td>
+    <% end %>
+    <td align="center"><%= version_control.pushable_repo == 1 ? "Yes" : "No" %></td>
+    <td align="center"><%= version_control.state %></td>
+  </tr>
+<% end %>
+</table>
+
+<br />
+
+<% if @variance != nil %>
+  <%= link_to 'New Version Control', new_project_variance_version_control_path(@project,@variance) %>
+<% else %>
+  <%= link_to 'New Version Control', new_project_version_control_path(@project) %>
+<% end %>

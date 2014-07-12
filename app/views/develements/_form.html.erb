@@ -1,0 +1,32 @@
+<%= form_for(@develement,:url => project_develements_path(@project)) do |f| %>
+  <% if @develement.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(@develement.errors.count, "error") %> prohibited this develement from being saved:</h2>
+
+      <ul>
+      <% @develement.errors.full_messages.each do |msg| %>
+        <li><%= msg %></li>
+      <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <table class="std">
+    <tr>
+      <td class="field">Short Description : </td>
+      <td><%= f.text_field :name %></td>
+    </tr>
+    <tr>
+      <td class="field">Description :</td>
+      <td><%= f.text_area :desc %></td>
+    </tr>
+    <tr>
+      <td class="field">Classification : </td>
+      <td><%= f.select :develement_type_id, @devType.collect { |p| [p.name,p.id]} %></td>
+    </tr>
+    <tr>
+      <td></td>
+      <td><%= f.submit %></td>
+    </tr>
+  </table>
+<% end %>

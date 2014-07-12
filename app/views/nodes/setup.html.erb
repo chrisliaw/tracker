@@ -1,0 +1,73 @@
+
+<div>
+This node is new and has not been setup. Please fill up the below information to setup the node.<br/>
+Alternatively, you can give your existing ID file to activate the nodes with your existing ID
+</div>
+
+<%= form_tag :controller => "nodes", :action => "init" do  -%>
+  <table>
+    <tr>
+      <td>Name : </td>
+      <td><%= text_field "nodes","name" %></td>
+    </tr>
+    <tr>
+      <td>Email : </td>
+      <td><%= text_field "nodes","email" %></td>
+    </tr>
+    <tr>
+      <td>Organization Name : </td>
+      <td><%= text_field "nodes","orgName" %></td>
+    </tr>
+    <tr>
+      <td>Organization Unit : </td>
+      <td><%= text_field "nodes","orgUnit" %></td>
+    </tr>
+    <tr>
+      <td>State : </td>
+      <td><%= text_field "nodes","state" %></td>
+    </tr>
+    <tr>
+      <td>Country : </td>
+      <td><%= text_field "nodes","country" %></td>
+    </tr>
+    <tr>
+      <td>&nbsp</td>
+      <td>&nbsp</td>
+    </tr>
+    <tr>
+      <td>Password : </td>
+      <td><%= password_field "nodes","pass" %></td>
+    </tr>
+    <tr>
+      <td>Password Confirmation : </td>
+      <td><%= password_field "nodes","pass_confirmation" %></td>
+    </tr>
+    <tr>
+      <td></td>
+      <td><%= submit_tag "Initialize" %></td>
+    </tr>
+  </table> 
+<% end -%>
+<p>
+  Or use your existing ID
+  </p>
+  <%= form_tag({ :controller => "nodes", :action => "init"}, {:multipart => true}) do -%>
+    <table>
+      <tr>
+        <td>Existing ID Path : </td>
+        <td><%= file_field "nodes","id_path" %></td>
+      </tr>
+      <tr>
+        <td>Password : </td>
+        <td><%= password_field "nodes","pass" %></td>
+      </tr>
+      <tr>
+        <td>Password Confirmation : </td>
+        <td><%= password_field "nodes","pass_confirmation" %></td>
+      </tr>
+      <tr>
+        <td></td>
+        <td><%= submit_tag "Activate" %></td>
+      </tr>
+    </table>
+  <% end -%>

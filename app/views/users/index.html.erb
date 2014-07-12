@@ -1,0 +1,26 @@
+<% content_for :page_title do -%>
+ Users 
+<% end -%>
+
+<div class="std">
+ <table>
+  <tr>
+    <th>Login</th>
+    <th>Name</th>
+    <th>Status</th>
+  </tr>
+
+<% @users.each do |user| %>
+  <tr>
+    <td><%= link_to user.login, user %></td>
+    <td><%= user.name %></td>
+    <td><%= user.status %></td>
+  </tr>
+<% end %>
+</table>
+
+ 
+</div>
+<br />
+
+<%= link_to 'New User', new_user_path %>

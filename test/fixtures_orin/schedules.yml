@@ -1,0 +1,15 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/Fixtures.html
+
+one:
+  project_id: 1
+  name: MyString
+  desc: MyText
+  state: MyString
+  created_by: MyString
+
+two:
+  project_id: 1
+  name: MyString
+  desc: MyText
+  state: MyString
+  created_by: MyString

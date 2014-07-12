@@ -1,0 +1,52 @@
+
+<% content_for :page_title do -%>
+  Edit Issue
+<% end -%>
+
+<%= form_for(@issue,:url => [@project,@issue] ) do |f| %>
+  <% if @issue.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(@issue.errors.count, "error") %> prohibited this issue from being saved:</h2>
+
+      <ul>
+      <% @issue.errors.full_messages.each do |msg| %>
+        <li><%= msg %></li>
+      <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <table class="std">
+    <tr>
+      <td class="field">Project : </td>
+      <td><%= @project.name %></td>
+    </tr>
+    <tr>
+      <td class="field">Short Description : </td>
+      <td><%= f.text_field :name, :size => 48 %></td>
+    </tr>
+    <tr>
+      <td class="field">Description :</td>
+      <td><%= f.text_area :desc, :class=>"tinymce", :cols => 38, :rows => 8 %></td>
+    </tr>
+    <tr>
+      <td class="field">Classification : </td>
+      <td><%= f.select :issue_type_id, @issueType.collect { |p| [p.name,p.id]}, :include_blank => true %></td>
+    </tr>
+    <tr>
+      <td class="field">Schedule : </td>
+      <td><%= f.select :schedule_id, @project.schedules.collect { |s| [s.name,s.id]} , :include_blank => true %> 
+        <%= link_to "Add Schedule", new_project_schedule_path(@project,:src => edit_project_issue_path(@project,@issue)) %>
+      </td>
+    </tr>
+ 
+    <tr>
+      <td></td>
+      <td><%= f.submit "Update" %></td>
+    </tr>
+  </table>
+
+<% end %>
+
+<%= link_to 'Show', [@project,@issue] %> |
+<%= link_to 'Back', project_issues_path(@project) %>

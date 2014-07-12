@@ -1,0 +1,27 @@
+<h1>Listing user_rights</h1>
+
+<table>
+  <tr>
+    <th>User</th>
+    <th>Domain</th>
+    <th>Right</th>
+    <th></th>
+    <th></th>
+    <th></th>
+  </tr>
+
+<% @user_rights.each do |user_right| %>
+  <tr>
+    <td><%= user_right.user_id %></td>
+    <td><%= user_right.domain %></td>
+    <td><%= user_right.right %></td>
+    <td><%= link_to 'Show', user_right %></td>
+    <td><%= link_to 'Edit', edit_user_right_path(user_right) %></td>
+    <td><%= link_to 'Destroy', user_right, method: :delete, data: { confirm: 'Are you sure?' } %></td>
+  </tr>
+<% end %>
+</table>
+
+<br />
+
+<%= link_to 'New User right', new_user_right_path %>

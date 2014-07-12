@@ -1,0 +1,119 @@
+<% content_for :page_title do -%>
+  Development Items
+<% end -%>
+<div class="parent_info">
+Project : <%= link_to @project.name, @project %> 
+</div>
+
+<div class="filter">
+  Quick Filter <br/>
+Status :
+<% # select_tag last param is the default value -%>
+<%= select_tag "status_filter", option_groups_from_collection_for_select(@status,:options,:name,:id,:name,@state) %>
+Classification : 
+<%= select_tag "class_filter", option_groups_from_collection_for_select(@class,:options,:name,:id,:name,@cls) %>
+Schedule : 
+<%= select_tag "schedule_filter", option_groups_from_collection_for_select(@schedules,:options,:name,:id,:name,@sch) %>
+Variance : 
+<%= select_tag "variance_filter", option_groups_from_collection_for_select(@variances,:options,:name,:id,:name,@var) %><br/>
+Keyword : 
+<%= text_field "quick_search","text", :size => 18, :value => @kw %>
+</div>
+<br/>
+<% content_for :script do -%>
+  <script>
+    jQuery(function($) {
+      // when the #search field changes
+      $("#status_filter").change(function(e) {
+        //alert(e.target.value);
+        cf = document.getElementById("class_filter");
+        qs = document.getElementById("quick_search_text")
+        schf = document.getElementById("schedule_filter")
+        varf = document.getElementById("variance_filter")
+        //alert(o);
+        // make a POST call and replace the content
+        $.post("<%= url_for(:only_path => true, :controller => "develements", :action => "filter_status", :project_id => @project.id) %>", {status: e.target.value, class: cf.value, keyword: qs.value, schedule: schf.value, variance: varf.value})
+          .done(function(data) {
+          $("#dyn-sec").html(data);
+        });
+      });
+    })
+
+    jQuery(function($) {
+      // when the #search field changes
+      $("#class_filter").change(function(e) {
+        //alert(e.target.value);
+        sf = document.getElementById("status_filter");
+        qs = document.getElementById("quick_search_text")
+        schf = document.getElementById("schedule_filter")
+        varf = document.getElementById("variance_filter")
+        //alert(o);
+        // make a POST call and replace the content
+        $.post("<%= url_for(:only_path => true, :controller => "develements", :action => "filter_status", :project_id => @project.id) %>", {class: e.target.value, status: sf.value, keyword: qs.value, schedule :schf.value, variance: varf.value})
+          .done(function(data) {
+          $("#dyn-sec").html(data);
+        });
+      });
+    })
+
+    jQuery(function($) {
+      // when the #search field changes
+      $("#quick_search_text").change(function(e) {
+        //alert(e.target.value);
+        sf = document.getElementById("status_filter");
+        cf = document.getElementById("class_filter")
+        schf = document.getElementById("schedule_filter")
+        varf = document.getElementById("variance_filter")
+        //alert(o);
+        // make a POST call and replace the content
+        $.post("<%= url_for(:only_path => true, :controller => "develements", :action => "filter_status", :project_id => @project.id) %>", {class: cf.value, status: sf.value, keyword: e.target.value, schedule: schf.value, variance: varf.value})
+          .done(function(data) {
+          $("#dyn-sec").html(data);
+        });
+      });
+    })
+
+    jQuery(function($) {
+      // when the #search field changes
+      $("#schedule_filter").change(function(e) {
+        //alert(e.target.value);
+        sf = document.getElementById("status_filter");
+        cf = document.getElementById("class_filter")
+        qs = document.getElementById("quick_search_text")
+        varf = document.getElementById("variance_filter")
+        //alert(o);
+        // make a POST call and replace the content
+        $.post("<%= url_for(:only_path => true, :controller => "develements", :action => "filter_status", :project_id => @project.id) %>", {class: cf.value, status: sf.value, keyword: qs.value, schedule: e.target.value, variance: varf.value})
+          .done(function(data) {
+          $("#dyn-sec").html(data);
+        });
+      });
+    })
+
+    jQuery(function($) {
+      // when the #search field changes
+      $("#variance_filter").change(function(e) {
+        //alert(e.target.value);
+        sf = document.getElementById("status_filter");
+        cf = document.getElementById("class_filter")
+        qs = document.getElementById("quick_search_text")
+        schf = document.getElementById("schedule_filter")
+        //alert(o);
+        // make a POST call and replace the content
+        $.post("<%= url_for(:only_path => true, :controller => "develements", :action => "filter_status", :project_id => @project.id) %>", {class: cf.value, status: sf.value, keyword: qs.value, schedule: schf.value, variance: e.target.value})
+          .done(function(data) {
+          $("#dyn-sec").html(data);
+        });
+      });
+    })
+
+
+  </script>
+<% end -%>
+
+<div id="dyn-sec">
+  <%= render "filter_status" %>  
+</div>
+<br />
+
+<%= link_to 'New Develement', new_project_develement_path(@project) %>

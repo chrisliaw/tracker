@@ -1,0 +1,67 @@
+
+<% content_for :page_title do -%>
+  Project Detail
+<% end -%>
+
+<p id="notice"><%= notice %></p>
+
+<table class="std">
+  <tr>
+    <td class="field">Project Name : </td>
+    <td width="30%"><%= link_to @project.name, edit_project_path(@project) %></td>
+    <td class="field" width="10%">Status : </td>
+    <td><%= @project.state.titleize %> 
+      <% if @actions.length > 0 %>
+				[
+				<% @actionCnt = 0 %>
+        <% @actions.each do |act| %>
+					<%= link_to "#{act.titleize}#{@actions.size == (@actionCnt+1) ? "" : ","}", update_status_project_path(@project, :event => act), :method => :post, :confirm => "Change the status of project to #{act.humanize}?" %>
+					<% @actionCnt += 1 %>
+        <% end -%>
+        ]
+      <% end -%>
+    </td>
+  </tr>
+  <tr>
+    <td class="field">Description : </td>
+    <td colspan="3"><%= @project.desc.html_safe %></td>
+  </tr>
+</table>
+<p/>
+
+<%= link_to 'Back', projects_path %> <br/>
+<%= link_to "Variances Management", project_variances_path(@project) %> <br/>
+<%= link_to "Schedule Management", project_schedules_path(@project) %> <br/>
+<%= link_to "Version Control", project_version_controls_path(@project) %>
+<br/>
+<% #link_to "Statistic", project_stat_project_path(@project), :remote => true, :update => 'stat' %>
+<div id="dev_stat">
+</div>
+<br/>
+<div id="issue_stat">
+</div>
+
+
+  <script>
+    jQuery(function($) {
+      // when the #var field changes
+      $(document).ready(function(e) {
+        //alert(e.target.value);
+        //varf = document.getElementById("vars")
+        //alert(o);
+        // make a POST call and replace the content
+        $.get("<%= url_for(:only_path => true, :controller => "projects", :action => "dev_stat", :id => @project.id) %>")
+				.done(function(data) {
+          $("#dev_stat").html(data);
+					});
+        $.get("<%= url_for(:only_path => true, :controller => "projects", :action => "issue_stat", :id => @project.id) %>")
+				.done(function(data) {
+          $("#issue_stat").html(data);
+					});
+
+      });
+    })
+
+  </script>
+
+

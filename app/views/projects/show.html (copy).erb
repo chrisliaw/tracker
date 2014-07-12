@@ -1,0 +1,110 @@
+
+<% content_for :page_title do -%>
+  Project Detail
+<% end -%>
+
+<p id="notice"><%= notice %></p>
+
+<table class="std">
+  <tr>
+    <td class="field">Project Name : </td>
+    <td width="30%"><%= link_to @project.name, edit_project_path(@project) %></td>
+    <td class="field" width="10%">Status : </td>
+    <td><%= @project.state.titleize %> 
+      <% if @actions.length > 0 %>
+        [
+        <% @actions.each do |act| %>
+          <%= link_to "#{act.titleize}, ", update_status_project_path(@project, :event => act), :method => :post, :confirm => "Change the status of project to #{act.humanize}?" %>
+        <% end -%>
+        ]
+      <% end -%>
+    </td>
+  </tr>
+  <tr>
+    <td class="field">Description : </td>
+    <td colspan="3"><%= @project.desc.html_safe %></td>
+  </tr>
+</table>
+<p/>
+
+<%= link_to 'Back', projects_path %> <br/>
+<%= link_to "Variances Management", project_variances_path(@project) %> <br/>
+<%= link_to "Schedule Management", project_schedules_path(@project) %> <br/>
+<%= link_to "Version Control", project_version_controls_path(@project) %>
+<br/>
+
+<table class="std" width="80%">
+  <tr>
+    <th colspan="<%= 2 + Develement.states.length %>"><%= link_to "Development Items", project_develements_path(@project) %></th>
+  </tr>
+  <tr>
+    <th>Classification</th>
+    <th>Total</th>
+    <% Develement.states.each do |st| -%>
+      <th><%= link_to st.to_s.titleize, project_develements_path(@project,:state => st.to_s) %></th>
+    <% end -%>
+  </tr>
+  <% @stat.each do |k,v| -%>
+    <tr>
+      <td><%= link_to k, project_develements_path(@project,:class => v[:id]) %></td>
+      <td align="right"><%= v[:stat] %></td>
+      <% Develement.states.each do |st| -%>
+        <td align="right">
+          <% if v[st].to_i > 0 %>
+            <%= link_to v[st], project_develements_path(@project,:class => v[:id], :state => st) %></td>
+
+        <% else %>
+          <%=  v[st] %></td>
+      <% end %>
+      <% end -%>
+    </tr>
+  <% end -%>
+  <tr>
+    <td align="right">Total : </td>
+    <td align="right"><%= @project.develements.size %></td>
+    <% Develement.states.each do |st| -%>
+      <% if @ttl_stat[st][:total].to_i > 0 %>
+        <td align="right"><%= link_to @ttl_stat[st][:total], project_develements_path(@project, :state => st) %></td>
+      <% else %>
+        <td align="right"><%= @ttl_stat[st][:total] %></td>
+      <% end %>
+    <% end -%>
+  </tr>
+</table>
+<br/>
+<table class="std" width="80%">
+  <tr>
+    <th colspan="<%= 2+Issue.states.size %>"><%= link_to "Issues", project_issues_path(@project) %></th>
+  </tr>
+  <tr>
+    <th>Classification</th>
+    <th>Total</th>
+    <% Issue.states.each do |st| -%>
+      <th><%= link_to st.to_s.titleize, project_issues_path(@project,:state => st.to_s) %></th>
+    <% end -%>
+  </tr>
+  <% @stat2.each do |k,v| -%>
+    <tr>
+      <td><%= link_to k, project_issues_path(@project,:class => v[:id]) %></td>
+      <td align="right"><%= v[:stat] %></td>
+      <% Issue.states.each do |st| -%>
+        <% if v[st].to_i > 0 %>
+          <td align="right"><%= link_to v[st], project_issues_path(@project,:class => v[:id], :state => st) %></td>
+        <% else %>
+          <td align="right"><%= v[st] %></td>
+        <% end %>
+      <% end -%>
+    </tr>
+  <% end -%>
+  <tr>
+    <td align="right">Total : </td>
+    <td align="right"><%= @project.issues.size %></td>
+    <% Issue.states.each do |st| -%>
+      <% if @ttl_stat2[st][:total].to_i > 0 %>
+        <td align="right"><%= link_to @ttl_stat2[st][:total], project_issues_path(@project,:state => st) %></td>
+      <% else %>
+        <td align="right"><%= @ttl_stat2[st][:total] %></td>
+      <% end %>
+    <% end -%>
+  </tr>
+</table>

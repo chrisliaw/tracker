@@ -1,0 +1,23 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/Fixtures.html
+
+one:
+  name: MyString
+  versionable_type: MyString
+  versionable_id: MyString
+  upstream_vcs_class: 1
+  upstream_vcs_path: MyString
+  vcs_class: 1
+  vcs_path: MyString
+  created_by: MyString
+  updated_by: MyString
+
+two:
+  name: MyString
+  versionable_type: MyString
+  versionable_id: MyString
+  upstream_vcs_class: 1
+  upstream_vcs_path: MyString
+  vcs_class: 1
+  vcs_path: MyString
+  created_by: MyString
+  updated_by: MyString

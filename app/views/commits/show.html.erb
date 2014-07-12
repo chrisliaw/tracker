@@ -1,0 +1,40 @@
+<p id="notice"><%= notice %></p>
+
+<p>
+  <b>Committable type:</b>
+  <%= @commit.committable_type %>
+</p>
+
+<p>
+  <b>Committable:</b>
+  <%= @commit.committable_id %>
+</p>
+
+<p>
+  <b>Identifier:</b>
+  <%= @commit.identifier %>
+</p>
+
+<p>
+  <b>Vcs reference:</b>
+  <%= @commit.vcs_reference %>
+</p>
+
+<p>
+  <b>Vcs diff:</b>
+  <%= @commit.vcs_diff %>
+</p>
+
+<p>
+  <b>Vcs info:</b>
+  <%= @commit.vcs_info %>
+</p>
+
+<p>
+  <b>Vcs affected files:</b>
+  <%= @commit.vcs_affected_files %>
+</p>
+
+
+<%= link_to 'Edit', edit_commit_path(@commit) %> |
+<%= link_to 'Back', commits_path %>

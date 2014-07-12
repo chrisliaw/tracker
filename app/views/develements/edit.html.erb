@@ -1,0 +1,71 @@
+<h1>Editing develement</h1>
+
+<%= form_for(@develement,:url => [@project,@develement]) do |f| %>
+  <% if @develement.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(@develement.errors.count, "error") %> prohibited this develement from being saved:</h2>
+
+      <ul>
+      <% @develement.errors.full_messages.each do |msg| %>
+        <li><%= msg %></li>
+      <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <table class="std">
+    <tr>
+      <td class="field">Project : </td>
+      <td><%= @project.name %></td>
+    </tr>
+    <% if @develement.variance != nil %>
+      <tr>
+        <td class="field">Variance : </td>
+        <td><%= @develement.variance.name %></td>
+      </tr>
+    <% end %>
+    <tr>
+      <td class="field">Short Description : </td>
+      <td><%= f.text_field :name %></td>
+    </tr>
+    <tr>
+      <td class="field">Description :</td>
+      <td><%= f.text_area :desc, :class => "tinymce", :cols => 48, :rows => 8 %></td>
+    </tr>
+    <tr>
+      <td class="field">Classification : </td>
+      <td><%= f.select :develement_type_id, @devType.collect { |p| [p.name,p.id]}, :include_blank => true %></td>
+    </tr>
+    <tr>
+      <td class="field">Advanced :</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td class="field">Schedule : </td>
+      <td>
+        <% if @develement.variance_parent == nil %>
+          <%= f.select :schedule_id, @project.schedules.collect { |s| [s.name,s.id]} , :include_blank => true %> 
+          <%= link_to "Add Schedule", new_project_schedule_path(@project,:src => edit_project_develement_path(@project)) %>
+        <% else %>
+          <% if @develement.variance.schedules.size == 0 # variance not defining any schedule %>
+            <%= f.select :schedule_id, @project.schedules.collect { |s| [s.name,s.id]} , :include_blank => true %> 
+            <%= link_to "Add Schedule", new_project_variance_schedule_path(@project,@develement.variance,:src => edit_project_develement_path(@project)) %>
+          <% else %>
+            <%= f.select :schedule_id, @develement.variance.schedules.collect { |s| [s.name,s.id]} , :include_blank => true %> 
+            <%= link_to "Add Schedule", new_project_variance_schedule_path(@project,@develement.variance,:src => edit_project_develement_path(@project)) %>
+          <% end %>
+        <% end %>
+      </td>
+    </tr>
+    <tr>
+      <td></td>
+      <td><%= f.submit %></td>
+    </tr>
+  </table>
+<% end %>
+
+<% if @variance != nil %>
+  <%= link_to 'Back', [@project,@variance,@develement] %> |
+<% else %>
+  <%= link_to 'Back', [@project,@develement] %> |
+<% end %>

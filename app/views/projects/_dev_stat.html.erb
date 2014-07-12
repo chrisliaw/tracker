@@ -1,0 +1,69 @@
+
+<table class="std" width="80%">
+  <tr>
+		<th colspan="<%= 2 + Develement.states.length %>">
+			<%= link_to "Development Items", project_develements_path(@project) %><br/>
+			<%= select_tag "vars" , option_groups_from_collection_for_select(@variances,:options,:name,:id,:name, @var) %>
+		</th>
+  </tr>
+  <tr>
+    <th>Classification</th>
+    <th>Total</th>
+    <% Develement.states.each do |st| -%>
+      <th><%= link_to st.to_s.titleize, project_develements_path(@project,:state => st.to_s) %></th>
+    <% end -%>
+  </tr>
+  <% @stat.each do |k,v| -%>
+    <tr>
+      <td><%= link_to k, project_develements_path(@project,:class => v[:id]) %></td>
+      <td align="right"><%= v[:stat] %></td>
+      <% Develement.states.each do |st| -%>
+        <td align="right">
+					<% if v[st].to_i > 0 %>
+						<% if @variance %>
+							<%= link_to v[st], project_develements_path(@project,:class => v[:id], :state => st, :variance => @variance) %></td>
+					<% else %>
+						<%= link_to v[st], project_develements_path(@project,:class => v[:id], :state => st) %></td>
+					<% end %>
+
+        <% else %>
+          <%=  v[st] %></td>
+      <% end %>
+      <% end -%>
+    </tr>
+  <% end -%>
+  <tr>
+    <td align="right">Total : </td>
+    <td align="right"><%= @grandTtl %></td>
+    <% Develement.states.each do |st| -%>
+			<% if @ttl_stat[st][:total].to_i > 0 %>
+				<% if @variance %>
+					<td align="right"><%= link_to @ttl_stat[st][:total], project_develements_path(@project, :state => st, :variance => @variance) %></td>
+				<% else %>
+					<td align="right"><%= link_to @ttl_stat[st][:total], project_develements_path(@project, :state => st) %></td>
+				<% end %>
+      <% else %>
+        <td align="right"><%= @ttl_stat[st][:total] %></td>
+      <% end %>
+    <% end -%>
+  </tr>
+</table>
+
+  <script>
+    jQuery(function($) {
+      // when the #var field changes
+      $("#vars").change(function(e) {
+        //alert(e.target.value);
+        varf = document.getElementById("vars")
+        //alert(o);
+        // make a POST call and replace the content
+        $.get("<%= url_for(:only_path => true, :controller => "projects", :action => "dev_stat", :id => @project.id) %>", {vars : varf.value})
+				.done(function(data) {
+          $("#dev_stat").html(data);
+        });
+      });
+    })
+
+  </script>
+
+

@@ -1,0 +1,68 @@
+  # states are referred from here 
+  # http://en.wikipedia.org/wiki/Software_release_life_cycle
+  # This portion will be using either conf file or database later
+  acts_as_state_machine :initial => :planning
+  state :planning
+  state :under_development
+  # first phase to begin software testing. Feature completed/freezed
+  state :alpha_released 
+  state :beta_released
+  # Product stabilization
+  state :rc_released
+  # Release to manufacturing
+  state :rtm_released
+  # General availability
+  state :ga_released
+  state :final_released
+  state :skipped
+
+  event :activate do
+    transitions :from => :planning, :to => :under_development
+  end
+
+  event :replan do
+    transitions :from => :under_development, :to => :planning
+  end
+
+  event :alpha_release do
+    transitions :from => :under_development, :to => :alpha_released
+  end
+
+  event :beta_release do
+    transitions :from => :alpha_released, :to => :beta_released
+  end
+
+  event :release_candidate do
+    transitions :from => :beta_released, :to => :rc_released
+  end
+
+  event :release_to_manufacturing do
+    transitions :from => :rc_released, :to => :rtm_released
+  end
+
+  event :general_availability do
+    transitions :from => :rtm_released, :to => :ga_released
+  end
+
+  event :final_release do
+    transitions :from => :ga_released, :to => :final_released
+  end
+
+  event :revert_release do
+    transitions :from => :beta_released, :to => :alpha_released
+    transitions :from => :rc_released, :to => :beta_released
+    transitions :from => :rtm_released, :to => :rc_released
+    transitions :from => :ga_released, :to => :rtm_released
+    transitions :from => :final_released, :to => :ga_released
+  end
+
+  event :skip_version do
+    transitions :from => :planning, :to => :skipped
+    transitions :from => :under_devepment, :to => :skipped 
+    transitions :from => :alpha_released, :to => :skipped 
+    transitions :from => :beta_released, :to => :skipped 
+    transitions :from => :rc_released, :to => :skipped 
+    transitions :from => :rtm_released, :to => :skipped 
+    transitions :from => :ga_released, :to => :skipped 
+  end 
+

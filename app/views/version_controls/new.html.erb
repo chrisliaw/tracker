@@ -1,0 +1,86 @@
+<% content_for :page_title do -%>
+  New Version Control <br/>
+  [Project <%= @project.name %> <%= @variance != nil ? ",#{@variance.name} variance" : "" %>]
+<% end -%>
+
+
+<%= form_for(@version_control, :url => (@variance != nil ? project_variance_version_controls_path(@project,@variance) : project_version_controls_path(@project))) do |f| %>
+  <% if @version_control.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(@version_control.errors.count, "error") %> prohibited this version_control from being saved:</h2>
+
+      <ul>
+      <% @version_control.errors.full_messages.each do |msg| %>
+        <li><%= msg %></li>
+      <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <table class="std">
+    <% if @variance != nil %>
+      <tr>
+        <td class="field">Project : </td>
+        <td><%= @project.name %></td>
+      </tr>
+    <% end %>
+    <tr>
+      <td class="field"><%= @version_control.versionable_type.titleize %></td>
+      <% if @variance != nil %>
+        <td><%=  @variance.name %></td>
+      <% else %>
+        <td><%=  @project.name %></td>
+      <% end %>
+    </tr>
+    <tr>
+      <td class="field"><%= f.label :name %></td>
+      <td><%= f.text_field :name %></td>
+    </tr>
+    <tr>
+      <td class="sub-heading">Remote Detail :</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td class="field"><%= f.label :upstream_vcs_class, "Remote VCS Type" %></td>
+      <td><%= f.select :upstream_vcs_class, VCS_CLASS.collect { |p| [p[1],p[0]] }, :include_blank => true %></td>
+    </tr>
+    <tr>
+      <td class="field"><%= f.label :upstream_vcs_path, "Remote VCS Path" %></td>
+      <td><%= f.text_field :upstream_vcs_path %></td>
+    </tr>
+    <tr>
+      <td class="field"><%= f.label :upstream_vcs_branch, "Remote VCS Branch" %></td>
+      <td><%= f.text_field :upstream_vcs_branch, :value => "master" %></td>
+    </tr>
+    <tr>
+      <td class="sub-heading">Local Detail :</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td class="field"><%= f.label :pushable_repo, "Local Pushable Repository?" %></td>
+      <td><%= f.check_box :pushable_repo %></td>
+    </tr>
+    <tr>
+      <td class="field"><%= f.label :vcs_class, "Local VCS Type" %></td>
+      <td><%= f.select :vcs_class, VCS_CLASS.collect { |p| [p[1],p[0]]}, :include_blank => true %></td>
+    </tr>
+    <tr>
+      <td class="field"><%= f.label :vcs_path, "Local VCS Path" %></td>
+      <td><%= f.text_field :vcs_path %></td>
+    </tr>
+    <tr>
+      <td class="field"><%= f.label :vcs_branch, "Local VCS Branch" %></td>
+      <td><%= f.text_field :vcs_branch, :value => "master" %></td>
+    </tr>
+    <tr>
+      <td class="field"></td>
+      <td><%= f.submit %></td>
+    </tr>
+  </table>
+<% end %>
+
+<% if @variance != nil %>
+  <%= link_to 'Back', project_variance_version_controls_path(@project,@variance) %>
+<% else %>
+  <%= link_to 'Back', project_version_controls_path(@project) %>
+<% end %>

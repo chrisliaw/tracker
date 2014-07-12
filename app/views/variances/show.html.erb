@@ -1,0 +1,38 @@
+
+<% content_for :page_title do -%>
+  Variance Detail
+<% end -%>
+
+<p id="notice"><%= notice %></p>
+
+<table class="std">
+  <tr>
+    <td class="field">Project : </td>
+    <td><%= @project.name %></td>
+  </tr>
+  <tr>
+    <td class="field">Variance Name : </td>
+    <td><%= link_to @variance.name, edit_project_variance_path(@project,@variance) %></td>
+  </tr>
+  <tr>
+    <td class="field">Variance Description : </td>
+    <td><%= @variance.desc %></td>
+  </tr>
+  <tr>
+    <td class="field">State : </td>
+    <td><%= @variance.state.titleize %>
+      <% if @actions.length > 0 %>
+        [
+        <% @actions.each do |act| -%>
+          <%= link_to "#{act}, ", update_status_project_variance_path(@project,@variance,:event => act), :method => :post , :confirm => "Change state to #{act}?" %>
+        <% end -%>
+        ]
+      <% end %>
+    </td>
+  </tr>
+</table>
+
+<%= link_to 'Back', project_variances_path(@project) %> | 
+<%= link_to "Delete", [@project,@variance], :method => :delete, :confirm => "Are you sure to delete this variance?" %> <br/>
+<%= link_to "Schedule Management", project_variance_schedules_path(@project,@variance) %> | 
+<%= link_to "Version Control", project_variance_version_controls_path(@project,@variance) %> 

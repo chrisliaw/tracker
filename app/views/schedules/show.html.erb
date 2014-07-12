@@ -1,0 +1,93 @@
+
+<% content_for :page_title do -%>
+  Schedule Detail
+<% end -%>
+
+<p id="notice"><%= notice %></p>
+
+<table class="std" width="80%">
+  <tr>
+    <td class="field">Project : </td>
+    <td colspan="3"><%= link_to @project.name, @project %></td>
+  </tr>
+  <tr>
+    <td class="field">Name : </td>
+    <td width="1%"><%= @schedule.name %></td>
+    <td class="field">Status : </td>
+    <td><%= @schedule.state.titleize %>
+      <% if @actions.length > 0 %>
+        [
+        <% @actions.each do |act| -%>
+          <%= link_to "#{act} ", update_status_project_schedule_path(@project,@schedule, :event => act), :method => :post, :confirm => "Change the status to #{act}?" %>
+        <% end -%>
+        ]
+      <% end %>
+    </td>
+  </tr>
+  <tr>
+    <td class="field">Description</td>
+    <td colspan="3"><%= @schedule.desc %></td>
+  </tr>
+</table>
+
+
+<%= link_to 'Edit', edit_project_schedule_path(@project,@schedule) %> |
+<%= link_to 'Back', project_schedules_path(@project) %>
+<br/>
+<table class="std" width="80%">
+  <tr>
+    <th colspan="<%= 2 + Develement.states.length %>"><%= link_to "Development Items", project_develements_path(@project) %></th>
+  </tr>
+  <tr>
+    <th>Classification</th>
+    <th>Total</th>
+    <% Develement.states.each do |st| -%>
+      <th><%= link_to st.to_s.titleize, project_develements_path(@project,:state => st.to_s) %></th>
+    <% end -%>
+  </tr>
+  <% @stat.each do |k,v| -%>
+    <tr>
+      <td><%= link_to k, project_develements_path(@project,:class => v[:id]) %></td>
+      <td align="right"><%= v[:stat] %></td>
+      <% Develement.states.each do |st| -%>
+        <td align="right"><%= v[st] %></td>
+      <% end -%>
+    </tr>
+  <% end -%>
+  <tr>
+    <td align="right">Total : </td>
+    <td align="right"><%= @schedule.develements.size %></td>
+    <% Develement.states.each do |st| -%>
+      <td align="right"><%= @ttl_stat[st][:total] %></td>
+    <% end -%>
+  </tr>
+</table>
+<br/>
+<table class="std" width="80%">
+  <tr>
+    <th colspan="<%= 2+Issue.states.size %>"><%= link_to "Issues", project_issues_path(@project) %></th>
+  </tr>
+  <tr>
+    <th>Classification</th>
+    <th>Total</th>
+    <% Issue.states.each do |st| -%>
+      <th><%= link_to st.to_s.titleize, project_issues_path(@project,:state => st.to_s) %></th>
+    <% end -%>
+  </tr>
+  <% @stat2.each do |k,v| -%>
+    <tr>
+      <td><%= link_to k, project_issues_path(@project,:class => v[:id]) %></td>
+      <td align="right"><%= v[:stat] %></td>
+      <% Issue.states.each do |st| -%>
+        <td align="right"><%= v[st] %></td>
+      <% end -%>
+    </tr>
+  <% end -%>
+  <tr>
+    <td align="right">Total : </td>
+    <td align="right"><%= @schedule.issues.size %></td>
+    <% Issue.states.each do |st| -%>
+      <td align="right"><%= @ttl_stat2[st][:total] %></td>
+    <% end -%>
+  </tr>
+</table>
