@@ -14,7 +14,7 @@ class DevelementsController < ApplicationController
     @kw = params[:keyword]
     @sch = params[:schedule]
     @var = params[:variance]
-    @develements = filter_record(@state,@cls,@kw,@sch,@var)
+    @develements = filter_record(@state,@cls,@kw,@sch,@var,params[:page])
     #@develements = @project.develements
 
     # status filter combo content
@@ -254,7 +254,7 @@ class DevelementsController < ApplicationController
     sch = params[:schedule]
     var = params[:variance]
 		@develements = []
-    @filter = filter_record(status,cls,kw,sch,var)
+    @filter = filter_record(status,cls,kw,sch,var,params[:page])
 		# TODO this is ineffective!
 		if var == "-1"
 			@filter.each do |d|
@@ -276,7 +276,7 @@ class DevelementsController < ApplicationController
   end
 
   private
-  def filter_record(state,cls,keyword,schedule,variance)
+  def filter_record(state,cls,keyword,schedule,variance,page)
 
     conds = []
     conds.add_condition!(['project_id = ?',@project.id])
@@ -317,7 +317,7 @@ class DevelementsController < ApplicationController
 
     p conds
 
-    Develement.all :conditions => conds
+		Develement.where(conds).page(page).per(10)
     #if state != nil and !state.empty?
     #  if cls != nil and !cls.empty?
     #    if cls == "-1"
