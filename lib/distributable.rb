@@ -70,7 +70,7 @@ module Distributable
             self.send("#{self.class.options[:distribution_key]}=", Digest::SHA1.hexdigest("#{SecureRandom.uuid}"))
             #self.identifier = Digest::SHA1.hexdigest "#{SecureRandom.uuid}"
             res = self.class.find :first, :conditions => ["identifier = ?",self.identifier]
-            break if res == nil
+            break if res == nil # break if no duplication found
           end
           #self.save!
           break
