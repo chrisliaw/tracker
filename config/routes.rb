@@ -36,6 +36,7 @@ Tracker::Application.routes.draw do
       end
       collection do
         post :filter_status
+				get :filter_status
       end
     end 
     resources :schedules do
