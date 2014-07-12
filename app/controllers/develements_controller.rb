@@ -298,7 +298,7 @@ class DevelementsController < ApplicationController
 
     if schedule != nil and !schedule.empty?
       if schedule == "-1"
-        conds.add_condition!('schedule_id is null')
+        conds.add_condition!("schedule_id is null or schedule_id = ''")
       else
         conds.add_condition!(['schedule_id = ?',schedule])
       end
