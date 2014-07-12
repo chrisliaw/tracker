@@ -8,7 +8,7 @@
 <table class="std">
   <tr>
     <td class="field">Project Name : </td>
-    <td width="30%"><%= link_to @project.name, edit_project_path(@project) %></td>
+    <td width="50%"><%= link_to @project.name, edit_project_path(@project) %></td>
     <td class="field" width="10%">Status : </td>
     <td><%= @project.state.titleize %> 
       <% if @actions.length > 0 %>
