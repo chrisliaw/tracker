@@ -187,7 +187,11 @@ class DevelementsController < ApplicationController
 
     respond_to do |format|
       #format.html { redirect_to develements_url }
-      format.html { redirect_to [@project,parent] }
+			if parent != nil
+				format.html { redirect_to [@project,parent] }
+			else
+				format.html { redirect_to @project }
+			end
       format.json { head :no_content }
     end
   end
