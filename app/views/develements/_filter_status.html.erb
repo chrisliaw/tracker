@@ -4,8 +4,10 @@
     <th>Detail</th>
     <th>State</th>
     <th>Classification</th>
-    <th>Schedule</th>
-    <th>Variance</th>
+		<th>Schedule</th>
+		<% if @project.variances.length > 0 %>
+			<th>Variance</th>
+		<% end %>
   </tr>
 
 <% @develements.each do |develement| %>
@@ -13,8 +15,10 @@
     <td width="50%"><%= link_to develement.name, [@project,develement] %></td>
     <td width="10%" align="center"><%= develement.state.titleize %></td>
     <td width="12%" align="center"><%= develement.develement_type == nil ? "Unclassified" : develement.develement_type.name %></td>
-    <td align="center"><%= develement.schedule == nil ? "Unschedule" : develement.schedule.name %></td>
-		<td align="center"><%= develement.variance_children.length > 0 ? develement.variance_children.collect { |d| d.variance.name }.join(",") : develement.variance == nil ? "-" : develement.variance.name %></td>
+		<td align="center"><%= develement.schedule == nil ? "Unschedule" : develement.schedule.name %></td>
+		<% if @project.variances.length > 0 %>
+			<td align="center"><%= develement.variance_children.length > 0 ? develement.variance_children.collect { |d| d.variance.name }.join(",") : develement.variance == nil ? "-" : develement.variance.name %></td>
+		<% end %>
   </tr>
 <% end %>
 </table>
