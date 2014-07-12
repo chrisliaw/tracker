@@ -190,7 +190,7 @@ class DevelementsController < ApplicationController
 			if parent != nil
 				format.html { redirect_to [@project,parent] }
 			else
-				format.html { redirect_to @project }
+				format.html { redirect_to project_develements_path(@project) }
 			end
       format.json { head :no_content }
     end
