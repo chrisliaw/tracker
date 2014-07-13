@@ -316,7 +316,8 @@ class DevelementsController < ApplicationController
     end
 
     p conds
-		[Develement.where(conds).page(page).per(10), Develement.where(conds).count]
+		#[Develement.where(conds).page(page).per(3), Develement.where(conds).count]
+		[Develement.where(conds), Develement.where(conds).count]
     #if state != nil and !state.empty?
     #  if cls != nil and !cls.empty?
     #    if cls == "-1"
