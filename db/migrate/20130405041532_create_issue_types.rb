@@ -22,5 +22,10 @@ class CreateIssueTypes < ActiveRecord::Migration
       :name => "Enhancement",
       :desc => "Suggestion or minor touch up on the system but does not affect functionality of the system"
     )
+
+		IssueType.create(
+			:name => "Task",
+			:desc => "Things need to be done related to the issue"
+		)
   end
 end
