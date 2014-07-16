@@ -11,7 +11,7 @@ class Project < ActiveRecord::Base
   has_many :schedules, :as => :schedulable
   has_many :commits, :as => :committable
 
-  validates :code, :presence => true, :uniqueness => { :case_sensitive => false }, :on => :create
+  validates :code, :presence => true, :uniqueness => { :case_sensitive => false } #, :on => :create
 
   distributable
 
