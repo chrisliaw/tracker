@@ -8,8 +8,8 @@
 <table class="std">
   <tr>
     <td class="field">Project Name : </td>
-    <td width="50%"><%= link_to @project.name, edit_project_path(@project) %></td>
-    <td class="field" width="10%">Status : </td>
+    <td><%= link_to @project.name, edit_project_path(@project) %></td>
+    <td class="field" width="30%">Status : </td>
     <td><%= @project.state.titleize %> 
       <% if @actions.length > 0 %>
 				[
@@ -24,7 +24,9 @@
 	</tr>
   <tr>
     <td class="field">Project Code : </td>
-    <td colspan="3"><%= @project.code %></td>
+    <td><%= @project.code %></td>
+    <td class="field">Project Identifier : </td>
+    <td><%= @project.id %></td>
   </tr>
   <tr>
     <td class="field">Description : </td>
