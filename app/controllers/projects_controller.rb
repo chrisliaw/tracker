@@ -106,6 +106,7 @@ class ProjectsController < ApplicationController
   def create
     @project = Project.new(params[:project])
     @project.created_by = session[:user][:login]
+		@project.code = @project.code.upcase if @project.code != nil
 
     respond_to do |format|
       if @project.save
@@ -122,6 +123,7 @@ class ProjectsController < ApplicationController
   # PUT /projects/1.json
   def update
     @project = Project.find(params[:id])
+		params[:project][:code] = params[:project][:code].upcase if params[:project][:code] != nil
 
     respond_to do |format|
       if @project.update_attributes(params[:project])

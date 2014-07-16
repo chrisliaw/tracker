@@ -17,6 +17,16 @@
       <td><%= f.text_field :name %></td>
     </tr>
     <tr>
+      <td class="field"><%= f.label :code, "Code : " %></td>
+			<td>
+				<% if @project.new_record? or @project.develements.length == 0 or @project.issues.length == 0 %>
+					<%= f.text_field :code %>
+				<% else %>
+					<%= @project.code %>
+				<% end %>
+			</td>
+    </tr>
+    <tr>
       <td class="field">Description : </td>
       <td><%= f.text_area :desc, :class => "tinymce", :rows => 8, :cols => 38 %></td>
     </tr>

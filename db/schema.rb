@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20140314151606) do
+ActiveRecord::Schema.define(:version => 20140716043809) do
 
   create_table "change_logs", :force => true do |t|
     t.string   "table"
@@ -100,6 +100,7 @@ ActiveRecord::Schema.define(:version => 20140314151606) do
     t.string   "data_hash"
     t.datetime "created_at", :null => false
     t.datetime "updated_at", :null => false
+    t.string   "code"
   end
 
   create_table "schedules", :force => true do |t|

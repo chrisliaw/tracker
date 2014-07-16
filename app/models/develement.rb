@@ -16,11 +16,12 @@ class Develement < ActiveRecord::Base
   after_create :update_code_and_id
 
   def update_code_and_id
-    #code = "%05d" % self.id
-    #self.code = "#{self.created_by.downcase}/#{self.project.short_name}/D/#{code}"
-    #data = "#{self.created_by.downcase}#{self.code}#{Time.now.to_f}"
-    #self.identifier = Digest::SHA1.hexdigest data
-    #self.save!
+		# id only available after create...
+		# Note this id is not the distributed ID, it is the standard rails model id
+		self.reload
+    code = "%05d" % self._id
+    self.code = "#{self.project.code}/Dev/#{code}"
+    self.save!
   end
 
   stateful :initial => :open

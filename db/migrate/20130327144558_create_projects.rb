@@ -3,7 +3,6 @@ class CreateProjects < ActiveRecord::Migration
     create_table :projects do |t|
       t.string  :identifier
       t.string  :name
-      #t.string  :short_name
       t.text    :desc
       t.text    :state
       t.string  :created_by
@@ -11,4 +10,4 @@ class CreateProjects < ActiveRecord::Migration
       t.timestamps
     end
   end
-end
+endb

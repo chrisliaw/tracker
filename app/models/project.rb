@@ -1,5 +1,5 @@
 class Project < ActiveRecord::Base
-  attr_accessible :desc, :name, :short_name, :state, :created_by, :identifier, :created_at, :updated_at
+  attr_accessible :desc, :name, :short_name, :state, :created_by, :identifier, :created_at, :updated_at, :code
   has_many :develements
   #has_many :features, :class_name => "Develement" , :conditions => "develement_type_id = 1"
   #has_many :enhancements, :class_name => "Develement", :conditions => "develement_type_id = 2"
@@ -11,7 +11,7 @@ class Project < ActiveRecord::Base
   has_many :schedules, :as => :schedulable
   has_many :commits, :as => :committable
 
-  #validates :short_name, :presence => true, :uniqueness => { :case_sensitive => false }, :on => :create
+  validates :code, :presence => true, :uniqueness => { :case_sensitive => false }, :on => :create
 
   distributable
 
