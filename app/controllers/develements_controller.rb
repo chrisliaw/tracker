@@ -272,8 +272,22 @@ class DevelementsController < ApplicationController
     @develement = Develement.find(params[:id])
     event = params[:event]
     @develement.send "#{event}!"
-    redirect_to [@project,@develement]
+
+		respond_to do |format|
+			format.html { redirect_to [@project,@develement] }
+			format.json { head :no_content }
+		end
+    #redirect_to [@project,@develement]
   end
+
+	def find_identity
+		code = params[:code]
+		@develement = Develement.where(["code = ?",code]).first
+    respond_to do |format|    
+      format.html 
+      format.json { render json: @develement }
+    end
+	end
 
   private
   def filter_record(state,cls,keyword,schedule,variance,page)

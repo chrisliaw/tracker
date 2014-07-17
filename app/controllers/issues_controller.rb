@@ -155,8 +155,13 @@ class IssuesController < ApplicationController
     @issue = Issue.find(params[:id])
     event = params[:event]
     @issue.send "#{event}!"
-    @issue.save
-    redirect_to [@project,@issue]
+    #@issue.save
+
+		respond_to do |format|
+			format.html { redirect_to [@project,@issue] }
+			format.json { head :no_content }
+		end
+    #redirect_to [@project,@issue]
   end
 
   private
@@ -182,7 +187,7 @@ class IssuesController < ApplicationController
 
     if schedule != nil and !schedule.empty?
       if schedule == "-1"
-        conds.add_condition!('schedule_id is null')
+        conds.add_condition!("schedule_id is null or schedule_id = ''")
       else
         conds.add_condition!(['schedule_id = ?',schedule])
       end

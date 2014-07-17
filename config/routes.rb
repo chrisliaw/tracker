@@ -37,6 +37,7 @@ Tracker::Application.routes.draw do
       collection do
         post :filter_status
 				get :filter_status
+				post :find_identity
       end
     end 
     resources :schedules do

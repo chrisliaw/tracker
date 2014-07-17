@@ -44,11 +44,11 @@
       <td class="field">Schedule : </td>
       <td>
         <% if @develement.variance_parent == nil %>
-          <%= f.select :schedule_id, @project.schedules.collect { |s| [s.name,s.id]} , :include_blank => true %> 
+					<%= f.select :schedule_id, @project.open_schedules.collect { |s| ["#{s.name} (#{s.state.titleize})",s.id]} , :include_blank => true %> 
           <%= link_to "Add Schedule", new_project_schedule_path(@project,:src => edit_project_develement_path(@project)) %>
         <% else %>
           <% if @develement.variance.schedules.size == 0 # variance not defining any schedule %>
-            <%= f.select :schedule_id, @project.schedules.collect { |s| [s.name,s.id]} , :include_blank => true %> 
+						<%= f.select :schedule_id, @project.open_schedules.collect { |s| ["#{s.name} (#{s.state.titleize})",s.id] } , :include_blank => true %> 
             <%= link_to "Add Schedule", new_project_variance_schedule_path(@project,@develement.variance,:src => edit_project_develement_path(@project)) %>
           <% else %>
             <%= f.select :schedule_id, @develement.variance.schedules.collect { |s| [s.name,s.id]} , :include_blank => true %> 

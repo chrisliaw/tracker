@@ -22,8 +22,8 @@ ActiveRecord::Schema.define(:version => 20140716043809) do
   end
 
   create_table "commits", :force => true do |t|
-    t.string   "committable_type"
-    t.string   "committable_id"
+    t.string   "committables_type"
+    t.string   "committables_id"
     t.string   "identifier"
     t.string   "vcs_reference"
     t.string   "vcs_diff"

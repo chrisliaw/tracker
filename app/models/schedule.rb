@@ -28,4 +28,12 @@ class Schedule < ActiveRecord::Base
   transform :active => :released do
     forward :release
   end
+
+	transform :released => :eol do
+		forward :end_of_life
+	end
+
+	transform :eol => :archived do
+		forward :archive
+	end
 end

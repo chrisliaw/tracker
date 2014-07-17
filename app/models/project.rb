@@ -13,6 +13,14 @@ class Project < ActiveRecord::Base
 
   validates :code, :presence => true, :uniqueness => { :case_sensitive => false } #, :on => :create
 
+	def open_schedules
+		Schedule.where(["schedulable_type = 'Project' and schedulable_id = ? and schedules.state != 'released'", self.id])
+	end
+
+	def released_schedules
+		Schedule.where(["schedulable_type = 'Project' and schedulable_id = ? and schedules.state = 'released'", self.id])
+	end
+
   distributable
 
   stateful :initial => :evaluation

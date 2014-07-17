@@ -34,7 +34,7 @@
     </tr>
     <tr>
       <td class="field">Schedule : </td>
-      <td><%= f.select :schedule_id, @project.schedules.collect { |s| [s.name,s.id]} , :include_blank => true %> 
+			<td><%= f.select :schedule_id, @project.schedules.collect { |s| ["#{s.name} (#{s.state.titleize})",s.id]} , :include_blank => true %> 
         <%= link_to "Add Schedule", new_project_schedule_path(@project,:src => new_project_issue_path(@project)) %>
       </td>
     </tr>
