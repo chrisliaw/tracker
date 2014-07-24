@@ -75,7 +75,7 @@ ActiveRecord::Schema.define(:version => 20140716043809) do
     t.string   "code"
     t.string   "state"
     t.integer  "issue_type_id"
-    t.integer  "schedule_id"
+    t.string   "schedule_id"
     t.string   "created_by"
     t.string   "variance_parent_id"
     t.string   "variance_id"

@@ -16,7 +16,14 @@
   <table class="std">
     <tr>
       <td class="field"><%= f.label :name %></td>
-      <td><%= f.text_field :name %></td>
+			<td>
+				<!-- not allow to change since there might be dvcs source tagged with this name -->
+				<% if @schedule.state == "released" or @schedule.state == "eol" or @schedule.state == 'archived' %>
+					<%= @schedule.name %>
+				<% else %>
+					<%= f.text_field :name %>
+				<% end %>
+			</td>
     </tr>
     <tr>
       <td class="field"><%= f.label :desc, "Description" %></td>
@@ -29,5 +36,4 @@
   </table>
 <% end %>
 
-<%= link_to 'Show', project_schedule_path(@project,@schedule) %> |
-<%= link_to 'Back', project_schedules_path(@project) %>
+<%= link_to 'Back', project_schedule_path(@project,@schedule) %>

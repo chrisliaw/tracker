@@ -280,7 +280,7 @@ class DevelementsController < ApplicationController
     #redirect_to [@project,@develement]
   end
 
-	def find_identity
+	def find_by_code
 		code = params[:code]
 		@develement = Develement.where(["code = ?",code]).first
     respond_to do |format|    
