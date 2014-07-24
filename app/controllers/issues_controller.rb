@@ -164,6 +164,15 @@ class IssuesController < ApplicationController
     #redirect_to [@project,@issue]
   end
 
+	def find_by_code
+		code = params[:code]
+		@issue = Issue.where(["code = ?",code]).first
+		respond_to do |format|
+			format.html
+			format.json { render json: @issue }
+		end
+	end
+
   private
   def filter_record(state,cls,keyword,schedule)
 
