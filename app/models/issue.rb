@@ -15,11 +15,12 @@ class Issue < ActiveRecord::Base
 
   after_create :create_code_and_id
   def create_code_and_id
-    #code = "%05d" % self.id
-    #self.code = "#{self.created_by.downcase}/#{self.project.short_name}/I/#{code}"
+		self.reload
+    code = "%05d" % self._id
+    self.code = "#{self.project.code}/Iss/#{code}"
     #data = "#{self.created_by.downcase}#{self.code}#{Time.now.to_f}"
     #self.identifier = Digest::SHA1.hexdigest data
-    #self.save!
+    self.save!
   end
 
   stateful :initial => :open
