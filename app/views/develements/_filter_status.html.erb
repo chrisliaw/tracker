@@ -1,6 +1,7 @@
 
 <table class="std">
-  <tr>
+	<tr>
+		<th>Ref</th>
     <th>Detail</th>
     <th>State</th>
     <th>Classification</th>
@@ -11,7 +12,8 @@
   </tr>
 
 <% @develements.each do |develement| %>
-  <tr>
+	<tr>
+		<td><%= link_to develement.code, [@project,develement] %></td>
     <td width="50%"><%= link_to develement.name, [@project,develement] %></td>
     <td width="10%" align="center"><%= develement.state.titleize %></td>
     <td width="12%" align="center"><%= develement.develement_type == nil ? "Unclassified" : develement.develement_type.name %></td>
