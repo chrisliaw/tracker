@@ -9,7 +9,7 @@
 
 <% @issues.each do |issue| %>
 	<tr>
-		<td><%= link_to issue.code, [@project,issue] %></td>
+		<td><%= link_to issue.user_code, [@project,issue] %></td>
     <td width="40%"><%= link_to issue.name, [@project,issue] %></td>
     <td width="10%" align="center"><%= issue.state.titleize %></td>
     <td width="12%" align="center"><%= issue.issue_type == nil ? "Unclassified" : issue.issue_type.name %></td>

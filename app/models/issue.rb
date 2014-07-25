@@ -23,6 +23,16 @@ class Issue < ActiveRecord::Base
     self.save!
   end
 
+	def user_code
+		if self.code != nil and not self.code.empty?
+			sp = self.code.split("/")
+			sp2 = sp[1..-1]
+			sp2.join("/")
+		else
+			""
+		end
+	end
+
   stateful :initial => :open
 
   transform :open => :active do
