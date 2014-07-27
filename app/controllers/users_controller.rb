@@ -88,12 +88,14 @@ class UsersController < ApplicationController
   end
 
   def authenticate
-    File.open(File.join(Rails.root,"db","owner.id"),"rb") do |f|
-      @store_bin = f.read
-    end
+    #File.open(File.join(Rails.root,"db","owner.id"),"rb") do |f|
+    #  @store_bin = f.read
+    #end
     begin
       puts "pass #{params["user"]["password"]}"
-      u = DistCredential.load_keystore(@store_bin,params["user"]["password"])
+      #u = DistCredential.load_keystore(@store_bin,params["user"]["password"])
+			idUrl = File.join(Rails.root,"db","owner.id")
+			u = DistCredential::PKCS12::LoadKeyStoreFromURL.call(idUrl,params["user"]["password"])
       sub = u.certificate.subject
       p sub
       sub.to_s.split("/").each do |f|

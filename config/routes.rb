@@ -1,5 +1,9 @@
 Tracker::Application.routes.draw do
 
+  get "sync_manager/login"
+
+  get "sync_manager/sync"
+
   resources :user_rights
 
   resources :commits
