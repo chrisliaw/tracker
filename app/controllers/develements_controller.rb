@@ -126,7 +126,8 @@ class DevelementsController < ApplicationController
     @develement = Develement.new(params[:develement])
     @develement.variance_id = ""
     @develement.project = @project
-    @develement.created_by = session[:user][:login]
+		@develement.desc = "" if @develement.desc == nil
+		#@develement.created_by = session[:user][:login]
 
     if params[:develement][:variance_id] != nil
       params[:develement][:variance_id].each do |v|
@@ -143,8 +144,9 @@ class DevelementsController < ApplicationController
       if @develement.save
         #format.html { redirect_to @develement, notice: 'Develement was successfully created.' }
         format.html { redirect_to project_develements_path(@project), notice: 'Develement was successfully created.' }
-        format.json { render json: @develement, status: :created, location: @develement }
+        format.json { render json: @develement, status: :created, location: project_develements_path(@project) }
       else
+				p @develement.errors
         format.html { render action: "new" }
         format.json { render json: @develement.errors, status: :unprocessable_entity }
       end
