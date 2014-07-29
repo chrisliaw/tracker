@@ -127,7 +127,7 @@ class DevelementsController < ApplicationController
     @develement.variance_id = ""
     @develement.project = @project
 		@develement.desc = "" if @develement.desc == nil
-		#@develement.created_by = session[:user][:login]
+		@develement.created_by = session[:user][:login] if not request.format == "json"
 
     if params[:develement][:variance_id] != nil
       params[:develement][:variance_id].each do |v|
