@@ -1,5 +1,5 @@
 <% content_for :page_title do -%>
-  Development Items
+  Batch Process - Development Items
 <% end -%>
 <div class="parent_info">
 Project : <%= link_to @project.name, @project %> 
@@ -32,7 +32,7 @@ Keyword :
         varf = document.getElementById("variance_filter")
         //alert(o);
         // make a POST call and replace the content
-        $.post("<%= url_for(:only_path => true, :controller => "develements", :action => "filter_status", :project_id => @project.id) %>", {status: e.target.value, class: cf.value, keyword: qs.value, schedule: schf.value, variance: varf.value})
+        $.post("<%= url_for(:only_path => true, :controller => "develements", :action => "batch_update_filter", :project_id => @project.id) %>", {status: e.target.value, class: cf.value, keyword: qs.value, schedule: schf.value, variance: varf.value})
           .done(function(data) {
           $("#dyn-sec").html(data);
         });
@@ -49,7 +49,7 @@ Keyword :
         varf = document.getElementById("variance_filter")
         //alert(o);
         // make a POST call and replace the content
-        $.post("<%= url_for(:only_path => true, :controller => "develements", :action => "filter_status", :project_id => @project.id) %>", {class: e.target.value, status: sf.value, keyword: qs.value, schedule :schf.value, variance: varf.value})
+        $.post("<%= url_for(:only_path => true, :controller => "develements", :action => "batch_update_filter", :project_id => @project.id) %>", {class: e.target.value, status: sf.value, keyword: qs.value, schedule :schf.value, variance: varf.value})
           .done(function(data) {
           $("#dyn-sec").html(data);
         });
@@ -66,7 +66,7 @@ Keyword :
         varf = document.getElementById("variance_filter")
         //alert(o);
         // make a POST call and replace the content
-        $.post("<%= url_for(:only_path => true, :controller => "develements", :action => "filter_status", :project_id => @project.id) %>", {class: cf.value, status: sf.value, keyword: e.target.value, schedule: schf.value, variance: varf.value})
+        $.post("<%= url_for(:only_path => true, :controller => "develements", :action => "batch_update_filter", :project_id => @project.id) %>", {class: cf.value, status: sf.value, keyword: e.target.value, schedule: schf.value, variance: varf.value})
           .done(function(data) {
           $("#dyn-sec").html(data);
         });
@@ -83,7 +83,7 @@ Keyword :
         varf = document.getElementById("variance_filter")
         //alert(o);
         // make a POST call and replace the content
-        $.post("<%= url_for(:only_path => true, :controller => "develements", :action => "filter_status", :project_id => @project.id) %>", {class: cf.value, status: sf.value, keyword: qs.value, schedule: e.target.value, variance: varf.value})
+        $.post("<%= url_for(:only_path => true, :controller => "develements", :action => "batch_update_filter", :project_id => @project.id) %>", {class: cf.value, status: sf.value, keyword: qs.value, schedule: e.target.value, variance: varf.value})
           .done(function(data) {
           $("#dyn-sec").html(data);
         });
@@ -100,7 +100,7 @@ Keyword :
         schf = document.getElementById("schedule_filter")
         //alert(o);
         // make a POST call and replace the content
-        $.post("<%= url_for(:only_path => true, :controller => "develements", :action => "filter_status", :project_id => @project.id) %>", {class: cf.value, status: sf.value, keyword: qs.value, schedule: schf.value, variance: e.target.value})
+        $.post("<%= url_for(:only_path => true, :controller => "develements", :action => "batch_update_filter", :project_id => @project.id) %>", {class: cf.value, status: sf.value, keyword: qs.value, schedule: schf.value, variance: e.target.value})
           .done(function(data) {
           $("#dyn-sec").html(data);
         });
@@ -112,9 +112,7 @@ Keyword :
 <% end -%>
 
 <div id="dyn-sec">
-  <%= render "filter_status" %>  
+  <%= render "batch_process" %>  
 </div>
-<br/>
-<%= link_to "Batch Processing", batch_process_project_develements_path(@project) %>
 <br />
 <%= link_to 'New Develement', new_project_develement_path(@project) %>

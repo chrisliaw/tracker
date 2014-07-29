@@ -268,6 +268,151 @@ class DevelementsController < ApplicationController
 		end
   end
 
+	def batch_process
+    @state = params[:state]
+    @cls = params[:class]
+    @kw = params[:keyword]
+    @sch = params[:schedule]
+    @var = params[:variance]
+    @develements,@ttlCnt = filter_record(@state,@cls,@kw,@sch,@var,params[:page])
+    #@develements = @project.develements
+
+    # status filter combo content
+    @status = []
+    d = Struct.new(:id,:name)
+    opt = FilterType.new("No Filter")
+    opt << d.new(nil,"All Status")
+    @status << opt
+
+    opt = FilterType.new("Status")
+    statuses = Develement.states.collect! {|e| e.to_s }
+    statuses.sort.each do |st|
+      opt << d.new(st,"#{st.titleize}")
+    end 
+    @status << opt
+    # end status filter combo content
+
+    # classification filter combo content
+    @class = []
+    d = Struct.new(:id,:name)
+    opt = FilterType.new("No Filter")
+    opt << d.new(nil,"All Classification")
+    @class << opt
+
+    opt = FilterType.new("Classification")
+    opt << d.new(-1,"Unclassified")
+    DevelementType.all.each do |dt|
+      opt << d.new(dt.id,dt.name)
+    end
+    @class << opt
+    # end classification combo content
+
+    # schedule filter combo content
+    @schedules = []
+    d = Struct.new(:id,:name)
+    opt = FilterType.new("No Filter")
+    opt << d.new(nil,"All Schedule")
+    @schedules << opt    
+    opt = FilterType.new("Schedule")
+    opt << d.new(-1,"Unschedule")
+    @project.schedules.each do |sc|
+      opt << d.new(sc.id,sc.name)
+    end
+    @schedules << opt
+    # end schedule filter combo content
+
+    # variance filter combo content
+    @variances = []
+    d = Struct.new(:id,:name)
+    opt = FilterType.new("No Filter")
+    opt << d.new(nil,"All Variances")
+    @variances << opt    
+    opt = FilterType.new("Variance")
+    opt << d.new(-1,"No Variance")
+    @project.variances.each do |sc|
+      opt << d.new(sc.id,sc.name)
+    end
+    @variances << opt
+    # end variance filter combo content
+
+   respond_to do |format|
+      format.html # index.html.erb
+      format.json { render json: @develements }
+    end
+	end
+
+	def batch_update_filter
+		status = params[:status]
+    cls = params[:class]
+    kw = params[:keyword]
+    sch = params[:schedule]
+    var = params[:variance]
+		@develements = []
+    @filter,@ttlCnt = filter_record(status,cls,kw,sch,var,params[:page])
+		# TODO this is ineffective!
+		if var == "-1"
+			@filter.each do |d|
+				if d.variance_children.length > 0
+				else
+					@develements << d
+				end
+			end
+		else
+			@develements = @filter
+		end
+
+	end
+
+	def select_batch_update_field
+		@selected = params[:develement][:id] if params[:develement] != nil
+		if @selected != nil and @selected.length > 0
+			@develements = []
+			@selected.each do |sel|
+				d = Develement.find(sel)
+				@status = d.state if @status == nil
+				if @status != "-" and @status != d.state
+					@status = "-"
+					@statuses = []
+				else
+					@statuses = d.possible_events
+				end
+				@develements << d
+			end
+
+			if @status != "-"
+				@statuses = @statuses.collect { |s| s.to_s.titleize }
+			end
+			@classification = DevelementType.all
+			@schedule = @project.schedules
+		else
+			flash[:error] = "Please select one of the record"
+			redirect_to :action => :batch_process
+		end		
+	end
+
+	def update_batch
+		selected = params[:selected]
+		newClass = params[:new_class]
+		newSchedule = params[:new_schedule]
+		newStatus = params[:new_status]
+		
+		if (newClass != nil and not newClass.empty?) or (newSchedule != nil and not newSchedule.empty?) or (newStatus != nil and not newStatus.empty?)
+			sels = selected.split(",")
+			sels.each do |sel|
+				d = Develement.find(sel)
+				d.develement_type_id = newClass if newClass != nil and not newClass.empty?
+				d.schedule_id = newSchedule if newSchedule != nil and not newSchedule.empty?
+				d.save
+				d.send "#{newStatus}!" if newStatus != nil and not newStatus.empty?
+			end
+			flash[:notice] = "#{sels.length} records updated"
+		else
+			flash[:notice] = "No new value given. None of the record got updated."
+		end
+
+		redirect_to project_develements_path(@project)
+	end
+
   def update_status
     @develement = Develement.find(params[:id])
     event = params[:event]

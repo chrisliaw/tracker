@@ -43,6 +43,10 @@ Tracker::Application.routes.draw do
         post :filter_status
 				get :filter_status
 				post :find_by_code
+				get :batch_process
+				post :update_batch
+				post :select_batch_update_field
+				post :batch_update_filter
       end
     end 
     resources :schedules do

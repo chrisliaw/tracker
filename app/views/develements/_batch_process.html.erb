@@ -1,9 +1,11 @@
 
+<%= form_tag select_batch_update_field_project_develements_path(@project) do %>
 <div id="rec_ttl_count" align="right" style="padding-right: 18%; font-weight: bold;">
 	Total Items Found : <%= @ttlCnt %>
 </div>
 <table class="std">
 	<tr>
+		<th></th>
 		<th>Ref</th>
     <th>Detail</th>
     <th>State</th>
@@ -16,10 +18,11 @@
 
 <% @develements.each do |develement| %>
 	<tr>
+		<td><%= check_box_tag "develement[id][]", develement.id %></td>
 		<td><%= link_to develement.user_code , [@project,develement] %></td>
     <td width="50%"><%= link_to develement.name, [@project,develement] %></td>
     <td width="10%" align="center"><%= develement.state.titleize %></td>
-    <td width="12%" align="center"><%= develement.develement_type == nil ? "Unclassified" : develement.develement_type.name %></td>
+    <td width="10%" align="center"><%= develement.develement_type == nil ? "Unclassified" : develement.develement_type.name %></td>
 		<td align="center"><%= develement.schedule == nil ? "Unschedule" : develement.schedule.name %></td>
 		<% if @project.variances.length > 0 %>
 			<td align="center"><%= develement.variance_children.length > 0 ? develement.variance_children.collect { |d| d.variance.name }.join(",") : develement.variance == nil ? "-" : develement.variance.name %></td>
@@ -32,4 +35,5 @@
 	Total Items Found : <%= @ttlCnt %>
 </div>
 <br/>
-<%# paginate @develements %>
+<%= submit_tag "Next" %>
+<% end %>

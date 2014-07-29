@@ -1,0 +1,58 @@
+
+<%= form_tag update_batch_project_develements_path(@project) do %>
+	<%= hidden_field_tag "selected", @selected.join(",") %>
+<table class="std">
+	<tr>
+		<th>Ref</th>
+    <th>Detail</th>
+    <th>State</th>
+    <th>Classification</th>
+		<th>Schedule</th>
+		<% if @project.variances.length > 0 %>
+			<th>Variance</th>
+		<% end %>
+  </tr>
+
+<% @develements.each do |develement| %>
+	<tr>
+		<td><%= link_to develement.user_code , [@project,develement] %></td>
+    <td width="50%"><%= link_to develement.name, [@project,develement] %></td>
+    <td width="10%" align="center"><%= develement.state.titleize %></td>
+    <td width="10%" align="center"><%= develement.develement_type == nil ? "Unclassified" : develement.develement_type.name %></td>
+		<td align="center"><%= develement.schedule == nil ? "Unschedule" : develement.schedule.name %></td>
+		<% if @project.variances.length > 0 %>
+			<td align="center"><%= develement.variance_children.length > 0 ? develement.variance_children.collect { |d| d.variance.name }.join(",") : develement.variance == nil ? "-" : develement.variance.name %></td>
+		<% end %>
+  </tr>
+<% end %>
+</table>
+
+<br/>
+<table style="margin-left:auto; margin-right:auto">
+	<tr>
+		<td style="font-weight:bold">New Value : </td>
+		<td></td>
+	</tr>
+	<% if @status != "-" %>
+	<tr>
+		<td align="right">State : </td>
+		<td><%= select_tag "new_status", options_for_select(@statuses), :include_blank => true %></td>
+	</tr>
+	<% end %>
+	<tr>
+		<td>Classification : </td>
+		<td><%= select_tag "new_class", options_for_select(@classification.collect { |c| [c.name,c.id] }), :include_blank => true %></td>
+	</tr>
+	<tr>
+		<td align="right">Schedule : </td>
+		<td><%= select_tag "new_schedule", options_for_select(@schedule.collect { |s| ["#{s.name} (#{s.state.to_s.titleize})", s.id] }), :include_blank => true %></td>
+	</tr>
+	<tr>
+		<td></td>
+		<td><%= submit_tag "Update" %></td>
+	</tr>
+</table>
+
+<% end %>
+
+<%= link_to 'Back', project_develements_path(@project) %>
