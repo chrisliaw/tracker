@@ -97,7 +97,7 @@
 		<tr>
 			<td><%= @cnt += 1 %></td>
 			<td><%= c.vcs_reference %></td>
-			<td><%= c.identifier %></td>
+			<td><%= link_to c.identifier, project_develement_commit_path(@project,@develement,c) %></td>
 			<td><%= c.vcs_info %></td>
 		</tr>
 	<% end %>

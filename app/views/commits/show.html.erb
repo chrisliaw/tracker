@@ -1,40 +1,49 @@
 <p id="notice"><%= notice %></p>
 
-<p>
-  <b>Committable type:</b>
-  <%= @commit.committable_type %>
-</p>
+<table class="std">
+	<tr>
+		<td class="field">Project:</td>
+		<td><%= link_to @committable.project.name, @committable.project %></td>
+	</tr>
+	<tr>
+		<td class="field"><%= @committable.class.name.titleize %> Name:</td>
+		<td><%= link_to @committable.name, [@committable.project,@committable] %></td>
+	</tr>
+	<tr>
+		<td class="field">Branch: </td>
+		<td><%= @commit.vcs_reference %></td>
+	</tr>
+	<tr>
+		<td class="field">VCS Reference: </td>
+		<td><%= @commit.identifier %></td>
+	</tr>
+	<tr>
+		<td class="field">VCS Info:</td>
+		<td><%= @commit.vcs_info %></td>
+	</tr>
+	<tr>
+		<td class="field">Repository: </td>
+		<td><%= @commit.repository_url %></td>
+	</tr>
+	<tr>
+		<td class="field"></td>
+		<td></td>
+	</tr>
+</table>
 
-<p>
-  <b>Committable:</b>
-  <%= @commit.committable_id %>
-</p>
-
-<p>
-  <b>Identifier:</b>
-  <%= @commit.identifier %>
-</p>
-
-<p>
-  <b>Vcs reference:</b>
-  <%= @commit.vcs_reference %>
-</p>
-
-<p>
-  <b>Vcs diff:</b>
-  <%= @commit.vcs_diff %>
-</p>
-
-<p>
-  <b>Vcs info:</b>
-  <%= @commit.vcs_info %>
-</p>
-
-<p>
-  <b>Vcs affected files:</b>
-  <%= @commit.vcs_affected_files %>
-</p>
+<%= link_to 'Back', [@committable.project,@committable] %>
+<br/>
+<table class="std">
+	<tr>
+		<td><%= @changes.html_safe %></td>
+	</tr>
+	<% if not Dir.exist?(@commit.repository_url) %>
+		<tr>
+			<td>
+				<%= link_to 'Repository moved. update url', edit_project_develement_commit_path(@committable.project,@committable,@commit) %>
+			</td>
+		</tr>
+	<% end %>
+</table>
 
 
-<%= link_to 'Edit', edit_commit_path(@commit) %> |
-<%= link_to 'Back', commits_path %>

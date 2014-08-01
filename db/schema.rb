@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20140716043809) do
+ActiveRecord::Schema.define(:version => 20140801105416) do
 
   create_table "change_logs", :force => true do |t|
     t.string   "table"
@@ -31,6 +31,8 @@ ActiveRecord::Schema.define(:version => 20140716043809) do
     t.string   "vcs_affected_files"
     t.datetime "created_at",         :null => false
     t.datetime "updated_at",         :null => false
+    t.string   "repository_url"
+    t.string   "dvcs_provider"
   end
 
   create_table "develement_types", :force => true do |t|

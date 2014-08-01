@@ -29,6 +29,16 @@ class CommitsController < ApplicationController
   # GET /commits/1.json
   def show
     @commit = Commit.find(params[:id])
+		if Dir.exist?(@commit.repository_url)
+			if @commit.dvcs_provider != nil and @commit.dvcs_provider.downcase == "git"
+				@changes = `cd #{@commit.repository_url} && git show #{@commit.identifier}`
+				@changes = format_git_changes(@changes)	
+			else
+				@changes = "<p style=\"color:red\">Unknown DVCS provider #{@commit.dvcs_provider}. Changeset failed to be extracted.<p/>"
+			end
+		else
+			@changes = "<p style=\"color:red\">Path #{@commit.repository_url} is not available. Changeset failed to be extracted.<p/>"
+		end
 
     respond_to do |format|
       format.html # show.html.erb
@@ -73,9 +83,16 @@ class CommitsController < ApplicationController
   def update
     @commit = Commit.find(params[:id])
 
+		@saved = false
+		@committable.commits.each do |c|
+			c.repository_url = params[:repository_url]
+			@saved = c.save
+		end
+
     respond_to do |format|
-      if @commit.update_attributes(params[:commit])
-        format.html { redirect_to @commit, notice: 'Commit was successfully updated.' }
+      #if @commit.update_attributes(params[:commit])
+      if @saved
+				format.html { redirect_to [@committable.project,@committable,@commit], notice: 'Commit was successfully updated.' }
         format.json { head :no_content }
       else
         format.html { render action: "edit" }
@@ -95,4 +112,10 @@ class CommitsController < ApplicationController
       format.json { head :no_content }
     end
   end
+
+	private
+	def format_git_changes(changes)
+		formatted = changes.gsub("\n","<br/>")
+		formatted
+	end
 end

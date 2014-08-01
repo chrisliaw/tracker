@@ -1,4 +1,4 @@
-<%= form_for(@commit) do |f| %>
+<%= form_for([@committable.project,@committable,@commit]) do |f| %>
   <% if @commit.errors.any? %>
     <div id="error_explanation">
       <h2><%= pluralize(@commit.errors.count, "error") %> prohibited this commit from being saved:</h2>
@@ -11,35 +11,22 @@
     </div>
   <% end %>
 
-  <div class="field">
-    <%= f.label :committable_type %><br />
-    <%= f.text_field :committable_type %>
-  </div>
-  <div class="field">
-    <%= f.label :committable_id %><br />
-    <%= f.text_field :committable_id %>
-  </div>
-  <div class="field">
-    <%= f.label :identifier %><br />
-    <%= f.text_field :identifier %>
-  </div>
-  <div class="field">
-    <%= f.label :vcs_reference %><br />
-    <%= f.text_field :vcs_reference %>
-  </div>
-  <div class="field">
-    <%= f.label :vcs_diff %><br />
-    <%= f.text_field :vcs_diff %>
-  </div>
-  <div class="field">
-    <%= f.label :vcs_info %><br />
-    <%= f.text_field :vcs_info %>
-  </div>
-  <div class="field">
-    <%= f.label :vcs_affected_files %><br />
-    <%= f.text_field :vcs_affected_files %>
-  </div>
-  <div class="actions">
-    <%= f.submit %>
-  </div>
+	<table class="std">
+		<tr>
+			<td class="field">Project:</td>
+			<td><%= @committable.project.name %></td>
+		</tr>
+		<tr>
+			<td class="field"><%= @committable.class.name.titleize %>: </td>
+			<td><%= @committable.name %></td>
+		</tr>
+		<tr>
+			<td class="field"><%= f.label :repository_url %>: </td>
+			<td><%= text_field_tag :repository_url, @commit.repository_url %></td>
+		</tr>
+		<tr>
+			<td class="field"></td>
+			<td><%= f.submit %></td>
+		</tr>
+	</table>
 <% end %>
