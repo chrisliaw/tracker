@@ -21,6 +21,10 @@ class Project < ActiveRecord::Base
 		Schedule.where(["schedulable_type = 'Project' and schedulable_id = ? and schedules.state = 'released'", self.id])
 	end
 
+	def self.active_projects
+		Project.where "state = 'active'"
+	end
+
   distributable
 
   stateful :initial => :evaluation

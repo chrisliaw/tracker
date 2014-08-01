@@ -20,10 +20,22 @@
     <div class="menu_item">
     <h3>Main</h3>
     <ul>
-      <li><%= link_to 'Project' , projects_path %></li>
+      <li><%= link_to 'Projects' , projects_path %></li>
     </ul>
-    </div>
-    
+		</div>
+
+		<% if Project.active_projects.length > 0 %>
+    <div class="menu_item">
+    <h3>Active Project</h3>
+		<ul>
+			<% Project.active_projects.each do |p| %>
+				<li><%= link_to p.name , p %></li>
+			<% end %>
+    </ul>
+		</div>
+		<% end %>
+
+   
     <div class="menu_item">
     <h3>Administration</h3>
     <ul>
