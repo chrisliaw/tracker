@@ -100,13 +100,14 @@ class IssuesController < ApplicationController
   def create
     @issue = Issue.new(params[:issue])
     @issue.project = @project
-    @issue.created_by = session[:user][:login]
+		@issue.desc = "" if @issue.desc == nil
+		@issue.created_by = session[:user][:login] if not request.format == "json"
 
     respond_to do |format|
       if @issue.save
         #format.html { redirect_to @issue, notice: 'Issue was successfully created.' }
         format.html { redirect_to project_issues_path(@project), notice: 'Issue was successfully created.' }
-        format.json { render json: @issue, status: :created, location: @issue }
+        format.json { render json: @issue, status: :created, location: project_issues_path(@project) }
       else
         format.html { render action: "new" }
         format.json { render json: @issue.errors, status: :unprocessable_entity }
