@@ -83,4 +83,18 @@
   </table>
 <% end %>
 
-
+<table class="std">
+	<tr>
+		<th></th>
+		<th>Branch</th>
+		<th>ID</th>
+	</tr>
+	<% @cnt = 1 %>
+	<% @develement.commits.each do |c| %>
+		<tr>
+			<td><%= @cnt++ %></td>
+			<td><%= c.reference %></td>
+			<td><%= c.identifier %></td>
+		</tr>
+	<% end %>
+</table>

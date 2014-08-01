@@ -22,7 +22,7 @@ class Project < ActiveRecord::Base
 	end
 
 	def self.active_projects
-		Project.where "state = 'active'"
+		Project.where("state = 'active'").order(:name)
 	end
 
   distributable
