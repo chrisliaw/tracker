@@ -51,3 +51,22 @@
 <%= link_to 'Edit', edit_project_issue_path(@project,@issue) %> |
 <%= link_to 'Back', project_issues_path(@project) %>
 
+<br/>
+<h4>Commit History</h4>
+<table class="std">
+	<tr>
+		<th></th>
+		<th>Branch</th>
+		<th>ID</th>
+		<th>Message</th>
+	</tr>
+	<% @cnt = 0 %>
+	<% @issue.commits.each do |c| %>
+		<tr>
+			<td><%= @cnt += 1 %></td>
+			<td><%= c.vcs_reference %></td>
+			<td><%= link_to c.identifier, project_issue_commit_path(@project,@issue,c) %></td>
+			<td><%= c.vcs_info %></td>
+		</tr>
+	<% end %>
+</table>
