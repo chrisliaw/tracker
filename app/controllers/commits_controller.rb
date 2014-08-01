@@ -29,7 +29,7 @@ class CommitsController < ApplicationController
   # GET /commits/1.json
   def show
     @commit = Commit.find(params[:id])
-		if Dir.exist?(@commit.repository_url)
+		if @commit.repository_url != nil and not @commit.repository_url.empty? and Dir.exist?(@commit.repository_url)
 			if @commit.dvcs_provider != nil and @commit.dvcs_provider.downcase == "git"
 				@changes = `cd #{@commit.repository_url} && git show #{@commit.identifier}`
 				@changes = format_git_changes(@changes)	
