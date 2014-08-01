@@ -37,7 +37,7 @@
 	<tr>
 		<td><%= @changes.html_safe %></td>
 	</tr>
-	<% if @commit.repository_url != nil and not Dir.exist?(@commit.repository_url) %>
+	<% if @commit.repository_url == nil or (@commit.repository_url != nil and not Dir.exist?(@commit.repository_url)) %>
 		<tr>
 			<td>
 				<%= link_to 'Repository moved. update url', edit_project_develement_commit_path(@committable.project,@committable,@commit) %>
