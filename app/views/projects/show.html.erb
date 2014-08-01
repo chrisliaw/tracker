@@ -8,7 +8,7 @@
 <table class="std">
   <tr>
     <td class="field">Project Name : </td>
-    <td><%= link_to @project.name, edit_project_path(@project) %></td>
+    <td><%= @project.name %> [<%= link_to "Edit", edit_project_path(@project) %>]</td>
     <td class="field" width="30%">Status : </td>
     <td><%= @project.state.titleize %> 
       <% if @actions.length > 0 %>
@@ -35,7 +35,11 @@
 </table>
 <p/>
 
-<%= link_to 'Back', projects_path %> <br/>
+<%= link_to 'Back', projects_path %> 
+<% if @project.develements.length == 0 and @project.issues.length == 0 %>
+	| <%= link_to 'Delete', @project, :method => :delete, :confirm => "Are you sure to delete project '#{@project.name}'" %>
+<% end %>
+<br/>
 <%= link_to "Variances Management", project_variances_path(@project) %> <br/>
 <%= link_to "Schedule Management", project_schedules_path(@project) %> <br/>
 <%= link_to "Version Control", project_version_controls_path(@project) %>
