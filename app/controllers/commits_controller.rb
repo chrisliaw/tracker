@@ -33,6 +33,10 @@ class CommitsController < ApplicationController
 			if @commit.dvcs_provider != nil and @commit.dvcs_provider.downcase == "git"
 				@changes = `cd #{@commit.repository_url} && git show #{@commit.identifier}`
 				@changes = format_git_changes(@changes)	
+			elsif @commit.dvcs_provider == nil 
+				# interim to allow old data to migrate
+				@changes = `cd #{@commit.repository_url} && git show #{@commit.identifier}`
+				@changes = format_git_changes(@changes)	
 			else
 				@changes = "<p style=\"color:red\">Unknown DVCS provider #{@commit.dvcs_provider}. Changeset failed to be extracted.<p/>"
 			end
