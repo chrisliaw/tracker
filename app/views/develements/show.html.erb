@@ -90,6 +90,7 @@
 		<th></th>
 		<th>Branch</th>
 		<th>ID</th>
+		<th>Message</th>
 	</tr>
 	<% @cnt = 0 %>
 	<% @develement.commits.each do |c| %>
@@ -97,6 +98,7 @@
 			<td><%= @cnt += 1 %></td>
 			<td><%= c.vcs_reference %></td>
 			<td><%= c.identifier %></td>
+			<td><%= c.vcs_info %></td>
 		</tr>
 	<% end %>
 </table>
