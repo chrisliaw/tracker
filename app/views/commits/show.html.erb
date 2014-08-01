@@ -40,7 +40,11 @@
 	<% if @commit.repository_url == nil or (@commit.repository_url != nil and not Dir.exist?(@commit.repository_url)) %>
 		<tr>
 			<td>
-				<%= link_to 'Repository moved. update url', edit_project_develement_commit_path(@committable.project,@committable,@commit) %>
+				<% if @committable.kind_of? Develement %>
+					<%= link_to 'Repository moved. update url', edit_project_develement_commit_path(@committable.project,@committable,@commit) %>
+				<% else %>
+					<%= link_to 'Repository moved. update url', edit_project_issue_commit_path(@committable.project,@committable,@commit) %>
+				<% end %>
 			</td>
 		</tr>
 	<% end %>
