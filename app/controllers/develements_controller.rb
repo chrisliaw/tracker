@@ -382,7 +382,7 @@ class DevelementsController < ApplicationController
 			end
 
 			if @status != "-"
-				@statuses = @statuses.collect { |s| s.to_s.titleize }
+				@statuses = @statuses.collect { |s| [s.to_s.titleize,s.to_s] }
 			end
 			@classification = DevelementType.all
 			@schedule = @project.schedules
