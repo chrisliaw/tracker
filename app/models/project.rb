@@ -29,8 +29,10 @@ class Project < ActiveRecord::Base
 		@tags = []
 		Project.all.each do |p|
 			tag = p.category_tags
-			tag.split(",").each do |t|
-				@tags << t.titleize
+			if tag != nil and not tag.empty?
+				tag.split(",").each do |t|
+					@tags << t.titleize
+				end
 			end
 		end
 		@tags
