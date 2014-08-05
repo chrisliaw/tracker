@@ -1,5 +1,5 @@
 class Project < ActiveRecord::Base
-  attr_accessible :desc, :name, :short_name, :state, :created_by, :identifier, :created_at, :updated_at, :code
+  attr_accessible :desc, :name, :short_name, :state, :created_by, :identifier, :created_at, :updated_at, :code, :category_tags
   has_many :develements
   #has_many :features, :class_name => "Develement" , :conditions => "develement_type_id = 1"
   #has_many :enhancements, :class_name => "Develement", :conditions => "develement_type_id = 2"
@@ -23,6 +23,17 @@ class Project < ActiveRecord::Base
 
 	def self.active_projects
 		Project.where("state = 'active'").order(:name)
+	end
+	
+	def self.tags
+		@tags = []
+		Project.all.each do |p|
+			tag = p.category_tags
+			tag.split(",").each do |t|
+				@tags << t.titleize
+			end
+		end
+		@tags
 	end
 
   distributable

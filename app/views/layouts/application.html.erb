@@ -24,6 +24,15 @@
     </ul>
 		</div>
 
+    <div class="menu_item">
+    <h3>Project Tags</h3>
+		<ul>
+			<% Project.tags.each do |tag| %>
+				<li><%= link_to tag , projects_path %></li>
+			<% end %>
+    </ul>
+		</div>
+
 		<% if Project.active_projects.length > 0 %>
     <div class="menu_item">
     <h3>Active Project</h3>
