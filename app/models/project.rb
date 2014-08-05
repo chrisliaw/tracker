@@ -31,11 +31,12 @@ class Project < ActiveRecord::Base
 			tag = p.category_tags
 			if tag != nil and not tag.empty?
 				tag.split(",").each do |t|
-					@tags << t.titleize
+					#@tags << t.titleize if not @tags.include?(t.titleize)
+					@tags << t if not @tags.include?(t)
 				end
 			end
 		end
-		@tags
+		@tags.sort
 	end
 
   distributable
