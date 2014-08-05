@@ -9,7 +9,7 @@ class DevelementsController < ApplicationController
   # GET /develements
   # GET /develements.json
   def index
-    @state = params[:state]
+    @state = params[:state] || "-3"  # default to 'active or open'
     @cls = params[:class]
     @kw = params[:keyword]
     @sch = params[:schedule]
@@ -29,6 +29,8 @@ class DevelementsController < ApplicationController
     statuses.sort.each do |st|
       opt << d.new(st,"#{st.titleize}")
     end 
+		opt << d.new(-2,"Not Closed")
+		opt << d.new(-3,"Active or Open")
     @status << opt
     # end status filter combo content
 
@@ -271,7 +273,7 @@ class DevelementsController < ApplicationController
   end
 
 	def batch_process
-    @state = params[:state]
+    @state = params[:state] || "-3"
     @cls = params[:class]
     @kw = params[:keyword]
     @sch = params[:schedule]
@@ -291,6 +293,8 @@ class DevelementsController < ApplicationController
     statuses.sort.each do |st|
       opt << d.new(st,"#{st.titleize}")
     end 
+		opt << d.new(-2,"Not Closed")
+		opt << d.new(-3,"Active or Open")
     @status << opt
     # end status filter combo content
 
@@ -344,7 +348,7 @@ class DevelementsController < ApplicationController
 	end
 
 	def batch_update_filter
-		status = params[:status]
+		status = params[:status] || "-3"
     cls = params[:class]
     kw = params[:keyword]
     sch = params[:schedule]
@@ -442,7 +446,13 @@ class DevelementsController < ApplicationController
     conds = []
     conds.add_condition!(['project_id = ?',@project.id])
     if state != nil and !state.empty?
-      conds.add_condition!(['state = ?',state])
+			if state.to_i == -2 # not closed
+				conds.add_condition!(['state != ?','closed'])
+			elsif state.to_i == -3 # active or open
+				conds.add_condition!(['state = ? or state =?',"active","open"])
+			else
+				conds.add_condition!(['state = ?',state])
+			end
     end
 
     if cls != nil and !cls.empty?
