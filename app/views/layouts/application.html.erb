@@ -30,7 +30,7 @@
     <h3>Project Tags</h3>
 		<ul>
 			<% Project.tags.each do |tag| %>
-				<li><%= link_to tag , projects_path %></li>
+				<li><%= link_to tag , projects_path(:tag => tag) %></li>
 			<% end %>
     </ul>
 		</div>
