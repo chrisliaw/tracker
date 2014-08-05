@@ -33,6 +33,10 @@
       <td><%= f.text_field :upstream_vcs_path %></td>
     </tr>
     <tr>
+      <td class="field"><%= f.label :upstream_vcs_branch, "Parent VCS Branch" %></td>
+      <td><%= f.text_field :upstream_vcs_branch %></td>
+    </tr>
+    <tr>
       <td class="field"><%= f.label :pushable_repo, "Create Local Pushable Repository?" %></td>
       <td><%= f.check_box :pushable_repo %></td>
     </tr>
