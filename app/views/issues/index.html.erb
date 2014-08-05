@@ -83,11 +83,13 @@ Schedule :
 
   </script>
 <% end -%>
-
+<br/>
+<br/>
+<%= link_to 'New Issue', new_project_issue_path(@project) %>
+<br/>
 <div id="dyn-sec">
   <%= render "filter_status" %>  
 </div>
 <br />
-
 
 <%= link_to 'New Issue', new_project_issue_path(@project) %>

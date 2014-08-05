@@ -110,7 +110,10 @@ Keyword :
 
   </script>
 <% end -%>
-
+<%= link_to "Batch Processing", batch_process_project_develements_path(@project) %>
+<br />
+<%= link_to 'New Develement', new_project_develement_path(@project) %>
+<br/>
 <div id="dyn-sec">
   <%= render "filter_status" %>  
 </div>
