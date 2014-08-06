@@ -8,6 +8,7 @@ class VersionControl < ActiveRecord::Base
   validates :upstream_vcs_path, :presence => true, :if => lambda { self.vcs_path == nil or self.vcs_path.empty? }
   validates :vcs_path, :presence => true, :if => lambda { self.pushable_repo == 1 or self.upstream_vcs_path == nil or self.upstream_vcs_path.empty? }
 
+	distributable
   stateful :initial => :active
 
   transform :active => :inactive do

@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20140805140404) do
+ActiveRecord::Schema.define(:version => 20140806025609) do
 
   create_table "change_logs", :force => true do |t|
     t.string   "table"
@@ -174,6 +174,8 @@ ActiveRecord::Schema.define(:version => 20140805140404) do
     t.integer  "pushable_repo",       :default => 0
     t.datetime "created_at",                         :null => false
     t.datetime "updated_at",                         :null => false
+    t.string   "identifier"
+    t.string   "data_hash"
   end
 
 end
