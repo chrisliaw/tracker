@@ -1,0 +1,15 @@
+<p id="notice"><%= notice %></p>
+
+<p>
+  <b>Name:</b>
+  <%= @dvcs_config.name %>
+</p>
+
+<p>
+  <b>Path:</b>
+  <%= @dvcs_config.path %>
+</p>
+
+
+<%= link_to 'Edit', edit_dvcs_config_path(@dvcs_config) %> |
+<%= link_to 'Back', dvcs_configs_path %>

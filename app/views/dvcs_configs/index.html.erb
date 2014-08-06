@@ -1,0 +1,21 @@
+<h1>DVCS Config</h1>
+
+<table class="std" width="80%">
+  <tr>
+    <th>Name</th>
+    <th>Path</th>
+    <th></th>
+  </tr>
+
+<% @dvcs_configs.each do |dvcs_config| %>
+  <tr>
+    <td><%= link_to dvcs_config.name, dvcs_config %></td>
+    <td><%= dvcs_config.path %></td>
+    <td><%= link_to 'Destroy', dvcs_config, method: :delete, data: { confirm: 'Are you sure to delete this DVCS config?' } %></td>
+  </tr>
+<% end %>
+</table>
+
+<br />
+
+<%= link_to 'New Dvcs config', new_dvcs_config_path %>

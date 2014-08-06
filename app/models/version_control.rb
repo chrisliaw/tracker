@@ -18,6 +18,15 @@ class VersionControl < ActiveRecord::Base
 		@definedSchedule
 	end
 
+	def dvcs_path
+		dvcs = DvcsConfig.find(self.upstream_vcs_class)
+		if dvcs != nil
+			dvcs.path
+		else
+			""
+		end
+	end
+
 	distributable
   stateful :initial => :active
 

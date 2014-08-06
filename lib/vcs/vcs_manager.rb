@@ -1,9 +1,5 @@
 
-module GitProvider
-  class VcsManager
-    def self.init(remote,local,opts = {})
+require "#{File.join(File.dirname(__FILE__),"git","git.rb")}"
 
-    end
-  end
-end
-
+class VCSException < Exception; end
+DVCSBranch = VCSProvider::GitProvider::Branch

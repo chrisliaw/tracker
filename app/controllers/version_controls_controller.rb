@@ -39,6 +39,7 @@ class VersionControlsController < ApplicationController
   # GET /version_controls/new.json
   def new
     @version_control = VersionControl.new
+		@dvcs = DvcsConfig.all
     if @variance != nil
       @version_control.versionable = @variance
     else
@@ -54,6 +55,7 @@ class VersionControlsController < ApplicationController
   # GET /version_controls/1/edit
   def edit
     @version_control = VersionControl.find(params[:id])
+		@dvcs = DvcsConfig.all
   end
 
   # POST /version_controls

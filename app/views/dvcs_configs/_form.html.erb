@@ -1,0 +1,25 @@
+<%= form_for(@dvcs_config) do |f| %>
+  <% if @dvcs_config.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(@dvcs_config.errors.count, "error") %> prohibited this dvcs_config from being saved:</h2>
+
+      <ul>
+      <% @dvcs_config.errors.full_messages.each do |msg| %>
+        <li><%= msg %></li>
+      <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="field">
+    <%= f.label :name %><br />
+    <%= f.text_field :name %>
+  </div>
+  <div class="field">
+    <%= f.label :path %><br />
+    <%= f.text_field :path %>
+  </div>
+  <div class="actions">
+    <%= f.submit %>
+  </div>
+<% end %>

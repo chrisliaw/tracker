@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20140806071611) do
+ActiveRecord::Schema.define(:version => 20140806100843) do
 
   create_table "change_logs", :force => true do |t|
     t.string   "table"
@@ -59,6 +59,13 @@ ActiveRecord::Schema.define(:version => 20140806071611) do
     t.string   "parent_id"
     t.datetime "created_at",         :null => false
     t.datetime "updated_at",         :null => false
+  end
+
+  create_table "dvcs_configs", :force => true do |t|
+    t.string   "name"
+    t.string   "path"
+    t.datetime "created_at", :null => false
+    t.datetime "updated_at", :null => false
   end
 
   create_table "issue_types", :force => true do |t|

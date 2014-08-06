@@ -1,5 +1,8 @@
 Tracker::Application.routes.draw do
 
+  resources :dvcs_configs
+
+
   #resources :version_control_branches
 
 
