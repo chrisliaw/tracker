@@ -71,7 +71,7 @@
 	</tr>
 	<% @version_control.version_control_branches.each do |vcb| %>
 		<tr>
-			<td><%= link_to vcb.project_status, edit_project_version_control_version_control_branch_path(@project,@version_control,vcb) %></td>
+			<td><%= link_to vcb.project_status.titleize, edit_project_version_control_version_control_branch_path(@project,@version_control,vcb) %></td>
 			<td><%= vcb.vcs_branch %></td>
 		</tr>
 	<% end %>
