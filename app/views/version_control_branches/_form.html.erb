@@ -1,0 +1,42 @@
+<%= form_for([@project,@version_control,@version_control_branch]) do |f| %>
+  <% if @version_control_branch.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(@version_control_branch.errors.count, "error") %> prohibited this version_control_branch from being saved:</h2>
+
+      <ul>
+      <% @version_control_branch.errors.full_messages.each do |msg| %>
+        <li><%= msg %></li>
+      <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+	<table class="std">
+		<tr>
+			<td class="field">Project: </td>
+			<td><%= @project.name %></td>
+		</tr>
+		<tr>
+			<td class="field">Version Control : </td>
+			<td>
+				<%= "#{@version_control.name} [#{@version_control.upstream_vcs_path}]" %>
+			</td>
+		</tr>
+		<tr>
+			<td class="field"><%= f.label :project_status, "Project Schedule Status"  %></td>
+			<td><%= f.select :project_status, options_for_select(@schedule_states.collect { |s| [s.titleize,s]}, @version_control_branch.project_status ) %></td>
+		</tr>
+		<tr>
+			<td class="field"><%= f.label :vcs_branch, "VCS Branch" %></td>
+			<td><%= f.text_field :vcs_branch %></td>
+		</tr>
+		<tr>
+			<td class="field"></td>
+			<td><%= f.submit %></td>
+		</tr>
+		<tr>
+			<td class="field"></td>
+			<td></td>
+		</tr>
+	</table>
+<% end %>

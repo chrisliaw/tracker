@@ -11,9 +11,9 @@
 
 <table class="std">
   <tr>
-    <th width="50%">Name</th>
-    <th>Pushable Repository?</th>
-    <th width="20%">Status</th>
+		<th width="30%">Name</th>
+		<th>Repository</th>
+		<th>Default Branch</th>
   </tr>
 
 <% @version_controls.each do |version_control| %>
@@ -23,8 +23,8 @@
     <% else  -%>
       <td><%= link_to version_control.name, [@project,version_control] %></td>
     <% end %>
-    <td align="center"><%= version_control.pushable_repo == 1 ? "Yes" : "No" %></td>
-    <td align="center"><%= version_control.state %></td>
+    <td align="center"><%= version_control.upstream_vcs_path %></td>
+    <td align="center"><%= version_control.upstream_vcs_branch %></td>
   </tr>
 <% end %>
 </table>

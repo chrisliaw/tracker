@@ -1,0 +1,15 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/Fixtures.html
+
+one:
+  identity: MyString
+  data_hash: MyString
+  project_status: MyString
+  vcs_branch: MyString
+  version_control_id: MyString
+
+two:
+  identity: MyString
+  data_hash: MyString
+  project_status: MyString
+  vcs_branch: MyString
+  version_control_id: MyString

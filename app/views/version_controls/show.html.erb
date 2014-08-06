@@ -61,3 +61,18 @@
   <%= link_to 'Edit', edit_project_version_control_path(@project,@version_control) %> |
   <%= link_to 'Back', project_version_controls_path(@project) %>
 <% end %>
+<br/>
+<%= link_to 'Add Branch', new_project_version_control_version_control_branch_path(@project, @version_control) %>
+<br/>
+<table class="std" width="50%">
+	<tr>
+		<th>Project Status</th>
+		<th>Branch Name</th>
+	</tr>
+	<% @version_control.version_control_branches.each do |vcb| %>
+		<tr>
+			<td><%= link_to vcb.project_status, edit_project_version_control_version_control_branch_path(@project,@version_control,vcb) %></td>
+			<td><%= vcb.vcs_branch %></td>
+		</tr>
+	<% end %>
+</table>

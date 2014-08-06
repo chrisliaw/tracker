@@ -1,0 +1,37 @@
+<h1>Version Control Branches</h1>
+
+<table class="std">
+	<tr>
+		<td class="field">Project:</td>
+		<td><%= @project.name %></td>
+	</tr>
+	<tr>
+		<td class="field">Version Control Name</td>
+		<td><%= @version_control.name %></td>
+	</tr>
+	<tr>
+		<td class="field">Version Control Repository</td>
+		<td><%= @version_control.upstream_vcs_path %></td>
+	</tr>
+</table>
+<br/>
+
+<table>
+  <tr>
+    <th>Project status</th>
+		<th>Vcs branch</th>
+		<th></th>
+  </tr>
+
+<% @version_control_branches.each do |version_control_branch| %>
+  <tr>
+    <td><%= link_to version_control_branch.project_status, version_control_branch %></td>
+    <td><%= version_control_branch.vcs_branch %></td>
+    <td><%= link_to 'Destroy', version_control_branch, method: :delete, data: { confirm: 'Are you sure?' } %></td>
+  </tr>
+<% end %>
+</table>
+
+<br />
+
+<%= link_to 'New Version control branch', new_version_control_branch_path %>

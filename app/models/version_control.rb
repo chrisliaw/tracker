@@ -3,10 +3,20 @@ class VersionControl < ActiveRecord::Base
 
   belongs_to :versionable, :polymorphic => true
 
+	has_many :version_control_branches
+
   validates :name, :presence => true
   #validates :upstream_vcs_path, :presence => true, :if => lambda { self.pushable_repo == nil or self.pushable_repo == 0 or (self.vcs_path == nil or self.vcs_path.empty?) }
   validates :upstream_vcs_path, :presence => true, :if => lambda { self.vcs_path == nil or self.vcs_path.empty? }
   validates :vcs_path, :presence => true, :if => lambda { self.pushable_repo == 1 or self.upstream_vcs_path == nil or self.upstream_vcs_path.empty? }
+
+	def already_defined_schedule_states
+		@definedSchedule = []
+		self.version_control_branches.each do |vcb|
+			@definedSchedule << vcb.project_status
+		end
+		@definedSchedule
+	end
 
 	distributable
   stateful :initial => :active

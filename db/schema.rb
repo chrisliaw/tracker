@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20140806025609) do
+ActiveRecord::Schema.define(:version => 20140806071611) do
 
   create_table "change_logs", :force => true do |t|
     t.string   "table"
@@ -156,6 +156,16 @@ ActiveRecord::Schema.define(:version => 20140806025609) do
     t.string   "data_hash"
     t.datetime "created_at", :null => false
     t.datetime "updated_at", :null => false
+  end
+
+  create_table "version_control_branches", :force => true do |t|
+    t.string   "identifier"
+    t.string   "data_hash"
+    t.string   "project_status"
+    t.string   "vcs_branch"
+    t.string   "version_control_id"
+    t.datetime "created_at",         :null => false
+    t.datetime "updated_at",         :null => false
   end
 
   create_table "version_controls", :force => true do |t|

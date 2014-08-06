@@ -1,0 +1,30 @@
+<p id="notice"><%= notice %></p>
+
+<p>
+  <b>Identity:</b>
+  <%= @version_control_branch.identity %>
+</p>
+
+<p>
+  <b>Data hash:</b>
+  <%= @version_control_branch.data_hash %>
+</p>
+
+<p>
+  <b>Project status:</b>
+  <%= @version_control_branch.project_status %>
+</p>
+
+<p>
+  <b>Vcs branch:</b>
+  <%= @version_control_branch.vcs_branch %>
+</p>
+
+<p>
+  <b>Version control:</b>
+  <%= @version_control_branch.version_control_id %>
+</p>
+
+
+<%= link_to 'Edit', edit_version_control_branch_path(@version_control_branch) %> |
+<%= link_to 'Back', version_control_branches_path %>

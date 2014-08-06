@@ -1,5 +1,8 @@
 Tracker::Application.routes.draw do
 
+  #resources :version_control_branches
+
+
   get "sync_manager/login"
 
   get "sync_manager/sync"
@@ -62,7 +65,9 @@ Tracker::Application.routes.draw do
       end
     end
 
-    resources :version_controls
+    resources :version_controls do
+			resources :version_control_branches
+		end
     # member: project id will be passed
     # collection: no project id will be passed
     member do
