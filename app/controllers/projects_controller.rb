@@ -4,7 +4,7 @@ class ProjectsController < ApplicationController
   def index
 		@tag = params[:tag]
 		if @tag != nil
-			@projects = Project.where(["category_tags like ? or category_tags like ? or category_tags like ?","#{@tag}","%,#{@tag}%","#{@tag}%,"]).order(:name)
+			@projects = Project.where(["category_tags like ? or category_tags like ? or category_tags like ? or category_tags like ?","#{@tag}","%,#{@tag},%","#{@tag},%","%,#{@tag}"]).order(:name)
 		else
 			@projects = Project.all :order => :name
 		end
@@ -58,7 +58,7 @@ class ProjectsController < ApplicationController
     #  @stat2 = {}
     #  @ttl_stat2 = {}
     #  issue = Issue.count :conditions => ["issue_type_id is null and project_id = ?",@project.id]
-    #  @stat2["Unclassified"] = {}
+    #  @stat2["Unclassified"] = {}Fun
     #  @stat2["Unclassified"][:stat] = issue
     #  @stat2["Unclassified"][:id] = -1
     #  Issue.states.each do |st|
@@ -113,6 +113,14 @@ class ProjectsController < ApplicationController
     @project.created_by = session[:user][:login]
 		@project.code = @project.code.upcase if @project.code != nil
 
+		catTags = @project.category_tags
+		if catTags != nil and not catTags.empty?
+			# to smoothen the search by wildcard?
+			s = catTags.split(",")
+			s = s.collect { |ss| ss.strip }
+			@project.category_tags = s.join(",")
+		end
+
     respond_to do |format|
       if @project.save
         format.html { redirect_to @project, notice: 'Project was successfully created.' }
@@ -129,6 +137,14 @@ class ProjectsController < ApplicationController
   def update
     @project = Project.find(params[:id])
 		params[:project][:code] = params[:project][:code].upcase if params[:project][:code] != nil
+
+		catTags = params[:project][:category_tags]
+		if catTags != nil and not catTags.empty?
+			# to smoothen the search by wildcard?
+			s = catTags.split(",")
+			s = s.collect { |ss| ss.strip }
+			params[:project][:category_tags] = s.join(",")
+		end
 
     respond_to do |format|
       if @project.update_attributes(params[:project])

@@ -32,7 +32,7 @@ class Project < ActiveRecord::Base
 			if tag != nil and not tag.empty?
 				tag.split(",").each do |t|
 					#@tags << t.titleize if not @tags.include?(t.titleize)
-					@tags << t if not @tags.include?(t)
+					@tags << t.strip if not @tags.include?(t.strip)
 				end
 			end
 		end
