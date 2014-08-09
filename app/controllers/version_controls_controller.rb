@@ -60,6 +60,7 @@ class VersionControlsController < ApplicationController
   # GET /version_controls/1/edit
   def edit
     @version_control = VersionControl.find(params[:id])
+		@version_control.notes = "" if @version_control.notes == nil
 		@dvcs = DvcsConfig.all
   end
 
