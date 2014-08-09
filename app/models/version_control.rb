@@ -1,5 +1,5 @@
 class VersionControl < ActiveRecord::Base
-  attr_accessible :created_by, :name, :updated_by, :upstream_vcs_class, :upstream_vcs_path, :vcs_class, :vcs_path, :versionable_id, :versionable_type, :state, :pushable_repo, :upstream_vcs_branch, :vcs_branch
+  attr_accessible :created_by, :name, :updated_by, :upstream_vcs_class, :upstream_vcs_path, :vcs_class, :vcs_path, :versionable_id, :versionable_type, :state, :pushable_repo, :upstream_vcs_branch, :vcs_branch, :notes
 
   belongs_to :versionable, :polymorphic => true
 

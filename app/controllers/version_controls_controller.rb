@@ -29,6 +29,11 @@ class VersionControlsController < ApplicationController
   def show
     @version_control = VersionControl.find(params[:id])
 
+    @actions = []
+    @version_control.possible_events.each do |evt|
+      @actions << evt.to_s
+    end
+
     respond_to do |format|
       format.html # show.html.erb
       format.json { render json: @version_control }
@@ -108,8 +113,18 @@ class VersionControlsController < ApplicationController
     @version_control.destroy
 
     respond_to do |format|
-      format.html { redirect_to version_controls_url }
+			format.html { redirect_to project_version_controls_path(@project) }
       format.json { head :no_content }
     end
   end
+
+  def update_status
+    @version_control = VersionControl.find(params[:id])
+    act = params[:event]
+    puts "act #{act}"
+    @version_control.send "#{act}!"
+    @version_control.save
+    redirect_to [@project,@version_control]
+  end
+
 end

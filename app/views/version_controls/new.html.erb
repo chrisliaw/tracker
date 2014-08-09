@@ -73,6 +73,10 @@
       <td><%= f.text_field :vcs_branch, :value => "master" %></td>
     </tr>
     <tr>
+      <td class="field"><%= f.label :notes, "Notes" %></td>
+			<td><%= f.text_area :notes, :class => "tinymce", :rows => 8, :cols => 38 %></td>
+    </tr>
+    <tr>
       <td class="field"></td>
       <td><%= f.submit %></td>
     </tr>

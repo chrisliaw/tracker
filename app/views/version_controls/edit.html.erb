@@ -26,7 +26,7 @@
     </tr>
     <tr>
       <td class="field"><%= f.label :upstream_vcs_class, "Parent VCS Type" %></td>
-      <td><%= f.select :upstream_vcs_class, @dvcs.collect { |p| [p.name,p.id }, :include_blank => true %></td>
+      <td><%= f.select :upstream_vcs_class, @dvcs.collect { |p| [p.name,p.id] }, :include_blank => true %></td>
     </tr>
     <tr>
       <td class="field"><%= f.label :upstream_vcs_path, "Parent VCS Path" %></td>
@@ -42,11 +42,15 @@
     </tr>
     <tr>
       <td class="field"><%= f.label :vcs_class, "Local VCS Type" %></td>
-      <td><%= f.select :vcs_class, @dvcs.collect { |p| [p.name,p.id}, :include_blank => true %></td>
+			<td><%= f.select :vcs_class, @dvcs.collect { |p| [p.name,p.id] }, :include_blank => true %></td>
     </tr>
     <tr>
       <td class="field"><%= f.label :vcs_path, "Local VCS Path" %></td>
       <td><%= f.text_field :vcs_path %></td>
+    </tr>
+    <tr>
+      <td class="field"><%= f.label :notes, "Notes" %></td>
+			<td><%= f.text_area :notes, :class => "tinymce", :rows => 8, :cols => 38 %></td>
     </tr>
     <tr>
       <td class="field"></td>

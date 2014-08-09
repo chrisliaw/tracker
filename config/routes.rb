@@ -1,5 +1,8 @@
 Tracker::Application.routes.draw do
 
+  #resources :attachments
+
+
   resources :dvcs_configs
 
 
@@ -27,9 +30,11 @@ Tracker::Application.routes.draw do
   end
 
   resources :projects do
+		resources :attachments
     resources :commits
     resources :issues do
       resources :commits
+			resources :attachments
       member do
         post :update_status
       end
@@ -40,6 +45,7 @@ Tracker::Application.routes.draw do
     end
     resources :develements do
       resources :commits
+			resources :attachments
       member do
         get :add_variances
         put :update_variances
@@ -69,6 +75,9 @@ Tracker::Application.routes.draw do
     end
 
     resources :version_controls do
+			member do
+        post :update_status
+			end
 			resources :version_control_branches
 		end
     # member: project id will be passed
