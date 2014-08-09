@@ -28,6 +28,7 @@ class VersionControlsController < ApplicationController
   # GET /version_controls/1.json
   def show
     @version_control = VersionControl.find(params[:id])
+		@version_control.notes = "" if @version_control.notes == nil
 
     @actions = []
     @version_control.possible_events.each do |evt|
@@ -60,7 +61,6 @@ class VersionControlsController < ApplicationController
   # GET /version_controls/1/edit
   def edit
     @version_control = VersionControl.find(params[:id])
-		@version_control.notes = "" if @version_control.notes == nil
 		@dvcs = DvcsConfig.all
   end
 
