@@ -5,6 +5,7 @@ class Develement < ActiveRecord::Base
   belongs_to :schedule
   belongs_to :variance
 
+	has_many :attachments, :as => :attachable
   has_many :commits, :as => :committables, :order => :created_at
 
   validates :name, :presence => true

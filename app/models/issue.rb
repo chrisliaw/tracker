@@ -6,6 +6,7 @@ class Issue < ActiveRecord::Base
 	belongs_to :variance
   has_many :version_controls, :as => :versionable
   has_many :commits, :as => :committables
+	has_many :attachments, :as => :attachable
 
   validates :name, :presence => true
 

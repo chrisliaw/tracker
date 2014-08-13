@@ -1,0 +1,15 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/Fixtures.html
+
+one:
+  attachable_type: MyString
+  attachable_id: MyString
+  attachment_class: 1
+  url: MyString
+  project_id: MyString
+
+two:
+  attachable_type: MyString
+  attachable_id: MyString
+  attachment_class: 1
+  url: MyString
+  project_id: MyString

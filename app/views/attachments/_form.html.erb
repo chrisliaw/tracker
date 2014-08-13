@@ -1,0 +1,39 @@
+<% @target = (@develement == nil ? (@issue == nil ? [@project,@attachment] : [@project,@issue,@attachment]) : [@project,@develement,@attachment]) %>
+
+<%= form_for(@target) do |f| %>
+  <% if @attachment.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(@attachment.errors.count, "error") %> prohibited this attachment from being saved:</h2>
+
+      <ul>
+      <% @attachment.errors.full_messages.each do |msg| %>
+        <li><%= msg %></li>
+      <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="field">
+    <%= f.label :attachable_type %><br />
+    <%= f.text_field :attachable_type %>
+  </div>
+  <div class="field">
+    <%= f.label :attachable_id %><br />
+    <%= f.text_field :attachable_id %>
+  </div>
+  <div class="field">
+    <%= f.label :attachment_class %><br />
+    <%= f.number_field :attachment_class %>
+  </div>
+  <div class="field">
+    <%= f.label :url %><br />
+    <%= f.text_field :url %>
+  </div>
+  <div class="field">
+    <%= f.label :project_id %><br />
+    <%= f.text_field :project_id %>
+  </div>
+  <div class="actions">
+    <%= f.submit %>
+  </div>
+<% end %>

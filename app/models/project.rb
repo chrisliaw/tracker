@@ -6,6 +6,7 @@ class Project < ActiveRecord::Base
   has_many :issues
   #has_many :schedules, :order => :name
   has_many :variances, :order => :name
+	has_many :attachments
 
   has_many :version_controls, :as => :versionable
   has_many :schedules, :as => :schedulable

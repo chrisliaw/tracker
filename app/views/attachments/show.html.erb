@@ -1,0 +1,30 @@
+<p id="notice"><%= notice %></p>
+
+<p>
+  <b>Attachable type:</b>
+  <%= @attachment.attachable_type %>
+</p>
+
+<p>
+  <b>Attachable:</b>
+  <%= @attachment.attachable_id %>
+</p>
+
+<p>
+  <b>Attachment class:</b>
+  <%= @attachment.attachment_class %>
+</p>
+
+<p>
+  <b>Url:</b>
+  <%= @attachment.url %>
+</p>
+
+<p>
+  <b>Project:</b>
+  <%= @attachment.project_id %>
+</p>
+
+
+<%= link_to 'Edit', edit_attachment_path(@attachment) %> |
+<%= link_to 'Back', attachments_path %>
