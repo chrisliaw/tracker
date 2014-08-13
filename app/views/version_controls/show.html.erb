@@ -33,7 +33,7 @@
   </tr>
   <tr>
     <td class="field">Remote VCS Type</td>
-    <td><%= VCS_CLASS[@version_control.upstream_vcs_class] %></td>
+    <td><%= @upstreamVcsClass == nil ? "" : @upstreamVcsClass.name %></td>
   </tr>
   <tr>
     <td class="field">Remote VCS Path</td>
@@ -53,7 +53,7 @@
   </tr>
   <tr>
     <td class="field">Local VCS Type</td>
-    <td><%= VCS_CLASS[@version_control.vcs_class] %></td>
+    <td><%= @vcsClass == nil ? "" : @vcsClass.name %></td>
   </tr>
   <tr>
     <td class="field">Local VCS Path</td>
