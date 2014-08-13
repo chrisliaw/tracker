@@ -1,7 +1,7 @@
 
-VCS_CLASS = {
-  1 => "Git"
-}
+#VCS_CLASS = {
+#  1 => "Git"
+#}
 
 class ApplicationController < ActionController::Base
   protect_from_forgery
