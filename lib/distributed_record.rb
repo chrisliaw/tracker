@@ -19,21 +19,32 @@ module Distributable
 
 	class DistributableRecord
 		def initialize
-			@newRec = []
-			@delRec = []
-			@changedRec = []
+			@newRec = {}
+			@delRec = {}
+			@changedRec = {}
 		end
 
 		def add_new_record(rec)
-			@newRec << rec
+			tblName = rec.class.table_name
+			if @newRec[tblName] == nil
+				@newRec[tblName] = []
+			end
+			@newRec[tblName] << rec
 		end
 
 		def add_deleted_record(table,key)
-			@delRec << DeletedRecord.new(table,key)
+			if @delRec[table] == nil
+				@delRec[table] = []
+			end
+			@delRec[table] << key
 		end
 
 		def add_edited_record(rec,changes)
-			@changedRec << ChangedRecord.new(rec,changes)
+			tblName = rec.class.table_name
+			if @changedRec[tblName] == nil
+				@changedRec[tblName] = []
+			end
+			@changedRec[tblName] << changes
 		end
 	end
 end
