@@ -46,6 +46,6 @@ EncodeParam = Proc.new do |hash|
 	encoded.join '&'
 end
 
-OpenWebService.call("http://localhost:3000/sync_service/sync.json", :post, params) do |res|
+OpenWebService.call("http://localhost:3000/projects/5442432db3457916573004514fec112ebbc42a24.json", :get) do |res|
 	p res
 end

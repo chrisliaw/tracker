@@ -47,11 +47,15 @@ module Distributable
     end
 
     def log_update_change
-			if self.class.changed?
+			if self.changed?
 				log = eval("#{self.class.options[:change_log_table]}.new")
 				log.table_name = self.class.table_name
 				log.key = self.send "#{self.class.options[:distribution_key]}"
-				log.changed_fields = self.class.changed.to_json
+				#changedFields = self.changed
+				#filtered = self.changed & self.class.options[:skippedCols] 
+				#log.changed_fields = (changedFields - filtered).to_json
+				changedFields = self.changed.delete_if { |c| self.class.options[:skippedCols].include?(c) }
+				log.changed_fields = changedFields.to_json
 				log.operation = 2
 				log.save
 			end
@@ -66,22 +70,26 @@ module Distributable
     end
 
     def generate_identifier
-      while true
-        begin
-          while true
-            #self.identifier = Digest::SHA1.hexdigest "#{Time.now.to_f}#{SecureRandom.random_number}"
-            self.send("#{self.class.options[:distribution_key]}=", Digest::SHA1.hexdigest("#{SecureRandom.uuid}"))
-            #self.identifier = Digest::SHA1.hexdigest "#{SecureRandom.uuid}"
-            res = self.class.find :first, :conditions => ["identifier = ?",self.identifier]
-            break if res == nil # break if no duplication found
-          end
-          #self.save!
-          break
-        rescue Exception => e
-          p e
-          retry
-        end
-      end
+			if self.identifier != nil and not self.identifier.empty?
+				# Guard here is to allow the identifier use the remote identifier without re-generating a new one
+			else
+				while true
+					begin
+						while true
+							#self.identifier = Digest::SHA1.hexdigest "#{Time.now.to_f}#{SecureRandom.random_number}"
+							self.send("#{self.class.options[:distribution_key]}=", Digest::SHA1.hexdigest("#{SecureRandom.uuid}"))
+							#self.identifier = Digest::SHA1.hexdigest "#{SecureRandom.uuid}"
+							res = self.class.find :first, :conditions => ["identifier = ?",self.identifier]
+							break if res == nil # break if no duplication found
+						end
+						#self.save!
+						break
+					rescue Exception => e
+						p e
+						retry
+					end
+				end
+			end
     end
 
     def generate_hash
@@ -99,7 +107,7 @@ module Distributable
         #end
 
       #else
-
+				self.reload
         if self.send("#{self.class.options[:hash_field_name]}") == nil
           log_new_change
         else
