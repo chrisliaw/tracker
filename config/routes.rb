@@ -1,5 +1,26 @@
 Tracker::Application.routes.draw do
 
+  get "sync_service/index"
+
+  post "sync_service/login"
+
+	post "sync_service/sync"
+
+  post "sync_service/download"
+
+  post "sync_service/upload"
+
+  
+	get "sync_client/index"
+
+  post "sync_client/login"
+
+	post "sync_client/sync"
+
+  post "sync_client/download"
+
+  post "sync_client/upload"
+
   #resources :attachments
 
 

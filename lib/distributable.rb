@@ -40,23 +40,26 @@ module Distributable
 
     def log_new_change
       log = eval("#{self.class.options[:change_log_table].to_s}.new")
-      log.table = self.class.table_name   # use classify method to get the proper table name back
+      log.table_name = self.class.table_name   # use classify method to get the proper table name back
       log.key = self.send "#{self.class.options[:distribution_key]}"
       log.operation = 1
       log.save
     end
 
     def log_update_change
-      log = eval("#{self.class.options[:change_log_table]}.new")
-      log.table = self.class.table_name
-      log.key = self.send "#{self.class.options[:distribution_key]}"
-      log.operation = 2
-      log.save
+			if self.class.changed?
+				log = eval("#{self.class.options[:change_log_table]}.new")
+				log.table_name = self.class.table_name
+				log.key = self.send "#{self.class.options[:distribution_key]}"
+				log.changed_fields = self.class.changed.to_json
+				log.operation = 2
+				log.save
+			end
     end
 
     def log_destroy_change
       log = eval("#{self.class.options[:change_log_table]}.new")
-      log.table = self.class.table_name
+      log.table_name = self.class.table_name
       log.key = self.send "#{self.class.options[:distribution_key]}"
       log.operation = 3
       log.save

@@ -1,4 +1,6 @@
 
+require 'rest-open-uri'
+
 class DistributeClientException < Exception; end
 module Distributable
 	LoginNode = Proc.new do 
@@ -31,10 +33,10 @@ module Distributable
 
 	end
 
-	OpenWebService = Proc.new do |url,method,hash,&block|
+	OpenWebService = Proc.new do |url,method = :get,hash = {},&block|
 		raise DistributeClientException,"No block defined for OpenWebService",caller if not block
 
-		if hash.empty?
+		if hash != nil and hash.empty?
 			res = open(url,:method => method)
 		else
 			res = open(url,:method => method, :body => EncodeParam.call(hash))
@@ -58,4 +60,13 @@ module Distributable
 			block.call("")
 		end
 	end
+
+	EncodeParam = Proc.new do |hash|
+		encoded = []
+		hash.each do |k,v|
+			encoded << CGI.escape(k.to_s) + '=' + CGI.escape(v)
+		end
+		encoded.join '&'
+	end
+
 end

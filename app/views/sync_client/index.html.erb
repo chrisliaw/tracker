@@ -1,0 +1,19 @@
+
+<h2>Client Synchronization</h2>
+
+<%= form_tag sync_client_sync_path do %>
+<table class="std">
+	<tr>
+		<td class="field">Server Host : </td>
+		<td><%= text_field_tag "sync_client[host]" %></td>
+	</tr>
+	<tr>
+		<td class="field">Operations : </td>
+		<td><%= select_tag "sync_client[operation]", options_for_select([["Pull Operation","pull"],["Push Operation","push"]]) %></td>
+	</tr>
+	<tr>
+		<td class="field"></td>
+		<td><%= submit_tag "Start" %></td>
+	</tr>
+</table>
+<% end %>
