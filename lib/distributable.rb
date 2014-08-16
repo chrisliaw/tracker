@@ -107,7 +107,6 @@ module Distributable
         #end
 
       #else
-				self.reload
         if self.send("#{self.class.options[:hash_field_name]}") == nil
           log_new_change
         else
