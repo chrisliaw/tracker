@@ -44,7 +44,11 @@ module Distributable
 			if @changedRec[tblName] == nil
 				@changedRec[tblName] = []
 			end
-			@changedRec[tblName] << changes
+			changeFields = {}
+			changes.each do |c|
+				changeFields[c] = eval("rec.#{c}") 
+			end
+			@changedRec[tblName] << [rec.identifier,changeFields]
 		end
 	end
 end

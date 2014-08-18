@@ -1,6 +1,16 @@
 class SyncServiceController < ApplicationController
 	
   def login
+		nodeID = params[:node_id]
+		node = Node.first
+		# Check if the node ID is in the list
+		nodeSess = SecureRandom.uuid
+		Struct.new("LoginStatus",:status, :status_message, :token, :server_id)
+		# TODO: nodeSess shall be encrypted with presented cert
+		retData = Struct::LoginStatus.new(true,"Authenticated",nodeSess,node.identifier)
+		respond_to do |format|
+			format.json { render json: retData }
+		end
   end
 
   def index
@@ -24,13 +34,13 @@ class SyncServiceController < ApplicationController
 			# never come here before
 			cutOffChange = ChangeLogs.last
 			if cutOffChange != nil
-				changesTbl = ChangeLogs.where(["id > ?",cutOffChange.id]).uniq.pluck('table_name')
+				changesTbl = ChangeLogs.where(["id between ? and ?",0,cutOffChange.id]).uniq.pluck('table_name')
 				changesTbl.each do |tbl|
-					changesKey = ChangeLogs.where(["id > ? and table_name = ?",cutOffChange.id,tbl]).uniq.pluck(:key)
+					changesKey = ChangeLogs.where(["id between ? and ? and table_name = ?",0,cutOffChange.id,tbl]).uniq.pluck(:key)
 					changesKey.each do |k|
-						add = ChangeLogs.where(["id > ? and table_name = ? and key = ? and operation = 1",cutOffChange.id,tbl,k])
-						edit = ChangeLogs.where(["id > ? and table_name = ? and key = ? and operation = 2",cutOffChange.id,tbl,k])
-						del = ChangeLogs.where(["id > ? and table_name = ? and key = ? and operation = 3",cutOffChange.id,tbl,k])
+						add = ChangeLogs.where(["id between ? and ? and table_name = ? and key = ? and operation = 1",0,cutOffChange.id,tbl,k])
+						edit = ChangeLogs.where(["id between ? and ? and table_name = ? and key = ? and operation = 2",0,cutOffChange.id,tbl,k])
+						del = ChangeLogs.where(["id between ? and ? and table_name = ? and key = ? and operation = 3",0,cutOffChange.id,tbl,k])
 
 						rec = eval("#{tbl.classify}.where([\"identifier = ?\",'#{k}'])")
 						if rec.length > 0
@@ -67,7 +77,7 @@ class SyncServiceController < ApplicationController
 				sl = SyncLogs.new
 				sl.node_id = nodeID
 				sl.last_change_log_id = cutOffChange.id
-				#sl.save
+				sl.save
 
 			else
 				# no ChangeLogs record means there is no changes being made...
@@ -77,25 +87,28 @@ class SyncServiceController < ApplicationController
 			# this node came here before...
 			cutOffChange = ChangeLogs.last
 			if cutOffChange != nil and syncHistory[0].last_change_log_id != cutOffChange.id
-				changesTbl = ChangeLogs.where(["id between ? and ?",syncHistory[0].last_change_log_id,cutOffChange.id]).uniq.pluck('table_name')
+				changesTbl = ChangeLogs.where(["id between ? and ?",syncHistory[0].last_change_log_id+1,cutOffChange.id]).uniq.pluck('table_name')
 				changesTbl.each do |tbl|
-					changesKey = ChangeLogs.where(["id between ? and ? and table_name = ?",syncHistory[0].last_change_log_id,cutOffChange.id,tbl]).uniq.pluck(:key)
+					changesKey = ChangeLogs.where(["id between ? and ? and table_name = ?",syncHistory[0].last_change_log_id+1,cutOffChange.id,tbl]).uniq.pluck(:key)
 					changesKey.each do |k|
-						add = ChangeLogs.where(["id between ? and ? and table_name = ? and key = ? and operation = 1",syncHistory[0].last_change_log_id,cutOffChange.id,tbl,k])
-						edit = ChangeLogs.where(["id between ? and ? and table_name = ? and key = ? and operation = 2",syncHistory[0].last_change_log_id,cutOffChange.id,tbl,k])
-						del = ChangeLogs.where(["id between ? and ? and table_name = ? and key = ? and operation = 3",syncHistory[0].last_change_log_id,cutOffChange.id,tbl,k])
+						add = ChangeLogs.where(["id between ? and ? and table_name = ? and key = ? and operation = 1",syncHistory[0].last_change_log_id+1,cutOffChange.id,tbl,k])
+						edit = ChangeLogs.where(["id between ? and ? and table_name = ? and key = ? and operation = 2",syncHistory[0].last_change_log_id+1,cutOffChange.id,tbl,k])
+						del = ChangeLogs.where(["id between ? and ? and table_name = ? and key = ? and operation = 3",syncHistory[0].last_change_log_id+1,cutOffChange.id,tbl,k])
 
 						rec = eval("#{tbl.classify}.where([\"identifier = ?\",'#{k}'])")
 						if rec.length > 0
 							if add.length > 0 and add.length == del.length
 								# record add here and deleted (status changed, not physical remove) here...ignore the record
+								logger.debug "Ignoring key #{tbl}/#{k}"
 							elsif add.length > del.length 
 								# record added here but not deleted
 								# Ignore edit operation after that since remote node doesn't have this record anyway
 								@distRec.add_new_record(rec[0])
+								logger.debug "New record #{tbl}/#{k}"
 							elsif del.length > add.length
 								# record deleted (status changed, not physical remove) only
 								@distRec.add_deleted_record(tbl,k)
+								logger.debug "Deleted record #{tbl}/#{k}"
 							else
 								@changed = []
 								edit.each do |er|
@@ -103,6 +116,7 @@ class SyncServiceController < ApplicationController
 									@changed = @changed | changedFields  # remove duplicates field name
 								end
 								@distRec.add_edited_record(rec[0],@changed)
+								logger.debug "Edited record #{tbl}/#{k}"
 							end
 						else
 							# deleted record from database will fall under here
@@ -120,7 +134,7 @@ class SyncServiceController < ApplicationController
 				sl = syncHistory[0]
 				sl.node_id = nodeID
 				sl.last_change_log_id = cutOffChange.id
-				#sl.save
+				sl.save
 
 			else
 				# no ChangeLogs record means there is no changes being made...
