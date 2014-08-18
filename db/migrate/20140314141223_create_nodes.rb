@@ -4,5 +4,9 @@ class CreateNodes < ActiveRecord::Migration
       t.string :identifier
       t.timestamps
     end
+
+		Node.create(
+			:identifier => Digest::SHA1.hexdigest("#{SecureRandom.uuid}")
+		)
   end
 end
