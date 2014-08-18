@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20140818024928) do
+ActiveRecord::Schema.define(:version => 20140818044249) do
 
   create_table "attachments", :force => true do |t|
     t.string   "attachable_type"
@@ -44,6 +44,7 @@ ActiveRecord::Schema.define(:version => 20140818024928) do
     t.datetime "updated_at",         :null => false
     t.string   "repository_url"
     t.string   "dvcs_provider"
+    t.string   "data_hash"
   end
 
   create_table "develement_types", :force => true do |t|
@@ -77,6 +78,8 @@ ActiveRecord::Schema.define(:version => 20140818024928) do
     t.string   "path"
     t.datetime "created_at", :null => false
     t.datetime "updated_at", :null => false
+    t.string   "identifier"
+    t.string   "data_hash"
   end
 
   create_table "issue_types", :force => true do |t|
