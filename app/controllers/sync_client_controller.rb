@@ -10,49 +10,229 @@ class SyncClientController < ApplicationController
 		host = params[:sync_client][:host]
 		ops = params[:sync_client][:operation]
 		node = Node.first
-		url = URI.join("#{host}","sync_service/sync.json")
-		Distributable::OpenWebService.call(url.to_s,:post,{"node_id" => node.identifier}) do |res|
+
+		# perform login
+		url = URI.join("#{host}","sync_service/login.json")
+		Distributable::OpenWebService.call(url.to_s,:post, {"node_id" => node.identifier}) do |res|
 			@result = res
-		end	
+		end
 
-		# ignore the code field...
-		ignoredFields = {}
-		ignoredFields[:develements] = %W(code created_at updated_at)
-		ignoredFields[:projects] = %W(category_tags created_at updated_at)
-		@newRecords = @result["newRec"] 
-		@delRecords = @result["delRec"]
-		@editRecords = @result["changedRec"]
+		if @result["status"] == true
+			@token = @result["token"]
+			@server_id = @result["server_id"]
 
-		p @result
-		@newRecords.keys.each do |type|
-			obj = eval("#{type.classify}.new")
-			@newRecords[type].each do |rec|
-				rec.each do |k,v|
-					obj.send("#{k}=",v) if ignoredFields[type.to_sym] != nil and not ignoredFields[type.to_sym].include?(k)
-				end
-			end
+			url = URI.join("#{host}","sync_service/sync.json")
+			Distributable::OpenWebService.call(url.to_s,:post,{"node_id" => node.identifier}) do |res|
+				@result = res
+			end	
 
-			p obj
-			if obj.kind_of?(Develement) or obj.kind_of?(Issue)
-				# Need project code to re-generate the code
-				p = Project.where(["identifier = ?",obj.project_id])
-				if p.length > 0
-					obj.save
-				else
-					url2 = URI.join("#{host}","projects/#{obj.project_id}.json")
-					Distributable::OpenWebService.call(url2.to_s,:get) do |res|
-						proj = Project.new
-						res.each do |k,v|
-							proj.send("#{k}=",v) if not ignoredFields[:projects].include?(k)
-						end	
-						p proj
-						proj.save
-						proj.reload
-						obj.project = proj
-						obj.save
+			# store the @result in case error happened later
+			hist = SyncHistory.new
+			hist.node_id = @server_id
+			hist.sync_session_id = @token
+			hist.sync_data = @result.to_json
+			hist.status = SyncHistory::INCOMPLETE
+			hist.save
+
+			ActiveRecord::Base.transaction do
+
+				@syncSummary = {}
+				@syncSummary[:newRecord] = {}
+				@syncSummary[:delRecord] = {}
+				@syncSummary[:editedRecord] = {}
+				@syncSummary[:crashed] = {}
+				# ignore the code field...
+				ignoredFields = {}
+				ignoredFields[:default] = %W(created_at updated_id id)
+				ignoredFields[:develements] = ignoredFields[:default] 
+				ignoredFields[:develements] += %W(code)
+				ignoredFields[:issues] = ignoredFields[:develements]
+				ignoredFields[:projects] = ignoredFields[:default]
+			  ignoredFields[:projects] += %W(category_tags)
+				ignoredFields[:dvcs_configs] = ignoredFields[:default]
+				ignoredFields[:dvcs_configs] = %W(path)
+
+				# check is there any old history which is not yet completed...
+				pending = SyncHistory.where(["status = ?",SyncHistory::INCOMPLETE])
+				# New record is saved before come here hence there is at least one incomplete record...
+				pending.each do |pending|
+					@result = JSON.parse(pending.sync_data)
+					p @result
+					@newRecords = @result["newRec"] 
+					@delRecords = @result["delRec"]
+					@editRecords = @result["changedRec"]
+
+					# for new record, check project first since there is the root of all linkage
+					if @newRecords["projects"] != nil
+						@newRecords["projects"].each do |rec|
+							proj = Project.new
+							rec.each do |k,v|
+								proj.send("#{k}=",v) if ignoredFields[:projects] != nil and not ignoredFields[:projects].include?(k)
+							end
+							# check for duplicate identifier?
+							dupProj = Project.where(["identifier = ?",proj.identifier])
+							if dupProj.length > 0
+								# DUPLICATED?????? DAMN!!
+								proj.identifier = "#{proj.identifier}-d"
+							end
+							proj.save
+						end
 					end
+
+					@newRecords.keys.each do |type|
+						next if type.to_sym == :projects
+						@newRecords[type].each do |rec|
+							obj = eval("#{type.classify}.new")
+							rec.each do |k,v|
+								if ignoredFields[type.to_sym] != nil
+									if not ignoredFields[type.to_sym].include?(k)
+										obj.send("#{k}=",v)
+									end
+								else
+									if not ignoredFields[:default].include?(k)
+										obj.send("#{k}=",v)
+									end
+								end
+							end
+
+							obj.save
+
+							@syncSummary[:newRecord][type.to_sym] = [] if @syncSummary[:newRecord][type.to_sym] == nil
+							@syncSummary[:newRecord][type.to_sym] << obj.id
+						end
+
+					end
+
+					@delRecords.each do |k,v|
+						# should local delete because remote node deleted the record?? hmm...
+						# If there is not changes at local, i.e. no commits, no changes, no record depending on this, can be removed...
+						v.each do |id|
+							begin
+								obj = eval("#{k.classify}.find('#{id}')")
+								@syncSummary[:delRecord][k.to_sym] = [] if @syncSummary[:delRecord][k.to_sym] == nil
+								@syncSummary[:delRecord][k.to_sym] << id
+							rescue ActiveRecord::RecordNotFound => ex
+								# ignore
+								next
+							end
+						end
+					end
+
+					# here will be using LOCAL_REF
+					tmpRef = SyncLogs.where(["node_id = ? and direction = ?", @server_id,SyncLogs::LOCAL_REF])
+					if tmpRef.length > 0
+						@ref = tmpRef[0]
+					else
+						@ref = SyncLogs.new
+						@ref.node_id = @server_id
+						@ref.last_change_log_id = 0
+						@ref.direction = SyncLogs::LOCAL_REF
+					end
+
+					cutOffChange = ChangeLogs.last
+					if cutOffChange != nil
+						@cutOffChangeID = cutOffChange.id
+					else
+						@cutOffChangeID = 0
+					end
+
+					if @ref.last_change_log_id == @cutOffChangeID
+						logger.debug "No changed since last sync. All remote node changes merged without crash check"
+						# nothing changed since last sync
+						# All changes just merged with local record
+						@edited = []
+						@editRecords.each do |k,v|
+							v.each do |rec|
+								id = rec[0]
+								changes = rec[1]
+								changes.each do |field,value|
+									obj = eval("#{k.classify}.find('#{id}')")
+
+									if ignoredFields[k.to_sym] != nil
+										if not ignoredFields[k.to_sym].include?(field)
+											obj.send("#{field}=",value)
+										end
+									else
+										if not ignoredFields[:default].include?(field)
+											obj.send("#{field}=",value)
+										end
+									end
+									#obj.send("#{field}=",value)
+									obj.save
+									@edited << id
+								end
+							end
+
+							@syncSummary[:editedRecord][k] = {} if @syncSummary[:editedRecord][k] == nil
+							@syncSummary[:editedRecord][k] = @edited
+						end
+
+					else
+						logger.debug "Check for record crashing"
+						# check for CRASHED changes
+						@conds = []
+						@conds.add_condition!(["id between ? and ?",@ref.last_change_log_id,@cutOffChangeID])
+
+						@editRecords.each do |k,v|
+							# this has the potential for changes to CRASH...
+							@crashed = {}
+							@edited = []
+							v.each do |rec|
+								id = rec[0]
+								@conds.add_condition!(["table_name = ? and key = ?",k,id])
+								changes = rec[1]
+								changes.each do |field,value|
+									cond = @conds.clone
+									cond.add_condition!(["changed_fields like ? or changed_fields like ? or changed_fields like ? or changed_fields like ?","#{field}","%,#{field},%","#{field},%","%,#{field}"])
+									crashed = ChangeLogs.where(cond).count
+									logger.debug "crashed count is #{crashed}"
+									if crashed == 0
+										# no crash on the field changed...merge automatically
+										obj = eval("#{k.classify}.find('#{id}')")
+
+										if ignoredFields[k.to_sym] != nil
+											if not ignoredFields[k.to_sym].include?(field)
+												obj.send("#{field}=",value)
+											end
+										else
+											if not ignoredFields[:default].include?(field)
+												obj.send("#{field}=",value)
+											end
+										end
+
+										#obj.send("#{field}=",value)
+										obj.save
+										@edited << id
+									else
+										# CRASHED!
+										@crashed[id] = [] if @crashed[id] == nil
+										@crashed[id] << field
+									end
+								end
+							end
+
+							@syncSummary[:editedRecord][k] = {} if @syncSummary[:editedRecord][k] == nil
+							@syncSummary[:editedRecord][k] = @edited
+							@syncSummary[:crashed][k] = {} if @syncSummary[:crashed][k] == nil
+							@syncSummary[:crashed][k] = @crashed
+						end
+
+					end
+
+					@ref.last_change_log_id = @cutOffChangeID
+					@ref.save
+
+					pending.status = SyncHistory::COMPLETED
+					pending.save
+
 				end
-			end
+			end # end transaction
+
+
+		else
+			# login status is false
+			flash[:error] = "Failed to login to host. Error was #{@result["status_message"]}"
+			render :action => "index"
 		end
 
 	end

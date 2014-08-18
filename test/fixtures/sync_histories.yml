@@ -1,0 +1,13 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/Fixtures.html
+
+one:
+  node_id: MyString
+  sync_session_id: MyString
+  sync_data: MyText
+  status: 1
+
+two:
+  node_id: MyString
+  sync_session_id: MyString
+  sync_data: MyText
+  status: 1
