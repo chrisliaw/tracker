@@ -30,8 +30,8 @@ class VersionControlsController < ApplicationController
     @version_control = VersionControl.find(params[:id])
 		@version_control.notes = "" if @version_control.notes == nil
 
-		@upstreamVcsClass = DvcsConfig.find(@version_control.upstream_vcs_class) if @version_control.upstream_vcs_class != nil
-		@vcsClass = DvcsConfig.find(@version_control.vcs_class) if @version_control.vcs_class != nil
+		@upstreamVcsClass = DvcsConfig.find(@version_control.upstream_vcs_class) if @version_control.upstream_vcs_class != nil and not @version_control.upstream_vcs_class.empty?
+		@vcsClass = DvcsConfig.find(@version_control.vcs_class) if @version_control.vcs_class != nil and not @version_control.vcs_class.empty?
 
     @actions = []
     @version_control.possible_events.each do |evt|
