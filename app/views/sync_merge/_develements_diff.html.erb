@@ -1,0 +1,54 @@
+
+<h3>Develement</h3>
+
+<% @dev = Develement.find(@rec.distributable_id) %>
+<%= form_tag sync_merge_update_path do %>
+	<%= hidden_field_tag "sm_id", @rec.id %>
+<table class="std">
+	<tr>
+		<th></th>
+		<th>Local</th>
+		<th>Incoming</th>
+		<th></th>
+	</tr>
+	<tr>
+		<td class="field">Project : </td>
+		<td colspan="2"><%= @dev.project.name %></td>
+	</tr>
+	<tr>
+		<td class="field">Code : </td>
+		<td colspan="2"><%= @dev.code %></td>
+	</tr>
+	<tr>
+		<td class="field">Identifier : </td>
+		<td colspan="2"><%= @dev.identifier %></td>
+	</tr>
+	<% YAML.load(@rec.changeset).each do |f| %>
+	<tr class="crash_item">
+		<td class="field"><%= "#{f[0] == "develement_type_id" ? "Classification" : f[0].titleize} : " %></td>
+		<% if f[0] == "desc" %>
+			<td><%= text_area_tag "develements[#{f[0]}]", @dev.send(f[0]), :class => "tinymce", :rows => 8, :cols => 38 %></td>
+			<td><%= text_area_tag "develements[new_#{f[0]}]", f[1], :class => "tinymce", :rows => 8, :cols => 38 %></td>
+		<% elsif f[0] == "develement_type_id" %>
+			<% @devType = DevelementType.all.collect { |d| [d.name, d.id] } %>
+			<td><%= select_tag "develements[#{f[0]}]", options_for_select(@devType, @dev.send(f[0])), :include_blank => true %></td>
+			<td><%= select_tag "develements[new_#{f[0]}]", options_for_select(@devType, f[1]), :include_blank => true %></td>
+		<% elsif f[0] == "schedule_id" %>
+			<% @sch = @dev.project.schedules.all.collect { |d| [d.name, d.id] } %>
+			<td><%= select_tag "develements[#{f[0]}]", options_for_select(@sch, @dev.send(f[0])), :include_blank => true %></td>
+			<td><%= select_tag "develements[new_#{f[0]}]", options_for_select(@sch, f[1]), :include_blank => true %></td>
+		<% else %>
+			<td><%= text_field_tag "develements[#{f[0]}]", @dev.send(f[0]), :cols => 38 %></td>
+			<td><%= text_field_tag "develements[new_#{f[0]}]", f[1], :cols => 38 %></td>
+		<% end %>
+		<td></td>
+	</tr>
+	<% end %>
+	<tr>
+		<td class="field"></td>
+		<td><%= submit_tag "Update" %></td>
+		<td></td>
+		<td></td>
+	</tr>
+</table>
+<% end %>

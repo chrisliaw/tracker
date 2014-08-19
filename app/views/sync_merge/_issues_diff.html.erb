@@ -1,0 +1,54 @@
+
+<h3>Issue</h3>
+
+<% @iss = Issue.find(@rec.distributable_id) %>
+<%= form_tag sync_merge_update_path do %>
+	<%= hidden_field_tag "sm_id", @rec.id %>
+<table class="std">
+	<tr>
+		<th></th>
+		<th>Local</th>
+		<th>Incoming</th>
+		<th></th>
+	</tr>
+	<tr>
+		<td class="field">Project : </td>
+		<td colspan="2"><%= @iss.project.name %></td>
+	</tr>
+	<tr>
+		<td class="field">Code : </td>
+		<td colspan="2"><%= @iss.code %></td>
+	</tr>
+	<tr>
+		<td class="field">Identifier : </td>
+		<td colspan="2"><%= @iss.identifier %></td>
+	</tr>
+	<% YAML.load(@rec.changeset).each do |f| %>
+	<tr class="crash_item">
+		<td class="field"><%= "#{f[0] == "issue_type_id" ? "Classification" : f[0].titleize} : " %></td>
+		<% if f[0] == "desc" %>
+			<td><%= text_area_tag "issues[#{f[0]}]", @iss.send(f[0]), :class => "tinymce", :rows => 8, :cols => 38 %></td>
+			<td><%= text_area_tag "issues[new_#{f[0]}]", f[1], :class => "tinymce", :rows => 8, :cols => 38 %></td>
+		<% elsif f[0] == "issue_type_id" %>
+			<% @issType = IssueType.all.collect { |d| [d.name, d.id] } %>
+			<td><%= select_tag "issues[#{f[0]}]", options_for_select(@issType, @iss.send(f[0])), :include_blank => true %></td>
+			<td><%= select_tag "issues[new_#{f[0]}]", options_for_select(@issType, f[1]), :include_blank => true %></td>
+		<% elsif f[0] == "schedule_id" %>
+			<% @sch = @iss.project.schedules.all.collect { |d| ["#{d.name} (#{d.state.titleize})", d.id] } %>
+			<td><%= select_tag "issues[#{f[0]}]", options_for_select(@sch, @iss.send(f[0])), :include_blank => true %></td>
+			<td><%= select_tag "issues[new_#{f[0]}]", options_for_select(@sch, f[1]), :include_blank => true %></td>
+		<% else %>
+			<td><%= text_field_tag "issues[#{f[0]}]", @iss.send(f[0]), :cols => 38 %></td>
+			<td><%= text_field_tag "issues[new_#{f[0]}]", f[1], :cols => 38 %></td>
+		<% end %>
+		<td></td>
+	</tr>
+	<% end %>
+	<tr>
+		<td class="field"></td>
+		<td><%= submit_tag "Update" %></td>
+		<td><%= submit_tag "Update New" %></td>
+		<td></td>
+	</tr>
+</table>
+<% end %>

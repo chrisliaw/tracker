@@ -8,8 +8,57 @@ class SyncClientController < ApplicationController
 
 	def sync
 		host = params[:sync_client][:host]
-		ops = params[:sync_client][:operation]
+		@ops = params[:sync_client][:operation]
 		node = Node.first
+
+		if @ops == "pull"
+			pull(node,host)
+		else
+			# perform login
+			url = URI.join("#{host}","sync_service/login.json")
+			Distributable::OpenWebService.call(url.to_s,:post, {"node_id" => node.identifier}) do |res|
+				@result = res
+			end
+
+			if @result["status"] == true
+				@token = @result["token"]
+				@server_id = @result["server_id"]
+			
+				@out = Distributable::GenerateDelta.call(@server_id,SyncLogs::PUSH_REF,logger)	
+				url = URI.join("#{host}","sync_service/sync.json")
+				Distributable::OpenWebService.call(url.to_s,:post,{"node_id" => node.identifier, "operation" => "push", "uploaded" => @out.to_json, "token" => @token }) do |res|
+					@result = res
+				end	
+				
+				p @result
+				if @result["status"] == 200
+					flash[:notice] = @result["status_message"]
+				else
+					flash[:error] = @result["status_message"]
+				end
+				#@syncSummary = {}
+				#@syncSummary[:newRecord] = {}
+				#@syncSummary[:delRecord] = {}
+				#@syncSummary[:editedRecord] = {}
+				#@syncSummary[:crashed] = {}
+
+				redirect_to sync_client_index_path
+				#render :action => "index"
+			else
+				# login status is false
+				flash[:error] = "Failed to login to host. Error was #{@result["status_message"]}"
+				render :action => "index"
+			end
+
+		end # end of if-else
+
+	end
+
+	def push
+
+	end
+
+	def pull(node,host)
 
 		# perform login
 		url = URI.join("#{host}","sync_service/login.json")
@@ -22,10 +71,11 @@ class SyncClientController < ApplicationController
 			@server_id = @result["server_id"]
 
 			url = URI.join("#{host}","sync_service/sync.json")
-			Distributable::OpenWebService.call(url.to_s,:post,{"node_id" => node.identifier}) do |res|
+			Distributable::OpenWebService.call(url.to_s,:post,{"node_id" => node.identifier, :operation => "pull"}) do |res|
 				@result = res
 			end	
 
+			#@syncSummary = Distributable::ParseDelta.call(@server_id,@token,@result,SyncLogs::PULL_REF,logger)
 			# store the @result in case error happened later
 			hist = SyncHistory.new
 			hist.node_id = @server_id
@@ -48,7 +98,7 @@ class SyncClientController < ApplicationController
 				ignoredFields[:develements] += %W(code)
 				ignoredFields[:issues] = ignoredFields[:develements]
 				ignoredFields[:projects] = ignoredFields[:default]
-			  ignoredFields[:projects] += %W(category_tags)
+				ignoredFields[:projects] += %W(category_tags)
 				ignoredFields[:dvcs_configs] = ignoredFields[:default]
 				ignoredFields[:dvcs_configs] += %W(path)
 
@@ -119,14 +169,14 @@ class SyncClientController < ApplicationController
 					end
 
 					# here will be using LOCAL_REF
-					tmpRef = SyncLogs.where(["node_id = ? and direction = ?", @server_id,SyncLogs::LOCAL_REF])
+					tmpRef = SyncLogs.where(["node_id = ? and direction = ?", @server_id,SyncLogs::PULL_REF])
 					if tmpRef.length > 0
 						@ref = tmpRef[0]
 					else
 						@ref = SyncLogs.new
 						@ref.node_id = @server_id
 						@ref.last_change_log_id = 0
-						@ref.direction = SyncLogs::LOCAL_REF
+						@ref.direction = SyncLogs::PULL_REF
 					end
 
 					cutOffChange = ChangeLogs.last
@@ -186,9 +236,9 @@ class SyncClientController < ApplicationController
 									cond.add_condition!(["changed_fields like ? or changed_fields like ? or changed_fields like ? or changed_fields like ?","[%#{field}%]","[%,#{field},%]","[%#{field},%]","[%,#{field}]"])
 									crashed = ChangeLogs.where(cond).count
 									logger.debug "crashed count is #{crashed}"
+									obj = eval("#{k.classify}.find('#{id}')")
 									if crashed == 0
 										# no crash on the field changed...merge automatically
-										obj = eval("#{k.classify}.find('#{id}')")
 
 										if ignoredFields[k.to_sym] != nil
 											if not ignoredFields[k.to_sym].include?(field)
@@ -205,8 +255,11 @@ class SyncClientController < ApplicationController
 									else
 										logger.debug "Crashed on #{id} and field #{field}"
 										# CRASHED!
-										@crashed[id] = [] if @crashed[id] == nil
-										@crashed[id] << [field,value]
+										curVal = obj.send("#{field}")
+										if curVal != value
+											@crashed[id] = [] if @crashed[id] == nil
+											@crashed[id] << [field,value]
+										end
 									end
 								end
 							end
@@ -257,14 +310,8 @@ class SyncClientController < ApplicationController
 		else
 			# login status is false
 			flash[:error] = "Failed to login to host. Error was #{@result["status_message"]}"
-			render :action => "index"
+			redirect_to sync_client_index_path
+			#render :action => "index"
 		end
-
-	end
-
-  def download
-  end
-
-  def upload
   end
 end

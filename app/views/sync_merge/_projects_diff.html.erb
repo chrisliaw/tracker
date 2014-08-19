@@ -33,11 +33,11 @@
 	<tr class="crash_item">
 		<td class="field"><%= "#{f[0].titleize} : " %></td>
 		<% if f[0] == "desc" %>
-			<td><%= text_area_tag "project[#{f[0]}]", @project.send(f[0]), :class => "tinymce", :rows => 8, :cols => 38 %></td>
-			<td><%= text_area_tag "project[new_#{f[0]}]", f[1], :class => "tinymce", :rows => 8, :cols => 38 %></td>
+			<td><%= text_area_tag "projects[#{f[0]}]", @project.send(f[0]), :class => "tinymce", :rows => 8, :cols => 38 %></td>
+			<td><%= text_area_tag "projects[new_#{f[0]}]", f[1], :class => "tinymce", :rows => 8, :cols => 38 %></td>
 		<% else %>
-			<td><%= text_field_tag "project[#{f[0]}]", @project.send(f[0]), :class => "tinymce", :rows => 8, :cols => 38 %></td>
-			<td><%= text_field_tag "project[new_#{f[0]}]", f[1], :class => "tinymce", :rows => 8, :cols => 38 %></td>
+			<td><%= text_field_tag "projects[#{f[0]}]", @project.send(f[0]), :cols => 38 %></td>
+			<td><%= text_field_tag "projects[new_#{f[0]}]", f[1], :cols => 38 %></td>
 		<% end %>
 		<td></td>
 	</tr>
