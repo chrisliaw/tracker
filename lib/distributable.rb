@@ -48,16 +48,21 @@ module Distributable
 
     def log_update_change
 			if self.changed?
-				log = eval("#{self.class.options[:change_log_table]}.new")
-				log.table_name = self.class.table_name
-				log.key = self.send "#{self.class.options[:distribution_key]}"
-				#changedFields = self.changed
-				#filtered = self.changed & self.class.options[:skippedCols] 
-				#log.changed_fields = (changedFields - filtered).to_json
-				changedFields = self.changed.delete_if { |c| self.class.options[:skippedCols].include?(c) }
-				log.changed_fields = changedFields.to_json
-				log.operation = 2
-				log.save
+				# ignore the data hash field since this field is generated locally
+				# data being sync across nodes this field might changed however the rest of the fields are not
+				self.changed.delete_if { |c| c == self.class.options[:hash_field_name].to_s }
+				if self.changed.size > 0
+					log = eval("#{self.class.options[:change_log_table]}.new")
+					log.table_name = self.class.table_name
+					log.key = self.send "#{self.class.options[:distribution_key]}"
+					#changedFields = self.changed
+					#filtered = self.changed & self.class.options[:skippedCols] 
+					#log.changed_fields = (changedFields - filtered).to_json
+					changedFields = self.changed.delete_if { |c| self.class.options[:skippedCols].include?(c) }
+					log.changed_fields = changedFields.to_json
+					log.operation = 2
+					log.save
+				end
 			end
     end
 
