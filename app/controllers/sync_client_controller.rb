@@ -3,9 +3,6 @@ class SyncClientController < ApplicationController
 
   end
 
-  def login
-  end
-
 	def sync
 		host = params[:sync_client][:host]
 		@ops = params[:sync_client][:operation]
@@ -25,12 +22,13 @@ class SyncClientController < ApplicationController
 				@server_id = @result["server_id"]
 			
 				@out = Distributable::GenerateDelta.call(@server_id,SyncLogs::PUSH_REF,logger)	
+				logger.debug "Delta to push: #{@out.to_json}"
 				url = URI.join("#{host}","sync_service/sync.json")
 				Distributable::OpenWebService.call(url.to_s,:post,{"node_id" => node.identifier, "operation" => "push", "uploaded" => @out.to_json, "token" => @token }) do |res|
 					@result = res
 				end	
-				
-				p @result
+			
+				logger.debug "Webservices push operation return #{@result}"	
 				if @result["status"] == 200
 					flash[:notice] = @result["status_message"]
 				else
@@ -107,7 +105,7 @@ class SyncClientController < ApplicationController
 				# New record is saved before come here hence there is at least one incomplete record...
 				pending.each do |pend|
 					@result = JSON.parse(pend.sync_data)
-					p @result
+					logger.debug "Processing data #{@result}"
 					@newRecords = @result["newRec"] 
 					@delRecords = @result["delRec"]
 					@editRecords = @result["changedRec"]
@@ -278,6 +276,7 @@ class SyncClientController < ApplicationController
 
 						if @syncSummary[:crashed] != nil
 							@syncSummary[:crashed].each do |k,v|
+
 								v.each do |kk,vv|
 									@sm = SyncMerge.where(["sync_history_id = ? and distributable_type = ? and distributable_id = ? and status = ?",pend.id,k,kk,SyncMerge::CRASHED])
 									if @sm.length == 0
