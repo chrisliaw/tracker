@@ -138,132 +138,33 @@ class SyncServiceController < ApplicationController
 						end
 					end
 
-					#tmpRef = SyncLogs.where(["node_id = ? and direction = ?", @server_id,SyncLogs::PUSH_REF])
-					#if tmpRef.length > 0
-					#	@ref = tmpRef[0]
-					#else
-					#	@ref = SyncLogs.new
-					#	@ref.node_id = @server_id
-					#	@ref.last_change_log_id = 0
-					#	#@ref.direction = SyncLogs::PULL_REF
-					#	@ref.direction = direction
-					#end
+					# All changes just merged with local record
+					@edited = []
+					@editRecords.each do |k,v|
+						v.each do |rec|
+							id = rec[0]
+							changes = rec[1]
+							changes.each do |field,value|
+								obj = eval("#{k.classify}.find('#{id}')")
 
-					#cutOffChange = ChangeLogs.last
-					#if cutOffChange != nil
-					#	@cutOffChangeID = cutOffChange.id
-					#else
-					#	@cutOffChangeID = 0
-					#end
-
-					#if @ref.last_change_log_id == @cutOffChangeID
-						# All changes just merged with local record
-						@edited = []
-						@editRecords.each do |k,v|
-							v.each do |rec|
-								id = rec[0]
-								changes = rec[1]
-								changes.each do |field,value|
-									obj = eval("#{k.classify}.find('#{id}')")
-
-									if ignoredFields[k.to_sym] != nil
-										if not ignoredFields[k.to_sym].include?(field)
-											obj.send("#{field}=",value)
-										end
-									else
-										if not ignoredFields[:default].include?(field)
-											obj.send("#{field}=",value)
-										end
+								if ignoredFields[k.to_sym] != nil
+									if not ignoredFields[k.to_sym].include?(field)
+										obj.send("#{field}=",value)
 									end
-									#obj.send("#{field}=",value)
-									obj.save
-									@edited << id
+								else
+									if not ignoredFields[:default].include?(field)
+										obj.send("#{field}=",value)
+									end
 								end
+								#obj.send("#{field}=",value)
+								obj.save
+								@edited << id
 							end
-
-							@syncSummary[:editedRecord][k] = {} if @syncSummary[:editedRecord][k] == nil
-							@syncSummary[:editedRecord][k] = @edited
 						end
 
-					#else
-					#	logger.debug "Check for record crashing"
-					#	# check for CRASHED changes
-					#	@conds = []
-					#	@conds.add_condition!(["id between ? and ?",@ref.last_change_log_id,@cutOffChangeID])
-
-					#	@editRecords.each do |k,v|
-					#		# this has the potential for changes to CRASH...
-					#		@crashed = {}
-					#		@edited = []
-					#		v.each do |rec|
-					#			id = rec[0]
-					#			@conds.add_condition!(["table_name = ? and key = ?",k,id])
-					#			changesSet = rec[1]
-					#			changesSet.each do |field,value|
-					#				cond = @conds.clone
-					#				cond.add_condition!(["changed_fields like ? or changed_fields like ? or changed_fields like ? or changed_fields like ?","[%#{field}%]","[%,#{field},%]","[%#{field},%]","[%,#{field}]"])
-					#				crashed = ChangeLogs.where(cond).count
-					#				logger.debug "crashed count is #{crashed}"
-					#				if crashed == 0
-					#					# no crash on the field changed...merge automatically
-					#					obj = eval("#{k.classify}.find('#{id}')")
-
-					#					if ignoredFields[k.to_sym] != nil
-					#						if not ignoredFields[k.to_sym].include?(field)
-					#							obj.send("#{field}=",value)
-					#						end
-					#					else
-					#						if not ignoredFields[:default].include?(field)
-					#							obj.send("#{field}=",value)
-					#						end
-					#					end
-
-					#					obj.save
-					#					@edited << id
-					#				else
-					#					logger.debug "Crashed on #{id} and field #{field}"
-					#					# CRASHED!
-					#					@crashed[id] = [] if @crashed[id] == nil
-					#					@crashed[id] << [field,value]
-					#				end
-					#			end
-					#		end
-
-					#		if @edited != nil and @edited.length > 0
-					#			@syncSummary[:editedRecord][k] = {} if @syncSummary[:editedRecord][k] == nil
-					#			@syncSummary[:editedRecord][k] = @edited
-					#		end
-
-					#		if @crashed != nil and @crashed.length > 0
-					#			@syncSummary[:crashed][k] = {} if @syncSummary[:crashed][k] == nil
-					#			@syncSummary[:crashed][k] = @crashed
-					#		end
-
-					#	end
-
-					#	if @syncSummary[:crashed] != nil
-					#		@syncSummary[:crashed].each do |k,v|
-					#			v.each do |kk,vv|
-					#				@sm = SyncMerge.where(["sync_history_id = ? and distributable_type = ? and distributable_id = ? and status = ?",pend.id,k,kk,SyncMerge::CRASHED])
-					#				if @sm.length == 0
-					#					@sm = SyncMerge.new
-					#					@sm.sync_history_id = pend.id
-					#					@sm.distributable_type = k
-					#					@sm.distributable_id = kk
-					#					@sm.status = SyncMerge::CRASHED	
-					#					@sm.changeset = vv             	
-					#				else                             	
-					#					@sm[0].changeset << vv         	
-					#				end                              	
-					#				@sm.save                         
-					#			end
-					#		end
-					#	end
-
-					#end
-
-					#@ref.last_change_log_id = cutOffChange.id
-					#@ref.save
+						@syncSummary[:editedRecord][k] = {} if @syncSummary[:editedRecord][k] == nil
+						@syncSummary[:editedRecord][k] = @edited
+					end
 
 					pend.status = SyncHistory::COMPLETED
 					pend.save
