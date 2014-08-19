@@ -50,13 +50,13 @@ class SyncClientController < ApplicationController
 				ignoredFields[:projects] = ignoredFields[:default]
 			  ignoredFields[:projects] += %W(category_tags)
 				ignoredFields[:dvcs_configs] = ignoredFields[:default]
-				ignoredFields[:dvcs_configs] = %W(path)
+				ignoredFields[:dvcs_configs] += %W(path)
 
 				# check is there any old history which is not yet completed...
 				pending = SyncHistory.where(["status = ?",SyncHistory::INCOMPLETE])
 				# New record is saved before come here hence there is at least one incomplete record...
-				pending.each do |pending|
-					@result = JSON.parse(pending.sync_data)
+				pending.each do |pend|
+					@result = JSON.parse(pend.sync_data)
 					p @result
 					@newRecords = @result["newRec"] 
 					@delRecords = @result["delRec"]
@@ -180,10 +180,10 @@ class SyncClientController < ApplicationController
 							v.each do |rec|
 								id = rec[0]
 								@conds.add_condition!(["table_name = ? and key = ?",k,id])
-								changes = rec[1]
-								changes.each do |field,value|
+								changesSet = rec[1]
+								changesSet.each do |field,value|
 									cond = @conds.clone
-									cond.add_condition!(["changed_fields like ? or changed_fields like ? or changed_fields like ? or changed_fields like ?","#{field}","%,#{field},%","#{field},%","%,#{field}"])
+									cond.add_condition!(["changed_fields like ? or changed_fields like ? or changed_fields like ? or changed_fields like ?","[%#{field}%]","[%,#{field},%]","[%#{field},%]","[%,#{field}]"])
 									crashed = ChangeLogs.where(cond).count
 									logger.debug "crashed count is #{crashed}"
 									if crashed == 0
@@ -200,21 +200,46 @@ class SyncClientController < ApplicationController
 											end
 										end
 
-										#obj.send("#{field}=",value)
 										obj.save
 										@edited << id
 									else
+										logger.debug "Crashed on #{id} and field #{field}"
 										# CRASHED!
 										@crashed[id] = [] if @crashed[id] == nil
-										@crashed[id] << field
+										@crashed[id] << [field,value]
 									end
 								end
 							end
 
-							@syncSummary[:editedRecord][k] = {} if @syncSummary[:editedRecord][k] == nil
-							@syncSummary[:editedRecord][k] = @edited
-							@syncSummary[:crashed][k] = {} if @syncSummary[:crashed][k] == nil
-							@syncSummary[:crashed][k] = @crashed
+							if @edited != nil and @edited.length > 0
+								@syncSummary[:editedRecord][k] = {} if @syncSummary[:editedRecord][k] == nil
+								@syncSummary[:editedRecord][k] = @edited
+							end
+
+							if @crashed != nil and @crashed.length > 0
+								@syncSummary[:crashed][k] = {} if @syncSummary[:crashed][k] == nil
+								@syncSummary[:crashed][k] = @crashed
+							end
+
+						end
+
+						if @syncSummary[:crashed] != nil
+							@syncSummary[:crashed].each do |k,v|
+								v.each do |kk,vv|
+									@sm = SyncMerge.where(["sync_history_id = ? and distributable_type = ? and distributable_id = ? and status = ?",pend.id,k,kk,SyncMerge::CRASHED])
+									if @sm.length == 0
+										@sm = SyncMerge.new
+										@sm.sync_history_id = pend.id
+										@sm.distributable_type = k
+										@sm.distributable_id = kk
+										@sm.status = SyncMerge::CRASHED
+										@sm.changeset = vv
+									else
+										@sm[0].changeset << vv
+									end
+									@sm.save
+								end
+							end
 						end
 
 					end
@@ -222,8 +247,8 @@ class SyncClientController < ApplicationController
 					@ref.last_change_log_id = @cutOffChangeID
 					@ref.save
 
-					pending.status = SyncHistory::COMPLETED
-					pending.save
+					pend.status = SyncHistory::COMPLETED
+					pend.save
 
 				end
 			end # end transaction

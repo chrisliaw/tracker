@@ -1,0 +1,52 @@
+
+<h3>Project</h3>
+
+<% @project = Project.find(@rec.distributable_id) %>
+<%= form_tag sync_merge_update_path do %>
+	<%= hidden_field_tag "sm_id", @rec.id %>
+<table class="std">
+	<tr>
+		<th></th>
+		<th>Local</th>
+		<th>Incoming</th>
+		<th></th>
+	</tr>
+	<tr>
+		<td class="field">Project : </td>
+		<td colspan="2"><%= @project.name %></td>
+		<td></td>
+		<td></td>
+	</tr>
+	<tr>
+		<td class="field">Code : </td>
+		<td><%= @project.code %></td>
+		<td></td>
+		<td></td>
+	</tr>
+	<tr>
+		<td class="field">Identifier : </td>
+		<td><%= @project.identifier %></td>
+		<td></td>
+		<td></td>
+	</tr>
+	<% YAML.load(@rec.changeset).each do |f| %>
+	<tr class="crash_item">
+		<td class="field"><%= "#{f[0].titleize} : " %></td>
+		<% if f[0] == "desc" %>
+			<td><%= text_area_tag "project[#{f[0]}]", @project.send(f[0]), :class => "tinymce", :rows => 8, :cols => 38 %></td>
+			<td><%= text_area_tag "project[new_#{f[0]}]", f[1], :class => "tinymce", :rows => 8, :cols => 38 %></td>
+		<% else %>
+			<td><%= text_field_tag "project[#{f[0]}]", @project.send(f[0]), :class => "tinymce", :rows => 8, :cols => 38 %></td>
+			<td><%= text_field_tag "project[new_#{f[0]}]", f[1], :class => "tinymce", :rows => 8, :cols => 38 %></td>
+		<% end %>
+		<td></td>
+	</tr>
+	<% end %>
+	<tr>
+		<td class="field"></td>
+		<td><%= submit_tag "Update" %></td>
+		<td></td>
+		<td></td>
+	</tr>
+</table>
+<% end %>

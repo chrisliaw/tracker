@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20140818044249) do
+ActiveRecord::Schema.define(:version => 20140818085351) do
 
   create_table "attachments", :force => true do |t|
     t.string   "attachable_type"
@@ -155,6 +155,16 @@ ActiveRecord::Schema.define(:version => 20140818044249) do
     t.integer  "last_change_log_id"
     t.string   "last_sync_from"
     t.integer  "direction"
+    t.datetime "created_at",         :null => false
+    t.datetime "updated_at",         :null => false
+  end
+
+  create_table "sync_merges", :force => true do |t|
+    t.integer  "sync_history_id"
+    t.string   "distributable_type"
+    t.string   "distributable_id"
+    t.text     "changeset"
+    t.integer  "status"
     t.datetime "created_at",         :null => false
     t.datetime "updated_at",         :null => false
   end

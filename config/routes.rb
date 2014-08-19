@@ -1,5 +1,11 @@
 Tracker::Application.routes.draw do
 
+  get "sync_merge/index"
+
+  get "sync_merge/show"
+
+  post "sync_merge/update"
+
   get "sync_service/index"
 
   post "sync_service/login"

@@ -1,0 +1,23 @@
+<h2>Merge Conflict Record</h2>
+
+<table class="std">
+	<tr>
+		<th>Table</th>
+		<th>Identifier</th>
+		<th>Conflicted Fields</th>
+	</tr>
+	<% @conflicted.each do |c| %>
+		<tr>
+			<td><%= link_to c.distributable_type.classify, sync_merge_show_path(:id => c.id) %></td>
+			<td><%= link_to c.distributable_id, sync_merge_show_path(:id => c.id) %></td>
+			<td>
+				<% @fields = [] %>
+				<% @ca = YAML.load(c.changeset) %>
+				<% @ca.each do |c| %>
+					<% @fields << c[0] %>
+				<% end %>
+				<%= @fields.join(",") %>
+			</td>
+		</tr>
+	<% end %>
+</table>
