@@ -4,4 +4,5 @@ class SyncMerge < ActiveRecord::Base
 	MERGED = 10
 	CRASHED = 20
 
+	belongs_to :sync_history
 end

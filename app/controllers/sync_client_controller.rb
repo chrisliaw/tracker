@@ -20,28 +20,28 @@ class SyncClientController < ApplicationController
 			if @result["status"] == true
 				@token = @result["token"]
 				@server_id = @result["server_id"]
-			
-				@out = Distributable::GenerateDelta.call(@server_id,SyncLogs::PUSH_REF,logger)	
-				logger.debug "Delta to push: #{@out.to_json}"
-				url = URI.join("#{host}","sync_service/sync.json")
-				Distributable::OpenWebService.call(url.to_s,:post,{"node_id" => node.identifier, "operation" => "push", "uploaded" => @out.to_json, "token" => @token }) do |res|
-					@result = res
-				end	
-			
-				logger.debug "Webservices push operation return #{@result}"	
-				if @result["status"] == 200
-					flash[:notice] = @result["status_message"]
-				else
-					flash[:error] = @result["status_message"]
-				end
-				#@syncSummary = {}
-				#@syncSummary[:newRecord] = {}
-				#@syncSummary[:delRecord] = {}
-				#@syncSummary[:editedRecord] = {}
-				#@syncSummary[:crashed] = {}
 
-				redirect_to sync_client_index_path
-				#render :action => "index"
+				history = SyncHistory.where(["node_id = ?",@server_id])
+				if history[0].pending_sync_merges.length == 0
+
+					@out = Distributable::GenerateDelta.call(@server_id,SyncLogs::PUSH_REF,logger)	
+					logger.debug "Delta to push: #{@out.to_json}"
+					url = URI.join("#{host}","sync_service/sync.json")
+					Distributable::OpenWebService.call(url.to_s,:post,{"node_id" => node.identifier, "operation" => "push", "uploaded" => @out.to_json, "token" => @token }) do |res|
+						@result = res
+					end	
+
+					logger.debug "Webservices push operation return #{@result}"	
+					if @result["status"] == 200
+						flash[:notice] = @result["status_message"]
+					else
+						flash[:error] = @result["status_message"]
+					end
+
+				else
+					flash[:error] = "It seems that you have pending merging record of #{history[0].pending_sync_merges.length} for the target node. You have to clear the pending merging items before you can proceed to push to the target node."			
+				end
+
 			else
 				# login status is false
 				flash[:error] = "Failed to login to host. Error was #{@result["status_message"]}"
@@ -50,6 +50,7 @@ class SyncClientController < ApplicationController
 
 		end # end of if-else
 
+		redirect_to sync_client_index_path
 	end
 
 	def push
