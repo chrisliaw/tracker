@@ -11,49 +11,50 @@ class SyncClientController < ApplicationController
 		if @ops == "pull"
 			pull(node,host)
 		else
-			# perform login
-			url = URI.join("#{host}","sync_service/login.json")
-			Distributable::OpenWebService.call(url.to_s,:post, {"node_id" => node.identifier}) do |res|
-				@result = res
-			end
+			push(node,host)
+		end # end of if-else
 
-			if @result["status"] == true
-				@token = @result["token"]
-				@server_id = @result["server_id"]
+	end
 
-				history = SyncHistory.where(["node_id = ?",@server_id])
-				if history[0].pending_sync_merges.length == 0
+	def push(node,host)
+		# perform login
+		url = URI.join("#{host}","sync_service/login.json")
+		Distributable::OpenWebService.call(url.to_s,:post, {"node_id" => node.identifier}) do |res|
+			@result = res
+		end
 
-					@out = Distributable::GenerateDelta.call(@server_id,SyncLogs::PUSH_REF,logger)	
-					logger.debug "Delta to push: #{@out.to_json}"
-					url = URI.join("#{host}","sync_service/sync.json")
-					Distributable::OpenWebService.call(url.to_s,:post,{"node_id" => node.identifier, "operation" => "push", "uploaded" => @out.to_json, "token" => @token }) do |res|
-						@result = res
-					end	
+		if @result["status"] == true
+			@token = @result["token"]
+			@server_id = @result["server_id"]
 
-					logger.debug "Webservices push operation return #{@result}"	
-					if @result["status"] == 200
-						flash[:notice] = @result["status_message"]
-					else
-						flash[:error] = @result["status_message"]
-					end
+			history = SyncHistory.pending_sync_merges(@server_id)
+			if history.length == 0
 
+				@out = Distributable::GenerateDelta.call(@server_id,SyncLogs::PUSH_REF,logger)	
+				logger.debug "Delta to push: #{@out.to_json}"
+				url = URI.join("#{host}","sync_service/sync.json")
+				Distributable::OpenWebService.call(url.to_s,:post,{"node_id" => node.identifier, "operation" => "push", "uploaded" => @out.to_json, "token" => @token }) do |res|
+					@result = res
+				end	
+
+				logger.debug "Webservices push operation return #{@result}"	
+				if @result["status"] == 200
+					flash[:notice] = @result["status_message"]
 				else
-					flash[:error] = "It seems that you have pending merging record of #{history[0].pending_sync_merges.length} for the target node. You have to clear the pending merging items before you can proceed to push to the target node."			
+					flash[:error] = @result["status_message"]
 				end
 
 			else
-				# login status is false
-				flash[:error] = "Failed to login to host. Error was #{@result["status_message"]}"
-				render :action => "index"
+				flash[:error] = %Q[It seems that you have pending merging record of #{history.length} for the target node. You have to clear the pending merging items before you can proceed to push to the target node. Click <a href="#{sync_merge_index_path(:node_id => @server_id)}">here</a> to merge the record.].html_safe
 			end
 
-		end # end of if-else
+		else
+			# login status is false
+			flash[:error] = "Failed to login to host. Error was #{@result["status_message"]}"
+			render :action => "index"
+		end
 
 		redirect_to sync_client_index_path
-	end
-
-	def push
 
 	end
 
@@ -82,14 +83,15 @@ class SyncClientController < ApplicationController
 			hist.sync_data = @result.to_json
 			hist.status = SyncHistory::INCOMPLETE
 			hist.save
+			
+			@syncSummary = {}
+			@syncSummary[:newRecord] = {}
+			@syncSummary[:delRecord] = {}
+			@syncSummary[:editedRecord] = {}
+			@syncSummary[:crashed] = {}
 
 			ActiveRecord::Base.transaction do
 
-				@syncSummary = {}
-				@syncSummary[:newRecord] = {}
-				@syncSummary[:delRecord] = {}
-				@syncSummary[:editedRecord] = {}
-				@syncSummary[:crashed] = {}
 				# ignore the code field...
 				ignoredFields = {}
 				ignoredFields[:default] = %W(created_at updated_id id)
@@ -306,12 +308,19 @@ class SyncClientController < ApplicationController
 				end
 			end # end transaction
 
+			if @syncSummary[:crashed] != nil and @syncSummary[:crashed].size > 0
+				flash[:notice] = %Q[There are conflicted record for the pull operation. Please click <a href="#{sync_merge_index_path(:node_id => @server_id)}">here</a> to resolve the conflict].html_safe
+			else
+				flash[:notice] = %Q[The data pull operation succeeded]
+			end
 
+			#redirect_to sync_client_index_path
 		else
 			# login status is false
 			flash[:error] = "Failed to login to host. Error was #{@result["status_message"]}"
-			redirect_to sync_client_index_path
 			#render :action => "index"
 		end
+
+		redirect_to sync_client_index_path
   end
 end

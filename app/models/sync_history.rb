@@ -5,11 +5,14 @@ class SyncHistory < ActiveRecord::Base
 	INCOMPLETE = 1
 
 	has_many :sync_merges
-	def pending_sync_merges
+	def self.pending_sync_merges(node_id)
 		@pending = []
-		self.sync_merges.each do |sm|
-			@pending << sm if sm.status == SyncMerge::CRASHED
-		end
+		hist = SyncHistory.where(["node_id = ?",node_id])
+		hist.each do |h|
+			h.sync_merges.each do |sm|
+				@pending << sm if sm.status == SyncMerge::CRASHED
+			end
+		end	
 		@pending
 	end
 end

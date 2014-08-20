@@ -30,13 +30,13 @@
 			<td><%= text_area_tag "develements[#{f[0]}]", @dev.send(f[0]), :class => "tinymce", :rows => 8, :cols => 38 %></td>
 			<td><%= text_area_tag "develements[new_#{f[0]}]", f[1], :class => "tinymce", :rows => 8, :cols => 38 %></td>
 		<% elsif f[0] == "develement_type_id" %>
-			<% @devType = DevelementType.all.collect { |d| [d.name, d.id] } %>
-			<td><%= select_tag "develements[#{f[0]}]", options_for_select(@devType, @dev.send(f[0])), :include_blank => true %></td>
-			<td><%= select_tag "develements[new_#{f[0]}]", options_for_select(@devType, f[1]), :include_blank => true %></td>
+			<%# @devType = DevelementType.all.collect { |d| [d.name, d.id] } %>
+			<td><%= DevelementType.find(@dev.send(f[0])).name %><%= hidden_field_tag "develements[#{f[0]}]", @dev.send(f[0]) %></td>
+			<td><%= DevelementType.find(f[1]).name %> <%= hidden_field_tag "develements[new_#{f[0]}]", f[1] %></td>
 		<% elsif f[0] == "schedule_id" %>
-			<% @sch = @dev.project.schedules.all.collect { |d| [d.name, d.id] } %>
-			<td><%= select_tag "develements[#{f[0]}]", options_for_select(@sch, @dev.send(f[0])), :include_blank => true %></td>
-			<td><%= select_tag "develements[new_#{f[0]}]", options_for_select(@sch, f[1]), :include_blank => true %></td>
+			<%# @sch = @dev.project.schedules.all.collect { |d| [d.name, d.id] } %>
+			<td><%= Schedule.find(@dev.send(f[0])).name %><%= hidden_field_tag "develements[#{f[0]}]", @dev.send(f[0]) %></td>
+			<td><%= Schedule.find(f[1]).name %><%= hidden_field_tag "develements[new_#{f[0]}]", f[1] %></td>
 		<% else %>
 			<td><%= text_field_tag "develements[#{f[0]}]", @dev.send(f[0]), :cols => 38 %></td>
 			<td><%= text_field_tag "develements[new_#{f[0]}]", f[1], :cols => 38 %></td>
@@ -46,8 +46,8 @@
 	<% end %>
 	<tr>
 		<td class="field"></td>
-		<td><%= submit_tag "Update" %></td>
-		<td></td>
+		<td><%= submit_tag "Accept Local" %></td>
+		<td><%= submit_tag "Accept Remote" %></td>
 		<td></td>
 	</tr>
 </table>
