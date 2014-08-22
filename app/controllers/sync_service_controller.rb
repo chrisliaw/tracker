@@ -33,10 +33,14 @@ class SyncServiceController < ApplicationController
 						encSess = AnCAL::Cipher::PKCS7::EncryptData.call(certs[0],nodeSess)
 						# sign the node id
 						idUrl = File.join(Rails.root,"db","owner.id")
-						pass = load_cache_password(node.identifier)
-						pkey,cert,chain = AnCAL::KeyFactory::FromP12Url.call(idUrl,pass)
-						signed = AnCAL::DataSign::PKCS7::SignData.call(pkey,cert,node.identifier,false)
-						retData = Struct::LoginStatus.new(200,"User authenticated",encSess.to_hex,signed.to_pem)
+						begin
+							pass = load_cache_password(node.identifier)
+							pkey,cert,chain = AnCAL::KeyFactory::FromP12Url.call(idUrl,pass)
+							signed = AnCAL::DataSign::PKCS7::SignData.call(pkey,cert,node.identifier,false)
+							retData = Struct::LoginStatus.new(200,"User authenticated",encSess.to_hex,signed.to_pem)
+						rescue Exception => ex
+							retData = Struct::LoginStatus.new(500,ex,"","")
+						end
 					else
 						# data signature verification failed
 						retData = Struct::LoginStatus.new(401,"Client token verification failed. Login failed.","","")
