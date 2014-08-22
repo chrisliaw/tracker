@@ -53,6 +53,7 @@ Tracker::Application.routes.draw do
       get :login
       get :logout
       post :authenticate
+			get :show_owner_detail
     end
   end
 

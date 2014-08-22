@@ -1,25 +1,50 @@
 <p id="notice"><%= notice %></p>
 
-<p>
-  <b>Login:</b>
-  <%= @user.login %>
-</p>
-
-<p>
-  <b>Name:</b>
-  <%= @user.name %>
-</p>
-
-<p>
-  <b>Pass:</b>
-  <%= @user.pass %>
-</p>
-
-<p>
-  <b>Status:</b>
-  <%= @user.status %>
-</p>
-
+<table class="std">
+	<% if @subj != nil %>
+	<tr>
+		<td class="field">User Name : </td>
+		<td><%= @subj["CN"] %></td>
+	</tr>
+	<tr>
+		<td class="field">Email : </td>
+		<td><%= @subj["emailAddress"] %></td>
+	</tr>
+	<tr>
+		<td class="field">Organization : </td>
+		<td><%= @subj["O"] %></td>
+	</tr>
+	<tr>
+		<td class="field">Unit : </td>
+		<td><%= @subj["OU"] %></td>
+	</tr>
+	<tr>
+		<td class="field">Cert Serial : </td>
+		<td><%= @cert.serial %></td>
+	</tr>
+	<tr>
+		<td class="field">Cert Issuer : </td>
+		<td><%= @cert.issuer %></td>
+	</tr>
+	<tr>
+		<td class="field">Public Key Hash (SHA1): </td>
+		<td><%= Digest::SHA1.hexdigest(@cert.public_key.to_der) %></td>
+	</tr>
+	<% else %>
+	<tr>
+		<td class="field">Login : </td>
+		<td><%= @user.login %></td>
+	</tr>
+	<% end %>
+	<tr>
+		<td class="field">Status : </td>
+		<td><%= @user.state.titleize %></td>
+	</tr>
+	<tr>
+		<td class="field">Group : </td>
+		<td><%= User::GroupToName[@user.group] %></td>
+	</tr>
+</table>
 
 <%= link_to 'Edit', edit_user_path(@user) %> |
 <%= link_to 'Back', users_path %>

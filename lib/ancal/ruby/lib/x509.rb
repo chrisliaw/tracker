@@ -32,6 +32,10 @@ module AnCAL
 			end
 		end
 
+		LoadCert = Proc.new do |cert|
+			OpenSSL::X509::Certificate.new(cert)
+		end
+
 		GenerateCert = Proc.new do |cert_name, pkey, cert_length = 3, hashAlgo = CERT_HASH_SHA1, &block|
 			cert = OpenSSL::X509::Certificate.new
 			cert.version = 2

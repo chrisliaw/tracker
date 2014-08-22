@@ -13,7 +13,7 @@
 <div id="header">
     <div id="header_title">Tracker - Gen-X Issue Tracking</div>
 	<div id="login">
-    	Welcome <%= session[:user][:name] %> | <%= link_to 'Logout', :controller => "users", :action => 'logout' %> |
+    	Welcome <%= link_to session[:user][:name], show_owner_detail_users_path  %> | <%= link_to 'Logout', :controller => "users", :action => 'logout' %> |
     </div>
 </div>
 <div id="left_menu">

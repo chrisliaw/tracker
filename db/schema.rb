@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20140818085351) do
+ActiveRecord::Schema.define(:version => 20140820050358) do
 
   create_table "attachments", :force => true do |t|
     t.string   "attachable_type"
@@ -180,10 +180,12 @@ ActiveRecord::Schema.define(:version => 20140818085351) do
   create_table "users", :force => true do |t|
     t.string   "login"
     t.string   "cert"
-    t.string   "cert_validation_token"
-    t.integer  "status",                :default => 1
-    t.datetime "created_at",                           :null => false
-    t.datetime "updated_at",                           :null => false
+    t.string   "validation_token"
+    t.datetime "created_at",       :null => false
+    t.datetime "updated_at",       :null => false
+    t.string   "state"
+    t.string   "rights"
+    t.string   "group"
   end
 
   create_table "variances", :force => true do |t|

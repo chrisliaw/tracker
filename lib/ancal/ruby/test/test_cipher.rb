@@ -49,6 +49,7 @@ class TestCipher < MiniTest::Test
 			# wrong cert to decrypt
 			decData = AnCAL::Cipher::PKCS7::DecryptData.call(pkey,cert,encData)
 		end
+		p encData.to_hex_formatted(10,"\n")
 	end
 
 	def test_pkcs5_basic

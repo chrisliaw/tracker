@@ -16,6 +16,15 @@ class UsersController < ApplicationController
   # GET /users/1.json
   def show
     @user = User.find(params[:id])
+		@cert = AnCAL::X509::LoadCert.call(@user.cert)
+		subj = @user.login
+		@subj = {}
+		subj.split("/").each do |f|
+			sp = f.split("=")
+			if sp != nil and sp.length > 0
+				@subj[sp[0]] = sp[1]
+			end
+		end
 
     respond_to do |format|
       format.html # show.html.erb
@@ -147,4 +156,9 @@ class UsersController < ApplicationController
     session[:user] = nil
     redirect_to :controller => "projects", :action => "index"
   end
+
+	def show_owner_detail
+		idUrl = File.join(Rails.root,"db","owner.id")
+		pkey,@cert,chain = AnCAL::KeyFactory::FromP12Url.call(idUrl,session[:user][:pass])	
+	end
 end

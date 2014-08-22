@@ -3,18 +3,18 @@
 <% end -%>
 
 <div class="std">
- <table>
+ <table class="std">
   <tr>
     <th>Login</th>
-    <th>Name</th>
     <th>Status</th>
+    <th>Group</th>
   </tr>
 
 <% @users.each do |user| %>
   <tr>
     <td><%= link_to user.login, user %></td>
-    <td><%= user.name %></td>
-    <td><%= user.status %></td>
+    <td><%= user.state.titleize %></td>
+    <td><%= User::GroupToName[user.group]  %></td>
   </tr>
 <% end %>
 </table>

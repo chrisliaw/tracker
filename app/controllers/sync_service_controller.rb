@@ -6,7 +6,7 @@ class SyncServiceController < ApplicationController
 		Struct.new("LoginStatus",:status, :status_message, :token, :server_id)
 
 		# TODO: Check if the node ID is in the list
-		detached?,certs,signers = AnCAL::DataSign::PKCS7::ParseSignedData.call(clientNodeID.to_bin)
+		detached,certs,signers = AnCAL::DataSign::PKCS7::ParseSignedData.call(clientNodeID)
 		if certs.length > 0
 			# find this cert in our user table?
 			user = User.where(["cert = ?",certs[0].to_pem])
@@ -47,6 +47,7 @@ class SyncServiceController < ApplicationController
 				# user not found in database...
 				# save it...
 				u = User.new
+				u.login = certs[0].subject.to_s
 				u.cert = certs[0].to_pem
 				u.validation_token = clientNodeID	
 				u.state = "pending"

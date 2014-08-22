@@ -6,6 +6,11 @@ class User < ActiveRecord::Base
 	REMOTE_USER_GROUP = "RU"
 	REMOTE_HOST_GROUP = "RH"
 
+	GroupToName = {
+		REMOTE_USER_GROUP => "Remote User",
+		REMOTE_HOST_GROUP => "Remote Host"
+	}
+
   stateful :initial => :pending
 
   transform :pending => :active do

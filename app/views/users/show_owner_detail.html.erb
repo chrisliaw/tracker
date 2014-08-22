@@ -1,0 +1,41 @@
+
+<h2>Node Owner Detail</h2>
+
+<table class="std">
+	<tr>
+		<td class="field">Subject : </td>
+		<td><%= @cert.subject.to_s %></td>
+	</tr>
+	<tr>
+		<td class="field">Issuer</td>
+		<td><%= @cert.issuer.to_s %></td>
+	</tr>
+	<tr>
+		<td class="field">Serial : </td>
+		<td><%= @cert.serial %></td>
+	</tr>
+	<tr>
+		<td class="field">Public Key Hash (SHA1) : </td>
+		<td><%= Digest::SHA1.hexdigest(@cert.public_key.to_der) %></td>
+	</tr>
+	<tr>
+		<td class="field">Valid From : </td>
+		<td><%= @cert.not_before %></td>
+	</tr>
+	<tr>
+		<td class="field">Valid To : </td>
+		<td><%= @cert.not_after %></td>
+	</tr>
+	<tr>
+		<td class="field"></td>
+		<td></td>
+	</tr>
+	<tr>
+		<td class="field"></td>
+		<td></td>
+	</tr>
+	<tr>
+		<td class="field"></td>
+		<td></td>
+	</tr>
+</table>
