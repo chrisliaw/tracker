@@ -81,181 +81,138 @@ class SyncClientController < ApplicationController
 					@result = res
 				end	
 
-				#@syncSummary = Distributable::ParseDelta.call(@server_id,@token,@result,SyncLogs::PULL_REF,logger)
-				# store the @result in case error happened later
-				hist = SyncHistory.new
-				hist.node_id = @server_id
-				hist.sync_session_id = @token
-				hist.sync_data = @result.to_json
-				hist.status = SyncHistory::INCOMPLETE
-				hist.save
+				if @result["status"] == 200
+					# store the @result in case error happened later
+					hist = SyncHistory.new
+					hist.node_id = @server_id
+					hist.sync_session_id = @token
+					hist.sync_data = @result["status_message"].to_json
+					hist.status = SyncHistory::INCOMPLETE
+					hist.save
 
-				@syncSummary = {}
-				@syncSummary[:newRecord] = {}
-				@syncSummary[:delRecord] = {}
-				@syncSummary[:editedRecord] = {}
-				@syncSummary[:crashed] = {}
+					@syncSummary = {}
+					@syncSummary[:newRecord] = {}
+					@syncSummary[:delRecord] = {}
+					@syncSummary[:editedRecord] = {}
+					@syncSummary[:crashed] = {}
 
-				ActiveRecord::Base.transaction do
+					ActiveRecord::Base.transaction do
 
-					# ignore the code field...
-					ignoredFields = {}
-					ignoredFields[:default] = %W(created_at updated_id id)
-					ignoredFields[:develements] = ignoredFields[:default] 
-					ignoredFields[:develements] += %W(code)
-					ignoredFields[:issues] = ignoredFields[:develements]
-					ignoredFields[:projects] = ignoredFields[:default]
-					ignoredFields[:projects] += %W(category_tags)
-					ignoredFields[:dvcs_configs] = ignoredFields[:default]
-					ignoredFields[:dvcs_configs] += %W(path)
+						# ignore the code field...
+						ignoredFields = {}
+						ignoredFields[:default] = %W(created_at updated_id id)
+						ignoredFields[:develements] = ignoredFields[:default] 
+						ignoredFields[:develements] += %W(code)
+						ignoredFields[:issues] = ignoredFields[:develements]
+						ignoredFields[:projects] = ignoredFields[:default]
+						ignoredFields[:projects] += %W(category_tags)
+						ignoredFields[:dvcs_configs] = ignoredFields[:default]
+						ignoredFields[:dvcs_configs] += %W(path)
 
-					# check is there any old history which is not yet completed...
-					pending = SyncHistory.where(["status = ?",SyncHistory::INCOMPLETE])
-					# New record is saved before come here hence there is at least one incomplete record...
-					pending.each do |pend|
-						@result = JSON.parse(pend.sync_data)
-						logger.debug "Processing data #{@result}"
-						@newRecords = @result["newRec"] 
-						@delRecords = @result["delRec"]
-						@editRecords = @result["changedRec"]
+						# check is there any old history which is not yet completed...
+						pending = SyncHistory.where(["status = ?",SyncHistory::INCOMPLETE])
+						# New record is saved before come here hence there is at least one incomplete record...
+						pending.each do |pend|
+							@result = JSON.parse(pend.sync_data)
+							logger.debug "Processing data #{@result}"
+							@newRecords = @result["newRec"] 
+							@delRecords = @result["delRec"]
+							@editRecords = @result["changedRec"]
 
-						# for new record, check project first since there is the root of all linkage
-						if @newRecords["projects"] != nil
-							@newRecords["projects"].each do |rec|
-								proj = Project.new
-								rec.each do |k,v|
-									proj.send("#{k}=",v) if ignoredFields[:projects] != nil and not ignoredFields[:projects].include?(k)
-								end
-								# check for duplicate identifier?
-								dupProj = Project.where(["identifier = ?",proj.identifier])
-								if dupProj.length > 0
-									# DUPLICATED?????? DAMN!!
-									logger.warn "Duplicated project identifier? #{proj.identifier}"
-									proj.identifier = "#{proj.identifier}-d"
-								end
-								proj.save
-							end
-						end
-						# done looping new project from remote node
-
-						# continue other new record
-						@newRecords.keys.each do |type|
-							next if type.to_sym == :projects
-							@newRecords[type].each do |rec|
-								obj = eval("#{type.classify}.new")
-								rec.each do |k,v|
-									if ignoredFields[type.to_sym] != nil
-										if not ignoredFields[type.to_sym].include?(k)
-											obj.send("#{k}=",v)
-										end
-									else
-										if not ignoredFields[:default].include?(k)
-											obj.send("#{k}=",v)
-										end
+							# for new record, check project first since there is the root of all linkage
+							if @newRecords["projects"] != nil
+								@newRecords["projects"].each do |rec|
+									proj = Project.new
+									rec.each do |k,v|
+										proj.send("#{k}=",v) if ignoredFields[:projects] != nil and not ignoredFields[:projects].include?(k)
 									end
-								end
-
-								obj.save
-
-								@syncSummary[:newRecord][type.to_sym] = [] if @syncSummary[:newRecord][type.to_sym] == nil
-								@syncSummary[:newRecord][type.to_sym] << obj.id
-							end
-						end
-						# done looping new record from remote node
-
-						# Now analyze deleted record...
-						@delRecords.each do |k,v|
-							# should local delete because remote node deleted the record?? hmm...
-							# If there is not changes at local, i.e. no commits, no changes, no record depending on this, can be removed...
-							v.each do |id|
-								begin
-									obj = eval("#{k.classify}.find('#{id}')")
-									@syncSummary[:delRecord][k.to_sym] = [] if @syncSummary[:delRecord][k.to_sym] == nil
-									@syncSummary[:delRecord][k.to_sym] << id
-								rescue ActiveRecord::RecordNotFound => ex
-									# ignore
-									next
+									# check for duplicate identifier?
+									dupProj = Project.where(["identifier = ?",proj.identifier])
+									if dupProj.length > 0
+										# DUPLICATED?????? DAMN!!
+										logger.warn "Duplicated project identifier? #{proj.identifier}"
+										proj.identifier = "#{proj.identifier}-d"
+									end
+									proj.save
 								end
 							end
-						end
-						# done deleted record processing
+							# done looping new project from remote node
 
-						# Now processing edited record...
-						# First get the last change log record for this remote node
-						tmpRef = SyncLogs.where(["node_id = ? and direction = ?", @server_id,SyncLogs::PULL_REF])
-						if tmpRef.length > 0
-							@ref = tmpRef[0]
-						else
-							@ref = SyncLogs.new
-							@ref.node_id = @server_id
-							@ref.last_change_log_id = 0
-							@ref.direction = SyncLogs::PULL_REF
-						end
-
-						# Lock down the change log pointer so that it is ok if there is other transaction going on while updating is done
-						cutOffChange = ChangeLogs.last
-						if cutOffChange != nil
-							@cutOffChangeID = cutOffChange.id
-						else
-							@cutOffChangeID = 0
-						end
-
-						# Node has not changed since last sync...remote node changes are not checked for conflicted changes
-						if @ref.last_change_log_id == @cutOffChangeID
-							logger.debug "No changed since last sync. All remote node changes merged without crash check"
-							# nothing changed since last sync
-							# All changes just merged with local record
-							@edited = []
-							@editRecords.each do |k,v|
-								v.each do |rec|
-									id = rec[0]
-									changes = rec[1]
-									changes.each do |field,value|
-										obj = eval("#{k.classify}.find('#{id}')")
-
-										if ignoredFields[k.to_sym] != nil
-											if not ignoredFields[k.to_sym].include?(field)
-												obj.send("#{field}=",value)
+							# continue other new record
+							@newRecords.keys.each do |type|
+								next if type.to_sym == :projects
+								@newRecords[type].each do |rec|
+									obj = eval("#{type.classify}.new")
+									rec.each do |k,v|
+										if ignoredFields[type.to_sym] != nil
+											if not ignoredFields[type.to_sym].include?(k)
+												obj.send("#{k}=",v)
 											end
 										else
-											if not ignoredFields[:default].include?(field)
-												obj.send("#{field}=",value)
+											if not ignoredFields[:default].include?(k)
+												obj.send("#{k}=",v)
 											end
 										end
-										#obj.send("#{field}=",value)
-										obj.save
-										@edited << id
+									end
+
+									obj.save
+
+									@syncSummary[:newRecord][type.to_sym] = [] if @syncSummary[:newRecord][type.to_sym] == nil
+									@syncSummary[:newRecord][type.to_sym] << obj.id
+								end
+							end
+							# done looping new record from remote node
+
+							# Now analyze deleted record...
+							@delRecords.each do |k,v|
+								# should local delete because remote node deleted the record?? hmm...
+								# If there is not changes at local, i.e. no commits, no changes, no record depending on this, can be removed...
+								v.each do |id|
+									begin
+										obj = eval("#{k.classify}.find('#{id}')")
+										@syncSummary[:delRecord][k.to_sym] = [] if @syncSummary[:delRecord][k.to_sym] == nil
+										@syncSummary[:delRecord][k.to_sym] << id
+									rescue ActiveRecord::RecordNotFound => ex
+										# ignore
+										next
 									end
 								end
+							end
+							# done deleted record processing
 
-								@syncSummary[:editedRecord][k] = {} if @syncSummary[:editedRecord][k] == nil
-								@syncSummary[:editedRecord][k] = @edited
+							# Now processing edited record...
+							# First get the last change log record for this remote node
+							tmpRef = SyncLogs.where(["node_id = ? and direction = ?", @server_id,SyncLogs::PULL_REF])
+							if tmpRef.length > 0
+								@ref = tmpRef[0]
+							else
+								@ref = SyncLogs.new
+								@ref.node_id = @server_id
+								@ref.last_change_log_id = 0
+								@ref.direction = SyncLogs::PULL_REF
 							end
 
-						else 
-							# If last processed change log is not the same as current change log id
-							# This node has already has some changes...so conflicted changes check is done
-							logger.debug "Check for record crashing"
-							# check for CRASHED/CONFLICTED changes
-							@conds = []
-							@conds.add_condition!(["id between ? and ?",@ref.last_change_log_id,@cutOffChangeID])
+							# Lock down the change log pointer so that it is ok if there is other transaction going on while updating is done
+							cutOffChange = ChangeLogs.last
+							if cutOffChange != nil
+								@cutOffChangeID = cutOffChange.id
+							else
+								@cutOffChangeID = 0
+							end
 
-							@editRecords.each do |k,v|
-								# this has the potential for changes to CRASH...
-								@crashed = {}
+							# Node has not changed since last sync...remote node changes are not checked for conflicted changes
+							if @ref.last_change_log_id == @cutOffChangeID
+								logger.debug "No changed since last sync. All remote node changes merged without crash check"
+								# nothing changed since last sync
+								# All changes just merged with local record
 								@edited = []
-								v.each do |rec|
-									id = rec[0]
-									@conds.add_condition!(["table_name = ? and key = ?",k,id])
-									changesSet = rec[1]
-									changesSet.each do |field,value|
-										cond = @conds.clone
-										cond.add_condition!(["changed_fields like ? or changed_fields like ? or changed_fields like ? or changed_fields like ?","[%#{field}%]","[%,#{field},%]","[%#{field},%]","[%,#{field}]"])
-										crashed = ChangeLogs.where(cond).count
-										logger.debug "crashed count is #{crashed}"
-										obj = eval("#{k.classify}.find('#{id}')")
-										if crashed == 0
-											# no crash on the field changed...merge automatically
+								@editRecords.each do |k,v|
+									v.each do |rec|
+										id = rec[0]
+										changes = rec[1]
+										changes.each do |field,value|
+											obj = eval("#{k.classify}.find('#{id}')")
+
 											if ignoredFields[k.to_sym] != nil
 												if not ignoredFields[k.to_sym].include?(field)
 													obj.send("#{field}=",value)
@@ -265,72 +222,118 @@ class SyncClientController < ApplicationController
 													obj.send("#{field}=",value)
 												end
 											end
-
+											#obj.send("#{field}=",value)
 											obj.save
 											@edited << id
-										else
-											logger.debug "Crashed on #{id} and field #{field}"
-											# CRASHED!
-											curVal = obj.send("#{field}")
-											if curVal != value
-												@crashed[id] = [] if @crashed[id] == nil
-												@crashed[id] << [field,value]
-											end
 										end
 									end
-								end
 
-								if @edited != nil and @edited.length > 0
 									@syncSummary[:editedRecord][k] = {} if @syncSummary[:editedRecord][k] == nil
 									@syncSummary[:editedRecord][k] = @edited
 								end
 
-								if @crashed != nil and @crashed.length > 0
-									@syncSummary[:crashed][k] = {} if @syncSummary[:crashed][k] == nil
-									@syncSummary[:crashed][k] = @crashed
+							else 
+								# If last processed change log is not the same as current change log id
+								# This node has already has some changes...so conflicted changes check is done
+								logger.debug "Check for record crashing"
+								# check for CRASHED/CONFLICTED changes
+								@conds = []
+								@conds.add_condition!(["id between ? and ?",@ref.last_change_log_id,@cutOffChangeID])
+
+								@editRecords.each do |k,v|
+									# this has the potential for changes to CRASH...
+									@crashed = {}
+									@edited = []
+									v.each do |rec|
+										id = rec[0]
+										@conds.add_condition!(["table_name = ? and key = ?",k,id])
+										changesSet = rec[1]
+										changesSet.each do |field,value|
+											cond = @conds.clone
+											cond.add_condition!(["changed_fields like ? or changed_fields like ? or changed_fields like ? or changed_fields like ?","[%#{field}%]","[%,#{field},%]","[%#{field},%]","[%,#{field}]"])
+											crashed = ChangeLogs.where(cond).count
+											logger.debug "crashed count is #{crashed}"
+											obj = eval("#{k.classify}.find('#{id}')")
+											if crashed == 0
+												# no crash on the field changed...merge automatically
+												if ignoredFields[k.to_sym] != nil
+													if not ignoredFields[k.to_sym].include?(field)
+														obj.send("#{field}=",value)
+													end
+												else
+													if not ignoredFields[:default].include?(field)
+														obj.send("#{field}=",value)
+													end
+												end
+
+												obj.save
+												@edited << id
+											else
+												logger.debug "Crashed on #{id} and field #{field}"
+												# CRASHED!
+												curVal = obj.send("#{field}")
+												if curVal != value
+													@crashed[id] = [] if @crashed[id] == nil
+													@crashed[id] << [field,value]
+												end
+											end
+										end
+									end
+
+									if @edited != nil and @edited.length > 0
+										@syncSummary[:editedRecord][k] = {} if @syncSummary[:editedRecord][k] == nil
+										@syncSummary[:editedRecord][k] = @edited
+									end
+
+									if @crashed != nil and @crashed.length > 0
+										@syncSummary[:crashed][k] = {} if @syncSummary[:crashed][k] == nil
+										@syncSummary[:crashed][k] = @crashed
+									end
+
 								end
 
-							end
-
-							# save the crashed/conflicted changes inside the table for manual merging purposes
-							if @syncSummary[:crashed] != nil
-								@syncSummary[:crashed].each do |k,v|
-									v.each do |kk,vv|
-										@sm = SyncMerge.where(["sync_history_id = ? and distributable_type = ? and distributable_id = ? and status = ?",pend.id,k,kk,SyncMerge::CRASHED])
-										if @sm.length == 0
-											@sm = SyncMerge.new
-											@sm.sync_history_id = pend.id
-											@sm.distributable_type = k
-											@sm.distributable_id = kk
-											@sm.status = SyncMerge::CRASHED
-											@sm.changeset = vv
-										else
-											@sm[0].changeset << vv
+								# save the crashed/conflicted changes inside the table for manual merging purposes
+								if @syncSummary[:crashed] != nil
+									@syncSummary[:crashed].each do |k,v|
+										v.each do |kk,vv|
+											@sm = SyncMerge.where(["sync_history_id = ? and distributable_type = ? and distributable_id = ? and status = ?",pend.id,k,kk,SyncMerge::CRASHED])
+											if @sm.length == 0
+												@sm = SyncMerge.new
+												@sm.sync_history_id = pend.id
+												@sm.distributable_type = k
+												@sm.distributable_id = kk
+												@sm.status = SyncMerge::CRASHED
+												@sm.changeset = vv
+											else
+												@sm[0].changeset << vv
+											end
+											@sm.save
 										end
-										@sm.save
 									end
 								end
-							end
-							# done save the conflicted record
-						end # done looping all the changes
+								# done save the conflicted record
+							end # done looping all the changes
 
-						# marked the last change log id reference in table
-						@ref.last_change_log_id = @cutOffChangeID
-						@ref.save
+							# marked the last change log id reference in table
+							@ref.last_change_log_id = @cutOffChangeID
+							@ref.save
 
-						# mark the history is done
-						pend.status = SyncHistory::COMPLETED
-						pend.save
-					end # end looping sync history record
-					
-				end # end transaction
+							# mark the history is done
+							pend.status = SyncHistory::COMPLETED
+							pend.save
+						end # end looping sync history record
 
-				if @syncSummary[:crashed] != nil and @syncSummary[:crashed].size > 0
-					flash[:notice] = %Q[There are conflicted record for the pull operation. Please click <a href="#{sync_merge_index_path(:node_id => @server_id)}">here</a> to resolve the conflict].html_safe
+					end # end transaction
+					if @syncSummary[:crashed] != nil and @syncSummary[:crashed].size > 0
+						flash[:notice] = %Q[There are conflicted record for the pull operation. Please click <a href="#{sync_merge_index_path(:node_id => @server_id)}">here</a> to resolve the conflict].html_safe
+					else
+						flash[:notice] = %Q[The data pull operation succeeded]
+					end
+
 				else
-					flash[:notice] = %Q[The data pull operation succeeded]
+					# sync controller return error codes
+					flash[:error] = "Failed to execute sync operation on remote node. Error message was : #{@result["status_message"]}"
 				end
-
 
 			else
 				# server token processing failed
@@ -367,16 +370,16 @@ class SyncClientController < ApplicationController
 	end
 
 	def generate_server_token(encToken,signedID)
-		p encToken
-		p signedID
+		#p encToken
+		#p signedID
 		idUrl = File.join(Rails.root,"db","owner.id")
 		pkey,cert,chain = AnCAL::KeyFactory::FromP12Url.call(idUrl,session[:user][:pass])
 
-		token = AnCAL::Cipher::PKCS7::DecryptData.call(pkey,cert,encToken)
-		detached,certs,signers = AnCAL::DataSign::PKCS7::ParseSignedData.call(signedID.to_bin)
+		token = AnCAL::Cipher::PKCS7::DecryptData.call(pkey,cert,encToken.hex_to_bin)
+		detached,certs,signers = AnCAL::DataSign::PKCS7::ParseSignedData.call(signedID)
 		if certs.length > 0
 			# TODO verify remote node certificate
-			status,p7 = AnCAL::DataSign::PKCS7::VerifyData.call(certs[0],signedID.to_bin) do |ok,ctx|
+			status,p7 = AnCAL::DataSign::PKCS7::VerifyData.call(certs[0],signedID) do |ok,ctx|
 				if ctx.current_cert != nil
 					true
 				else
@@ -399,8 +402,8 @@ class SyncClientController < ApplicationController
 					@newHost = u
 				end
 				# generate token
-				tok = AnCAL::Cipher::PKCS7::EncryptData.call(certs[0],p7.data)
-				[true,tok,p7.data,@newHost]
+				tok = AnCAL::Cipher::PKCS7::EncryptData.call(certs[0],token)
+				[true,tok.to_hex,p7.data,@newHost]
 			else
 				[false,"Failed to verify target node token. Authentic token info not available."]
 			end
