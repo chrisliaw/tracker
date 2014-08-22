@@ -1,0 +1,13 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/Fixtures.html
+
+one:
+  distributable_type: MyString
+  distributable_id: MyString
+  changes: MyText
+  status: 1
+
+two:
+  distributable_type: MyString
+  distributable_id: MyString
+  changes: MyText
+  status: 1

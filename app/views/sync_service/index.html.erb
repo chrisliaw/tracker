@@ -1,0 +1,27 @@
+
+<% content_for :page_title do -%>
+	Synchronization User
+<% end -%>
+
+<div class="std">
+ <table class="std">
+  <tr>
+    <th>ID</th>
+		<th>Status</th>
+		<th></th>
+  </tr>
+
+<% @users.each do |user| %>
+  <tr>
+		<td><%= link_to user.login, user_path(:id => user.id, :groups => User::REMOTE_USER_GROUP) %></td>
+		<td><%= user.state.titleize %></td>
+		<td><%= link_to 'Delete', user_path(:id => user.id, :groups => User::REMOTE_USER_GROUP), :method => :delete, :confirm => "Are you sure to delete this user?" %></td>
+  </tr>
+<% end %>
+</table>
+
+ 
+</div>
+<br />
+
+<%= link_to 'Add new remote user', new_user_path %>

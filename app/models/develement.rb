@@ -20,9 +20,9 @@ class Develement < ActiveRecord::Base
 		# id only available after create...
 		# Note this id is not the distributed ID, it is the standard rails model id
 		self.reload
-    code = "%05d" % self._id
-    self.code = "#{self.project.code}/Dev/#{code}"
-    self.save!
+		code = "%05d" % self._id
+		self.code = "#{self.project.code}/Dev/#{code}"
+		self.save!
   end
 
 	def user_code

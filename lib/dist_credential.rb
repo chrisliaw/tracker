@@ -34,7 +34,7 @@ module DistCredential
     OpenSSL::PKCS7.sign(cert,privKey,data,[],(detached ? OpenSSL::PKCS7::DETACHED : OpenSSL::PKCS7::BINARY))
 	end
 
-	VerifyData = Proc.new do |params|
+	VerifyData = Proc.new do |params,block|
 		detached = params[:detached]
 		cert = params[:cert]
 		data = params[:data]
@@ -42,20 +42,34 @@ module DistCredential
 
     store = OpenSSL::X509::Store.new
     store.add_cert(cert)
-    store.verify_callback = lambda do |ok,ctx|
-			#p [ctx.current_cert.subject.to_s,ok,ctx.error_string]
-			#p ctx.current_cert.public_key.to_pem
-			#p cert.public_key.to_pem
-			# check cert is all here
-			if cert != nil and ctx.current_cert != nil and ctx.current_cert.public_key.to_pem == cert.public_key.to_pem
-				true
-			else
-				false
-			end
-    end
+		store.verify_callback = block
+		#store.verify_callback = lambda do |ok,ctx|
+		#	block.call(ok,ctx)
+		#end
+    #store.verify_callback = lambda do |ok,ctx|
+		#	#p [ctx.current_cert.subject.to_s,ok,ctx.error_string]
+		#	#p ctx.current_cert.public_key.to_pem
+		#	#p cert.public_key.to_pem
+		#	# check cert is all here
+		#	if cert != nil and ctx.current_cert != nil and ctx.current_cert.public_key.to_pem == cert.public_key.to_pem
+		#		true
+		#	else
+		#		false
+		#	end
+    #end
 
     p7 = OpenSSL::PKCS7::PKCS7.new(signature)
     p7.verify([cert],store,data,(detached ? OpenSSL::PKCS7::DETACHED : OpenSSL::PKCS7::BINARY))
+	end
+
+	EncryptData = Proc.new do |cert,data,alg = "AES-256-CFB"|
+		cipher = OpenSSL::Cipher::Cipher.new(alg)
+		OpenSSL::PKCS7::encrypt([cert],data,cipher,OpenSSL::PKCS7::BINARY)
+	end
+
+	DecryptData = Proc.new do |pkey,cert,data|
+		dec = OpenSSL::PKCS7.new(data)
+		dec.decrypt(pkey,cert)
 	end
 
 	GenerateCertificate = Proc.new do |name,email,orgName,orgUnit,state,country,keypair,duration,&block|

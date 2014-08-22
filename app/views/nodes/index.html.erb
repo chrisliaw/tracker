@@ -1,0 +1,33 @@
+
+<h2>Nodes Management</h2>
+
+<table class="std">
+	<tr>
+		<th>Identifier</th>
+		<th>Rights</th>
+		<th>Submitted By</th>
+		<th>Status</th>
+		<th></th>
+	</tr>
+	<% @nodes.each do |node| %>
+		<tr>
+			<td><%= link_to node.identifier, node %></td>
+			<td><%= node.rights %></td>
+			<td>
+				<% if node.submitted_by != nil and not node.submitted_by.empty? %>
+					<% @subj = AnCAL::X509::ParseName.call((AnCAL::X509::LoadCert.call(node.submitted_by).subject.to_s)) %>
+					<%= "#{@subj["CN"]} (#{@subj["emailAddress"]})" %>
+				<% else %>
+					<%= "Manually Created" %>
+				<% end %>
+			</td>
+			<td><%= node.state.to_s.titleize %></td>
+			<td>
+				<%= link_to "Edit", edit_node_path(node) %>
+				<%= link_to "Delete", node, :method => :delete, :confirm => "Are you sure to delete this node?" %></td>	
+		</tr>
+	<% end %>
+</table>
+
+<%= link_to "New Authorized Node", new_node_path %>
+

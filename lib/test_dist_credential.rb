@@ -14,8 +14,15 @@ asigned = DistCredential::SignData.call(keypair,cert,data,false)
 #p DistCredential::VerifyData.call({:detached => true, :cert => cert, :data => data, :signature => dsigned})
 #p DistCredential::VerifyData.call({:detached => false, :cert => cert, :data => nil, :signature => asigned})
 
+@verifer = lambda do |ok,ctx|
+	if cert != nil and ctx.current_cert != nil and ctx.current_cert.public_key.to_pem == cert.public_key.to_pem
+		true
+	else
+		false
+	end
+end
 # attached sign the data should set to nil
-p DistCredential::VerifyData.call({:detached => true, :cert => cert2, :data => data, :signature => dsigned})
-p DistCredential::VerifyData.call({:detached => false, :cert => cert2, :data => nil, :signature => asigned})
+p DistCredential::VerifyData.call({:detached => true, :cert => cert, :data => data, :signature => dsigned },@verifer)
+p DistCredential::VerifyData.call({:detached => false, :cert => cert, :data => nil, :signature => asigned },@verifer)
 
 p cert.verify(keypair2)

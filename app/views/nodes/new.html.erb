@@ -1,0 +1,25 @@
+
+<h2>New Authorized Node</h2>
+
+<%= form_for @node do |f| %>
+<table class="std">
+	<tr>
+		<td class="field">Identifier : </td>
+		<td><%= f.text_field :identifier %></td>
+	</tr>
+	<tr>
+		<td class="field">Rights:</td>
+		<td><%= f.select :rights, options_for_select([["Pull Only","Pull"],["Push and Pull","Push|Pull"]]) %></td>
+	</tr>
+	<tr>
+		<td class="field"></td>
+		<td></td>
+	</tr>
+	<tr>
+		<td class="field"></td>
+		<td><%= f.submit "Add Node" %></td>
+	</tr>
+</table>
+<% end %>
+
+<%= link_to "Back", nodes_path %>

@@ -16,6 +16,16 @@ class UsersController < ApplicationController
   # GET /users/1.json
   def show
     @user = User.find(params[:id])
+		@cert = AnCAL::X509::LoadCert.call(@user.cert)
+		subj = @user.login
+		@subj = {}
+		subj.split("/").each do |f|
+			sp = f.split("=")
+			if sp != nil and sp.length > 0
+				@subj[sp[0]] = sp[1]
+			end
+		end
+		@group = params[:groups]
 
     respond_to do |format|
       format.html # show.html.erb
@@ -60,25 +70,49 @@ class UsersController < ApplicationController
   def update
     @user = User.find(params[:id])
 
-    respond_to do |format|
-      if @user.update_attributes(params[:user])
-        format.html { redirect_to @user, notice: 'User was successfully updated.' }
-        format.json { head :no_content }
+		source = params[:page_source]	
+		commit = params[:commit]
+		evt = commit.split(" ")[0]
+		@user.send("#{evt.downcase}!")
+		
+		respond_to do |format|
+		  if @user.save
+				if source != "sync_service"
+					format.html { redirect_to @user, notice: 'User was successfully updated.' }
+				else
+					format.html { redirect_to sync_service_index_path, notice: 'User was successfully updated.' }
+				end
+				format.json { head :no_content }
       else
-        format.html { render action: "edit" }
+        format.html { render action: "show" }
         format.json { render json: @user.errors, status: :unprocessable_entity }
       end
-    end
+		end
+
+    #respond_to do |format|
+    #  if @user.update_attributes(params[:user])
+    #    format.html { redirect_to @user, notice: 'User was successfully updated.' }
+    #    format.json { head :no_content }
+    #  else
+    #    format.html { render action: "edit" }
+    #    format.json { render json: @user.errors, status: :unprocessable_entity }
+    #  end
+    #end
   end
 
   # DELETE /users/1
   # DELETE /users/1.json
   def destroy
+		@group = params[:groups]
     @user = User.find(params[:id])
     @user.destroy
 
     respond_to do |format|
-      format.html { redirect_to users_url }
+			if @group == User::REMOTE_USER_GROUP
+				format.html { redirect_to sync_service_index_path }
+			else
+				format.html { redirect_to users_url }
+			end
       format.json { head :no_content }
     end
   end
@@ -92,7 +126,7 @@ class UsersController < ApplicationController
     #  @store_bin = f.read
     #end
     begin
-      puts "pass #{params["user"]["password"]}"
+      #puts "pass #{params["user"]["password"]}"
       #u = DistCredential.load_keystore(@store_bin,params["user"]["password"])
 			idUrl = File.join(Rails.root,"db","owner.id")
 			u = DistCredential::PKCS12::LoadKeyStoreFromURL.call(idUrl,params["user"]["password"])
@@ -113,6 +147,8 @@ class UsersController < ApplicationController
         session[:user] = {}
         session[:user][:login] = @login
         session[:user][:name] = @name
+				session[:user][:pass] = params["user"]["password"] 
+				cache_password(params["user"]["password"])
         redirect_to :controller => "projects", :action => "index"
       else
         flash[:error] = "Login do not match nodes owner email address"
@@ -144,4 +180,17 @@ class UsersController < ApplicationController
     session[:user] = nil
     redirect_to :controller => "projects", :action => "index"
   end
+
+	def show_owner_detail
+		idUrl = File.join(Rails.root,"db","owner.id")
+		pkey,@cert,chain = AnCAL::KeyFactory::FromP12Url.call(idUrl,session[:user][:pass])	
+	end
+
+	def cache_password(pass)
+		node = Node.first
+		bin,key = AnCAL::Cipher::PKCS5_PBKDF2::EncryptData.call(node.identifier,pass)
+		File.open(File.join(Rails.root,"db","sync.key"),"wb") do |f|
+			f.write AnCAL::Cipher::GenEnvelope.call(bin,key)
+		end
+	end
 end

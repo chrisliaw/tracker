@@ -88,6 +88,7 @@ GEM
     rake (10.0.4)
     rdoc (3.12.2)
       json (~> 1.4)
+    rest-open-uri (1.0.0)
     rugged (0.16.0)
     sass (3.2.7)
     sass-rails (3.2.6)
@@ -124,6 +125,7 @@ DEPENDENCIES
   jquery-rails
   kaminari
   rails (= 3.2.13)
+  rest-open-uri
   rugged
   sass-rails (~> 3.2.3)
   sqlite3

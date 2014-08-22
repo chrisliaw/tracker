@@ -13,7 +13,7 @@
 <div id="header">
     <div id="header_title">Tracker - Gen-X Issue Tracking</div>
 	<div id="login">
-    	Welcome <%= session[:user][:name] %> | <%= link_to 'Logout', :controller => "users", :action => 'logout' %> |
+    	Welcome <%= link_to session[:user][:name], show_owner_detail_users_path  %> | <%= link_to 'Logout', :controller => "users", :action => 'logout' %> |
     </div>
 </div>
 <div id="left_menu">
@@ -47,7 +47,17 @@
 		</div>
 		<% end %>
 
-   
+    <div class="menu_item">
+    <h3>Data Sync</h3>
+    <ul>
+				<li><%= link_to 'Sync Client', sync_client_index_path %></li>
+				<li><%= link_to 'Sync Merge', sync_merge_index_path %></li>
+        <li><%= link_to 'Sync Service', sync_service_index_path %></li>
+        <li><%= link_to 'Nodes', nodes_path %></li>
+    </ul>
+    </div>
+
+  
     <div class="menu_item">
     <h3>Administration</h3>
     <ul>
@@ -66,7 +76,7 @@
     <%= yield %>
 </div>
 <div id="footer">
-  <b><i>Version 0.1</i></b> <br/>Copyrighted Antrapolation Technology Sdn Bhd 2012 - <%= Time.now.strftime("%Y") %>
+  <b><i>Version 0.1 (Node ID: <%= Node.first.identifier %>)</i></b> <br/>Copyrighted Antrapolation Technology Sdn Bhd 2012 - <%= Time.now.strftime("%Y") %>
 
 </div>
 </body>

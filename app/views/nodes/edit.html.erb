@@ -1,0 +1,25 @@
+
+<h2>Edit Authorized Node</h2>
+
+<%= form_for @node do |f| %>
+<table class="std">
+	<tr>
+		<td class="field">Identifier : </td>
+		<td><%= @node.identifier %></td>
+	</tr>
+	<tr>
+		<td class="field">Rights:</td>
+		<td><%= f.select :rights, options_for_select([["No Access","NoAccess"],["Pull Only","Pull"],["Push and Pull","Push & Pull"]], @node.rights) %></td>
+	</tr>
+	<tr>
+		<td class="field"></td>
+		<td></td>
+	</tr>
+	<tr>
+		<td class="field"></td>
+		<td><%= f.submit "Update" %></td>
+	</tr>
+</table>
+<% end %>
+
+<%= link_to "Back", @node %>

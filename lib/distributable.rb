@@ -40,45 +40,61 @@ module Distributable
 
     def log_new_change
       log = eval("#{self.class.options[:change_log_table].to_s}.new")
-      log.table = self.class.table_name   # use classify method to get the proper table name back
+      log.table_name = self.class.table_name   # use classify method to get the proper table name back
       log.key = self.send "#{self.class.options[:distribution_key]}"
       log.operation = 1
       log.save
     end
 
     def log_update_change
-      log = eval("#{self.class.options[:change_log_table]}.new")
-      log.table = self.class.table_name
-      log.key = self.send "#{self.class.options[:distribution_key]}"
-      log.operation = 2
-      log.save
+			if self.changed?
+				# ignore the data hash field since this field is generated locally
+				# data being sync across nodes this field might changed however the rest of the fields are not
+				self.changed.delete_if { |c| c == self.class.options[:hash_field_name].to_s }
+				if self.changed.size > 0
+					log = eval("#{self.class.options[:change_log_table]}.new")
+					log.table_name = self.class.table_name
+					log.key = self.send "#{self.class.options[:distribution_key]}"
+					#changedFields = self.changed
+					#filtered = self.changed & self.class.options[:skippedCols] 
+					#log.changed_fields = (changedFields - filtered).to_json
+					changedFields = self.changed.delete_if { |c| self.class.options[:skippedCols].include?(c) }
+					log.changed_fields = changedFields.to_json
+					log.operation = 2
+					log.save
+				end
+			end
     end
 
     def log_destroy_change
       log = eval("#{self.class.options[:change_log_table]}.new")
-      log.table = self.class.table_name
+      log.table_name = self.class.table_name
       log.key = self.send "#{self.class.options[:distribution_key]}"
       log.operation = 3
       log.save
     end
 
     def generate_identifier
-      while true
-        begin
-          while true
-            #self.identifier = Digest::SHA1.hexdigest "#{Time.now.to_f}#{SecureRandom.random_number}"
-            self.send("#{self.class.options[:distribution_key]}=", Digest::SHA1.hexdigest("#{SecureRandom.uuid}"))
-            #self.identifier = Digest::SHA1.hexdigest "#{SecureRandom.uuid}"
-            res = self.class.find :first, :conditions => ["identifier = ?",self.identifier]
-            break if res == nil # break if no duplication found
-          end
-          #self.save!
-          break
-        rescue Exception => e
-          p e
-          retry
-        end
-      end
+			if self.identifier != nil and not self.identifier.empty?
+				# Guard here is to allow the identifier use the remote identifier without re-generating a new one
+			else
+				while true
+					begin
+						while true
+							#self.identifier = Digest::SHA1.hexdigest "#{Time.now.to_f}#{SecureRandom.random_number}"
+							self.send("#{self.class.options[:distribution_key]}=", Digest::SHA1.hexdigest("#{SecureRandom.uuid}"))
+							#self.identifier = Digest::SHA1.hexdigest "#{SecureRandom.uuid}"
+							res = self.class.find :first, :conditions => ["identifier = ?",self.identifier]
+							break if res == nil # break if no duplication found
+						end
+						#self.save!
+						break
+					rescue Exception => e
+						p e
+						retry
+					end
+				end
+			end
     end
 
     def generate_hash
@@ -96,7 +112,6 @@ module Distributable
         #end
 
       #else
-
         if self.send("#{self.class.options[:hash_field_name]}") == nil
           log_new_change
         else

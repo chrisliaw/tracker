@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20140809123935) do
+ActiveRecord::Schema.define(:version => 20140822091511) do
 
   create_table "attachments", :force => true do |t|
     t.string   "attachable_type"
@@ -24,11 +24,12 @@ ActiveRecord::Schema.define(:version => 20140809123935) do
   end
 
   create_table "change_logs", :force => true do |t|
-    t.string   "table"
+    t.string   "table_name"
     t.string   "key"
     t.integer  "operation"
-    t.datetime "created_at", :null => false
-    t.datetime "updated_at", :null => false
+    t.datetime "created_at",     :null => false
+    t.datetime "updated_at",     :null => false
+    t.string   "changed_fields"
   end
 
   create_table "commits", :force => true do |t|
@@ -43,6 +44,7 @@ ActiveRecord::Schema.define(:version => 20140809123935) do
     t.datetime "updated_at",         :null => false
     t.string   "repository_url"
     t.string   "dvcs_provider"
+    t.string   "data_hash"
   end
 
   create_table "develement_types", :force => true do |t|
@@ -76,6 +78,8 @@ ActiveRecord::Schema.define(:version => 20140809123935) do
     t.string   "path"
     t.datetime "created_at", :null => false
     t.datetime "updated_at", :null => false
+    t.string   "identifier"
+    t.string   "data_hash"
   end
 
   create_table "issue_types", :force => true do |t|
@@ -106,8 +110,11 @@ ActiveRecord::Schema.define(:version => 20140809123935) do
 
   create_table "nodes", :force => true do |t|
     t.string   "identifier"
-    t.datetime "created_at", :null => false
-    t.datetime "updated_at", :null => false
+    t.datetime "created_at",   :null => false
+    t.datetime "updated_at",   :null => false
+    t.string   "state"
+    t.string   "rights"
+    t.string   "submitted_by"
   end
 
   create_table "projects", :force => true do |t|
@@ -136,12 +143,31 @@ ActiveRecord::Schema.define(:version => 20140809123935) do
     t.datetime "updated_at",       :null => false
   end
 
+  create_table "sync_histories", :force => true do |t|
+    t.string   "node_id"
+    t.string   "sync_session_id"
+    t.text     "sync_data"
+    t.integer  "status"
+    t.datetime "created_at",      :null => false
+    t.datetime "updated_at",      :null => false
+  end
+
   create_table "sync_logs", :force => true do |t|
     t.string   "node_id"
     t.string   "user_id"
     t.integer  "last_change_log_id"
     t.string   "last_sync_from"
     t.integer  "direction"
+    t.datetime "created_at",         :null => false
+    t.datetime "updated_at",         :null => false
+  end
+
+  create_table "sync_merges", :force => true do |t|
+    t.integer  "sync_history_id"
+    t.string   "distributable_type"
+    t.string   "distributable_id"
+    t.text     "changeset"
+    t.integer  "status"
     t.datetime "created_at",         :null => false
     t.datetime "updated_at",         :null => false
   end
@@ -157,10 +183,12 @@ ActiveRecord::Schema.define(:version => 20140809123935) do
   create_table "users", :force => true do |t|
     t.string   "login"
     t.string   "cert"
-    t.string   "cert_validation_token"
-    t.integer  "status",                :default => 1
-    t.datetime "created_at",                           :null => false
-    t.datetime "updated_at",                           :null => false
+    t.string   "validation_token"
+    t.datetime "created_at",       :null => false
+    t.datetime "updated_at",       :null => false
+    t.string   "state"
+    t.string   "rights"
+    t.string   "groups"
   end
 
   create_table "variances", :force => true do |t|
@@ -189,10 +217,10 @@ ActiveRecord::Schema.define(:version => 20140809123935) do
     t.string   "name"
     t.string   "versionable_type"
     t.string   "versionable_id"
-    t.integer  "upstream_vcs_class"
+    t.string   "upstream_vcs_class"
     t.string   "upstream_vcs_path"
     t.string   "upstream_vcs_branch"
-    t.integer  "vcs_class"
+    t.string   "vcs_class"
     t.string   "vcs_path"
     t.string   "vcs_branch"
     t.string   "created_by"

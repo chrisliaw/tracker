@@ -1,5 +1,32 @@
 Tracker::Application.routes.draw do
 
+  get "sync_merge/index"
+
+  get "sync_merge/show"
+
+  post "sync_merge/update"
+
+  get "sync_service/index"
+
+  post "sync_service/login"
+
+	post "sync_service/sync"
+
+  post "sync_service/download"
+
+  post "sync_service/upload"
+
+  
+	get "sync_client/index"
+
+  post "sync_client/login"
+
+	post "sync_client/sync"
+
+  post "sync_client/download"
+
+  post "sync_client/upload"
+
   #resources :attachments
 
 
@@ -15,6 +42,8 @@ Tracker::Application.routes.draw do
 
   resources :user_rights
 
+  resources :nodes
+
   resources :commits
 
   resources :issue_types
@@ -26,6 +55,7 @@ Tracker::Application.routes.draw do
       get :login
       get :logout
       post :authenticate
+			get :show_owner_detail
     end
   end
 
