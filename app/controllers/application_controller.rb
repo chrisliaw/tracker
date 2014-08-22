@@ -36,10 +36,15 @@ class ApplicationController < ActionController::Base
   end
 
 	def load_cache_password(node_id)
-		File.open(File.join(Rails.root,"db","sync.key")) do |f|
-			@cont = f.read
+		syncFile = File.join(Rails.root,"db","sync.key")
+		if File.exist?(syncFile)
+			File.open(File.join(Rails.root,"db","sync.key")) do |f|
+				@cont = f.read
+			end
+			bin,key = AnCAL::Cipher::ReadEnvelope.call(@cont)
+			AnCAL::Cipher::PKCS5_PBKDF2::DecryptData.call(node_id,bin,key)
+		else
+			raise Exception,"Sync service is not configured. Please contact the node admin to configure the node",caller
 		end
-		bin,key = AnCAL::Cipher::ReadEnvelope.call(@cont)
-		AnCAL::Cipher::PKCS5_PBKDF2::DecryptData.call(node_id,bin,key)
 	end
 end
