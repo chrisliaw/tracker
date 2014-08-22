@@ -397,7 +397,7 @@ class SyncClientController < ApplicationController
 					u.validation_token = signedID
 					u.state = "pending"
 					u.rights = ""
-					u.group = User::REMOTE_HOST_GROUP
+					u.groups = User::REMOTE_HOST_GROUP
 					u.save
 					@newHost = u
 				end
