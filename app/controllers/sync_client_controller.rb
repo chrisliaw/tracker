@@ -351,7 +351,7 @@ class SyncClientController < ApplicationController
 		idUrl = File.join(Rails.root,"db","owner.id")
 		@result = {}
 		begin
-			pkey,cert,chain = AnCAL::KeyFactory::FromP12Url.call(idUrl,pass != nil and not pass.empty? ? pass : session[:user][:pass])
+			pkey,cert,chain = AnCAL::KeyFactory::FromP12Url.call(idUrl,((pass != nil and not pass.empty?) ? pass : session[:user][:pass]))
 			signed = AnCAL::DataSign::PKCS7::SignData.call(pkey,cert,node.identifier,false)
 			
 			url = URI.join("#{host}","sync_service/login.json")
