@@ -1,5 +1,6 @@
 <p id="notice"><%= notice %></p>
 
+<%= form_for @user do |f| %>
 <table class="std">
 	<% if @subj != nil %>
 	<tr>
@@ -38,13 +39,19 @@
 	<% end %>
 	<tr>
 		<td class="field">Status : </td>
-		<td><%= @user.state.titleize %></td>
+		<td>
+			<%= @user.state.titleize %>
+			<% @user.possible_events.each do |evt| %>
+				<%= f.submit "#{evt.to_s.titleize} User" %>
+			<% end %>
+		</td>
 	</tr>
 	<tr>
 		<td class="field">Group : </td>
 		<td><%= User::GroupToName[@user.group] %></td>
 	</tr>
 </table>
+<% end %>
 
 <%= link_to 'Edit', edit_user_path(@user) %> |
 <%= link_to 'Back', users_path %>

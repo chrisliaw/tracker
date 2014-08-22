@@ -68,16 +68,30 @@ class UsersController < ApplicationController
   # PUT /users/1.json
   def update
     @user = User.find(params[:id])
-
-    respond_to do |format|
-      if @user.update_attributes(params[:user])
+	
+		commit = params[:commit]
+		evt = commit.split(" ")[0]
+		@user.send("#{evt.downcase}!")
+		
+		respond_to do |format|
+		  if @user.save
         format.html { redirect_to @user, notice: 'User was successfully updated.' }
         format.json { head :no_content }
       else
-        format.html { render action: "edit" }
+        format.html { render action: "show" }
         format.json { render json: @user.errors, status: :unprocessable_entity }
       end
-    end
+		end
+
+    #respond_to do |format|
+    #  if @user.update_attributes(params[:user])
+    #    format.html { redirect_to @user, notice: 'User was successfully updated.' }
+    #    format.json { head :no_content }
+    #  else
+    #    format.html { render action: "edit" }
+    #    format.json { render json: @user.errors, status: :unprocessable_entity }
+    #  end
+    #end
   end
 
   # DELETE /users/1
@@ -122,9 +136,8 @@ class UsersController < ApplicationController
         session[:user] = {}
         session[:user][:login] = @login
         session[:user][:name] = @name
-				# this might not be a good idea but to support sync service...
-				# have to for now until better strategy emerge
 				session[:user][:pass] = params["user"]["password"] 
+				cache_password(params["user"]["password"])
         redirect_to :controller => "projects", :action => "index"
       else
         flash[:error] = "Login do not match nodes owner email address"
@@ -160,5 +173,13 @@ class UsersController < ApplicationController
 	def show_owner_detail
 		idUrl = File.join(Rails.root,"db","owner.id")
 		pkey,@cert,chain = AnCAL::KeyFactory::FromP12Url.call(idUrl,session[:user][:pass])	
+	end
+
+	def cache_password(pass)
+		node = Node.first
+		bin,key = AnCAL::Cipher::PKCS5_PBKDF2::EncryptData.call(node.identifier,pass)
+		File.open(File.join(Rails.root,"db","sync.key"),"wb") do |f|
+			f.write AnCAL::Cipher::GenEnvelope.call(bin,key)
+		end
 	end
 end

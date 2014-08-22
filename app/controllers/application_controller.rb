@@ -34,4 +34,12 @@ class ApplicationController < ActionController::Base
       redirect_to :controller => "users", :action => "login"
     end
   end
+
+	def load_cache_password(node_id)
+		File.open(File.join(Rails.root,"db","sync.key")) do |f|
+			@cont = f.read
+		end
+		bin,key = AnCAL::Cipher::ReadEnvelope.call(@cont)
+		AnCAL::Cipher::PKCS5_PBKDF2::DecryptData.call(node_id,bin,key)
+	end
 end

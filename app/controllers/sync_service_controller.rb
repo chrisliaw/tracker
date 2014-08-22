@@ -1,5 +1,5 @@
 class SyncServiceController < ApplicationController
-	
+	skip_before_filter :verify_authenticity_token, :only => [:login]	
   def login
 		clientNodeID = params[:node_id]
 		node = Node.first
@@ -12,8 +12,8 @@ class SyncServiceController < ApplicationController
 			user = User.where(["cert = ?",certs[0].to_pem])
 			if user.length > 0
 				if user[0].state == "active"
-					status,p7 = AnCAL::DataSign::PKCS7::VerifyData.call(clientNodeID,certs[0]) do |ok,ctx|
-						if ctx.current_cert != nil and ctx.current_cert.to_pem == user.cert
+					status,p7 = AnCAL::DataSign::PKCS7::VerifyData.call(certs[0],clientNodeID) do |ok,ctx|
+						if ctx.current_cert != nil and ctx.current_cert.to_pem == user[0].cert
 							true
 						else
 							false
@@ -22,18 +22,21 @@ class SyncServiceController < ApplicationController
 
 					if status
 						nodeSess = SecureRandom.uuid
-						session[:remote_user] = {} if session[:remote_user] == nil
-						session[:remote_user][nodeSess] = user.id
-						session[:node_session] = {} if session[:node_session] == nil
-						session[:node_session][nodeSess] = p7.data # node id inside signature
+						user[0].validation_token = nodeSess
+						user[0].save
+						#session[:remote_user] = {} if session[:remote_user] == nil
+						#session[:remote_user][nodeSess] = user[0].id
+						#session[:node_session] = {} if session[:node_session] == nil
+						#session[:node_session][nodeSess] = p7.data # node id inside signature
 
 						# encrypt the session id
-						encSess = AnCAL::Cipher::PKCS7::EncryptData.call(user.cert,nodeSess)
+						encSess = AnCAL::Cipher::PKCS7::EncryptData.call(certs[0],nodeSess)
 						# sign the node id
 						idUrl = File.join(Rails.root,"db","owner.id")
-						pkey,cert,chain = AnCAL::KeyFactory::FromP12Url.call(idUrl,session[:user][:pass])
+						pass = load_cache_password(node.identifier)
+						pkey,cert,chain = AnCAL::KeyFactory::FromP12Url.call(idUrl,pass)
 						signed = AnCAL::DataSign::PKCS7::SignData.call(pkey,cert,node.identifier,false)
-						retData = Struct::LoginStatus.new(200,"User authenticated",encSess,signed)
+						retData = Struct::LoginStatus.new(200,"User authenticated",encSess.to_hex,signed.to_pem)
 					else
 						# data signature verification failed
 						retData = Struct::LoginStatus.new(401,"Client token verification failed. Login failed.","","")
@@ -76,12 +79,19 @@ class SyncServiceController < ApplicationController
 		nodeID = params[:node_id]		
 		token = params[:token]
 		uploaded = params[:uploaded]
+		Struct.new("SyncStatus",:status, :status_message)
 
-		if ops == "pull"
-			@out = Distributable::GenerateDelta.call(nodeID,SyncLogs::PULL_REF,logger)
-			#@out = pull(nodeID)
+		if validate_token(token)
+			if ops == "pull"
+				out = Distributable::GenerateDelta.call(nodeID,SyncLogs::PULL_REF,logger)
+				@out = Struct::SyncStatus.new(200,out)
+				#@out = pull(nodeID)
+			else
+				out = handle_push(nodeID,token,uploaded)
+				@out = Struct::SyncStatus.new(200,out)
+			end
 		else
-			@out = handle_push(nodeID,token,uploaded)
+			@out = Struct::SyncStatus.new(401,"Session ID invalid. Please login before call sync operation")
 		end
 
 		p @out
@@ -366,5 +376,17 @@ class SyncServiceController < ApplicationController
 	#	@distRec
   #end
 
-
+	def validate_token(token)
+		node = Node.first
+		idUrl = File.join(Rails.root,"db","owner.id")
+		pass = load_cache_password(node.identifier)
+		pkey,cert,chain = AnCAL::KeyFactory::FromP12Url.call(idUrl,pass)
+		nodeSess = AnCAL::Cipher::PKCS7::DecryptData.call(pkey,cert,token.hex_to_bin)
+		u = User.where(["validation_token = ?",nodeSess])
+		if u.length == 0
+			false
+		else
+			true
+		end
+	end
 end

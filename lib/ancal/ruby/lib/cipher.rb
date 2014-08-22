@@ -2,6 +2,32 @@
 module AnCAL
 	module Cipher
 		DEFAULT_SYM_ALGO = "AES-256-CFB"
+		GenEnvelope = Proc.new do |bin,salt|
+			binType = OpenSSL::ASN1::Integer.new(10)
+			saltType = OpenSSL::ASN1::Integer.new(20)
+			payload = OpenSSL::ASN1::OctetString.new(bin)
+			salted = OpenSSL::ASN1::OctetString.new(salt)
+
+			binSeq = OpenSSL::ASN1::Sequence.new([binType,payload])
+			saltSeq = OpenSSL::ASN1::Sequence.new([saltType,salted])
+			seq = OpenSSL::ASN1::Sequence.new([binSeq,saltSeq])
+			seq.to_der
+		end
+
+		ReadEnvelope = Proc.new do |env|
+			dec = OpenSSL::ASN1.decode_all(env)
+			mainSeq = dec[0]
+			mainSeq.entries.each do |ent|
+				entries = ent.entries
+				if entries[0].class == OpenSSL::ASN1::Integer and entries[0].value.to_i == 10
+					@bin = entries[1].value
+				else
+					@salt = entries[1].value
+				end
+			end
+			[@bin,@salt]
+		end
+
 		module PKCS5Basic
 			EncryptData = Proc.new do |pass,data,alg = DEFAULT_SYM_ALGO|
 				salt = OpenSSL::Random.random_bytes(8)

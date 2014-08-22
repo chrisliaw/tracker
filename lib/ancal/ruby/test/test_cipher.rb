@@ -49,7 +49,7 @@ class TestCipher < MiniTest::Test
 			# wrong cert to decrypt
 			decData = AnCAL::Cipher::PKCS7::DecryptData.call(pkey,cert,encData)
 		end
-		p encData.to_hex_formatted(10,"\n")
+		encData.to_hex_formatted(10,"\n")
 	end
 
 	def test_pkcs5_basic
@@ -70,5 +70,11 @@ class TestCipher < MiniTest::Test
 		refute_equal(data,plain)
 		plain = AnCAL::Cipher::PKCS5_PBKDF2::DecryptData.call("pass",encData[0],encData[1],2000)
 		refute_equal(data,plain)
+
+		asn1 = AnCAL::Cipher::GenEnvelope.call(encData[0],encData[1])
+		dat,sal = AnCAL::Cipher::ReadEnvelope.call(asn1)
+		plain = AnCAL::Cipher::PKCS5_PBKDF2::DecryptData.call("pass",dat,sal)
+		puts plain
+		assert_equal(data,plain)
 	end
 end
