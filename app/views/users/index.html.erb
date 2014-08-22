@@ -7,12 +7,16 @@
   <tr>
     <th>Login</th>
     <th>Status</th>
+		<th>Group</th>
+		<th></th>
   </tr>
 
 <% @users.each do |user| %>
   <tr>
     <td><%= link_to user.login, user %></td>
-    <td><%= user.state.titleize %></td>
+		<td><%= user.state.titleize %></td>
+		<td><%= User::GroupToName[user.groups] %></td>
+		<td><%= link_to 'Delete', user_path(:id => user.id, :groups => User::REMOTE_USER_GROUP), :method => :delete, :confirm => "Are you sure to delete this user?" %></td>
   </tr>
 <% end %>
 </table>

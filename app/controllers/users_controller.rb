@@ -25,6 +25,7 @@ class UsersController < ApplicationController
 				@subj[sp[0]] = sp[1]
 			end
 		end
+		@group = params[:groups]
 
     respond_to do |format|
       format.html # show.html.erb
@@ -68,15 +69,20 @@ class UsersController < ApplicationController
   # PUT /users/1.json
   def update
     @user = User.find(params[:id])
-	
+
+		source = params[:page_source]	
 		commit = params[:commit]
 		evt = commit.split(" ")[0]
 		@user.send("#{evt.downcase}!")
 		
 		respond_to do |format|
 		  if @user.save
-        format.html { redirect_to @user, notice: 'User was successfully updated.' }
-        format.json { head :no_content }
+				if source != "sync_service"
+					format.html { redirect_to @user, notice: 'User was successfully updated.' }
+				else
+					format.html { redirect_to sync_service_index_path, notice: 'User was successfully updated.' }
+				end
+				format.json { head :no_content }
       else
         format.html { render action: "show" }
         format.json { render json: @user.errors, status: :unprocessable_entity }
@@ -97,11 +103,16 @@ class UsersController < ApplicationController
   # DELETE /users/1
   # DELETE /users/1.json
   def destroy
+		@group = params[:groups]
     @user = User.find(params[:id])
     @user.destroy
 
     respond_to do |format|
-      format.html { redirect_to users_url }
+			if @group == User::REMOTE_USER_GROUP
+				format.html { redirect_to sync_service_index_path }
+			else
+				format.html { redirect_to users_url }
+			end
       format.json { head :no_content }
     end
   end

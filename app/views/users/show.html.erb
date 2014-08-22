@@ -48,10 +48,17 @@
 	</tr>
 	<tr>
 		<td class="field">Group : </td>
-		<td><%= User::GroupToName[@user.group] %></td>
+		<td><%= User::GroupToName[@user.groups] %></td>
 	</tr>
 </table>
+<% if @group != nil %>
+	<%= hidden_field_tag "page_source", "sync_service" %>
+<% end %>
 <% end %>
 
 <%= link_to 'Edit', edit_user_path(@user) %> |
-<%= link_to 'Back', users_path %>
+<% if @group != nil %>
+	<%= link_to 'Back', sync_service_index_path %>
+<% else %>
+	<%= link_to 'Back', users_path %>
+<% end %>

@@ -49,7 +49,7 @@ class SyncServiceController < ApplicationController
 
 				else
 					# user state is not active
-					retData = Struct::LoginStatus.new(401,"User is not in active state","","")
+					retData = Struct::LoginStatus.new(401,"User is not in active state. Currently it is #{user[0].state}.","","")
 				end
 			else
 				# user not found in database...
