@@ -9,7 +9,7 @@ class SyncClientController < ApplicationController
 		node = Node.first
 
 		if @ops == "pull"
-			pull(node,host)
+			pull(node,host,session[:user][:pass])
 		else
 			push(node,host)
 		end # end of if-else
@@ -351,11 +351,11 @@ class SyncClientController < ApplicationController
 		idUrl = File.join(Rails.root,"db","owner.id")
 		@result = {}
 		begin
-			pkey,cert,chain = AnCAL::KeyFactory::FromP12Url.call(idUrl,((pass != nil and not pass.empty?) ? pass : session[:user][:pass]))
+			pkey,cert,chain = AnCAL::KeyFactory::FromP12Url.call(idUrl,pass)
 			signed = AnCAL::DataSign::PKCS7::SignData.call(pkey,cert,node.identifier,false)
 			
 			url = URI.join("#{host}","sync_service/login.json")
-			Distributable::OpenWebService.call(url.to_s,:post, {"node_id" => signed.to_hex}) do |res|
+			Distributable::OpenWebService.call(url.to_s,:post, {"node_id" => signed.to_pem}) do |res|
 				@result = res
 			end
 		rescue Exception => ex
@@ -367,6 +367,8 @@ class SyncClientController < ApplicationController
 	end
 
 	def generate_server_token(encToken,signedID)
+		p encToken
+		p signedID
 		idUrl = File.join(Rails.root,"db","owner.id")
 		pkey,cert,chain = AnCAL::KeyFactory::FromP12Url.call(idUrl,session[:user][:pass])
 
@@ -374,7 +376,7 @@ class SyncClientController < ApplicationController
 		detached,certs,signers = AnCAL::DataSign::PKCS7::ParseSignedData.call(signedID.to_bin)
 		if certs.length > 0
 			# TODO verify remote node certificate
-			status,p7 = AnCAL::DataSign::PKCS7::VerifyData.call(signedID.to_bin,certs[0]) do |ok,ctx|
+			status,p7 = AnCAL::DataSign::PKCS7::VerifyData.call(certs[0],signedID.to_bin) do |ok,ctx|
 				if ctx.current_cert != nil
 					true
 				else
