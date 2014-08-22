@@ -113,6 +113,9 @@ class UsersController < ApplicationController
         session[:user] = {}
         session[:user][:login] = @login
         session[:user][:name] = @name
+				# this might not be a good idea but to support sync service...
+				# have to for now until better strategy emerge
+				session[:user][:pass] = params["user"]["password"] 
         redirect_to :controller => "projects", :action => "index"
       else
         flash[:error] = "Login do not match nodes owner email address"

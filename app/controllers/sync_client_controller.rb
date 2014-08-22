@@ -371,7 +371,7 @@ class SyncClientController < ApplicationController
 		pkey,cert,chain = AnCAL::KeyFactory::FromP12Url.call(idUrl,session[:user][:pass])
 
 		token = AnCAL::Cipher::PKCS7::DecryptData.call(pkey,cert,encToken)
-		detached?,certs,signers = AnCAL::DataSign::PKCS7::ParseSignedData.call(signedID.to_bin)
+		detached,certs,signers = AnCAL::DataSign::PKCS7::ParseSignedData.call(signedID.to_bin)
 		if certs.length > 0
 			# TODO verify remote node certificate
 			status,p7 = AnCAL::DataSign::PKCS7::VerifyData.call(signedID.to_bin,certs[0]) do |ok,ctx|
