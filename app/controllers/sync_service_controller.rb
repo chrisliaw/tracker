@@ -39,6 +39,7 @@ class SyncServiceController < ApplicationController
 							signed = AnCAL::DataSign::PKCS7::SignData.call(pkey,cert,node.identifier,false)
 							retData = Struct::LoginStatus.new(200,"User authenticated",encSess.to_hex,signed.to_pem)
 						rescue Exception => ex
+							p ex
 							retData = Struct::LoginStatus.new(500,ex.message,"","")
 						end
 					else
