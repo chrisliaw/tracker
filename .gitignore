@@ -17,3 +17,6 @@
 
 # Ignore the test user key
 /db/owner.id
+
+/lib/ancal/ruby/test/*
+!/lib/ancal/ruby/test/*.rb
