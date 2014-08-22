@@ -11,43 +11,52 @@ class SyncClientController < ApplicationController
 		if @ops == "pull"
 			pull(node,host,session[:user][:pass])
 		else
-			push(node,host)
+			push(node,host,session[:user][:pass])
 		end # end of if-else
 
 	end
 
-	def push(node,host)
+	def push(node,host,pass)
 		# perform login
-		url = URI.join("#{host}","sync_service/login.json")
-		Distributable::OpenWebService.call(url.to_s,:post, {"node_id" => node.identifier}) do |res|
-			@result = res
-		end
+		@result = node_login(host,node,pass)
+		#url = URI.join("#{host}","sync_service/login.json")
+		#Distributable::OpenWebService.call(url.to_s,:post, {"node_id" => node.identifier}) do |res|
+		#	@result = res
+		#end
 
-		if @result["status"] == true
+		if @result["status"] == 200
 			@token = @result["token"]
 			@server_id = @result["server_id"]
 
-			history = SyncHistory.pending_sync_merges(@server_id)
-			if history.length == 0
+			status,tok,serverID,newNode = generate_server_token(@token,@server_id)
+			if status
+				@token = tok
+				@server_id = serverID
+				history = SyncHistory.pending_sync_merges(@server_id)
+				if history.length == 0
 
-				@out = Distributable::GenerateDelta.call(@server_id,SyncLogs::PUSH_REF,logger)	
-				logger.debug "Delta to push: #{@out.to_json}"
-				url = URI.join("#{host}","sync_service/sync.json")
-				Distributable::OpenWebService.call(url.to_s,:post,{"node_id" => node.identifier, "operation" => "push", "uploaded" => @out.to_json, "token" => @token }) do |res|
-					@result = res
-				end	
+					@out = Distributable::GenerateDelta.call(@server_id,SyncLogs::PUSH_REF,logger)	
+					logger.debug "Delta to push: #{@out.to_json}"
+					url = URI.join("#{host}","sync_service/sync.json")
+					Distributable::OpenWebService.call(url.to_s,:post,{"node_id" => node.identifier, "operation" => "push", "uploaded" => @out.to_json, "token" => @token }) do |res|
+						@result = res
+					end	
 
-				logger.debug "Webservices push operation return #{@result}"	
-				if @result["status"] == 200
-					flash[:notice] = @result["status_message"]
+					logger.debug "Webservices push operation return #{@result}"	
+					if @result["status"] == 200
+						flash[:notice] = @result["status_message"]
+					else
+						flash[:error] = @result["status_message"]
+					end
+
 				else
-					flash[:error] = @result["status_message"]
+					flash[:error] = %Q[It seems that you have pending merging record of #{history.length} for the target node. You have to clear the pending merging items before you can proceed to push to the target node. Click <a href="#{sync_merge_index_path(:node_id => @server_id)}">here</a> to merge the record.].html_safe
 				end
 
 			else
-				flash[:error] = %Q[It seems that you have pending merging record of #{history.length} for the target node. You have to clear the pending merging items before you can proceed to push to the target node. Click <a href="#{sync_merge_index_path(:node_id => @server_id)}">here</a> to merge the record.].html_safe
+				# server token processing failed
+				flash[:error] = tok
 			end
-
 		else
 			# login status is false
 			flash[:error] = "Failed to login to host. Error was #{@result["status_message"]}"
