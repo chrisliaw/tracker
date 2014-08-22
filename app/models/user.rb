@@ -3,10 +3,14 @@ class User < ActiveRecord::Base
 
   validates :login, :presence => true, :uniqueness => true
 
+	REMOTE_USER_GROUP = "RU"
+	REMOTE_HOST_GROUP = "RH
+
+
   stateful :initial => :pending
 
   transform :pending => :active do
-    forward :verify
+    forward :verified
   end
 
   transform :active => :suspended do

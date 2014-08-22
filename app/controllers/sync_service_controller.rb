@@ -1,14 +1,66 @@
 class SyncServiceController < ApplicationController
 	
   def login
-		nodeID = params[:node_id]
+		clientNodeID = params[:node_id]
 		node = Node.first
-		# TODO: Check if the node ID is in the list
-		# TODO: Get the user rights...can user push? pull? both?
-		nodeSess = SecureRandom.uuid
 		Struct.new("LoginStatus",:status, :status_message, :token, :server_id)
-		# TODO: nodeSess shall be encrypted with presented cert
-		retData = Struct::LoginStatus.new(true,"Authenticated",nodeSess,node.identifier)
+
+		# TODO: Check if the node ID is in the list
+		detached?,certs,signers = AnCAL::DataSign::PKCS7::ParseSignedData.call(clientNodeID.to_bin)
+		if certs.length > 0
+			# find this cert in our user table?
+			user = User.where(["cert = ?",certs[0].to_pem])
+			if user.length > 0
+				if user[0].state == "active"
+					status,p7 = AnCAL::DataSign::PKCS7::VerifyData.call(clientNodeID,certs[0]) do |ok,ctx|
+						if ctx.current_cert != nil and ctx.current_cert.to_pem == user.cert
+							true
+						else
+							false
+						end
+					end
+
+					if status
+						nodeSess = SecureRandom.uuid
+						session[:remote_user] = {} if session[:remote_user] == nil
+						session[:remote_user][nodeSess] = user.id
+						session[:node_session] = {} if session[:node_session] == nil
+						session[:node_session][nodeSess] = p7.data # node id inside signature
+
+						# encrypt the session id
+						encSess = AnCAL::Cipher::PKCS7::EncryptData.call(user.cert,nodeSess)
+						# sign the node id
+						idUrl = File.join(Rails.root,"db","owner.id")
+						pkey,cert,chain = AnCAL::KeyFactory::FromP12Url.call(idUrl,session[:user][:pass])
+						signed = AnCAL::DataSign::PKCS7::SignData.call(pkey,cert,node.identifier,false)
+						retData = Struct::LoginStatus.new(200,"User authenticated",encSess,signed)
+					else
+						# data signature verification failed
+						retData = Struct::LoginStatus.new(401,"Client token verification failed. Login failed.","","")
+					end
+
+				else
+					# user state is not active
+					retData = Struct::LoginStatus.new(401,"User is not in active state","","")
+				end
+			else
+				# user not found in database...
+				# save it...
+				u = User.new
+				u.cert = certs[0].to_pem
+				u.validation_token = clientNodeID	
+				u.state = "pending"
+				u.rights = ""
+				u.group = User::REMOTE_USER_GROUP
+				u.save
+				retData = Struct::LoginStatus.new(201,"User is not in list. Request has been created and upon authorized by administrator, you can retry again.","","")
+			end
+		else
+			# no cert available in the incoming data
+			retData = Struct::LoginStatus.new(400,"Request no given appropriate data for authentication","","")
+		end
+		#Struct.new("LoginStatus",:status, :status_message, :token, :server_id)
+		#retData = Struct::LoginStatus.new(true,"Authenticated",nodeSess,node.identifier)
 		respond_to do |format|
 			format.json { render json: retData }
 		end
