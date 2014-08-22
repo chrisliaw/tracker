@@ -7,14 +7,12 @@
   <tr>
     <th>Login</th>
     <th>Status</th>
-    <th>Group</th>
   </tr>
 
 <% @users.each do |user| %>
   <tr>
     <td><%= link_to user.login, user %></td>
     <td><%= user.state.titleize %></td>
-    <td><%= User::GroupToName[user.group]  %></td>
   </tr>
 <% end %>
 </table>

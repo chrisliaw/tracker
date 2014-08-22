@@ -185,7 +185,7 @@ ActiveRecord::Schema.define(:version => 20140820050358) do
     t.datetime "updated_at",       :null => false
     t.string   "state"
     t.string   "rights"
-    t.string   "group"
+    t.string   "groups"
   end
 
   create_table "variances", :force => true do |t|

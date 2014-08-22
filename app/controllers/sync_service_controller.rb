@@ -60,7 +60,7 @@ class SyncServiceController < ApplicationController
 				u.validation_token = clientNodeID	
 				u.state = "pending"
 				u.rights = ""
-				u.group = User::REMOTE_USER_GROUP
+				u.groups = User::REMOTE_USER_GROUP
 				u.save
 				retData = Struct::LoginStatus.new(201,"User is not in list. Request has been created and upon authorized by administrator, you can retry again.","","")
 			end
@@ -76,8 +76,13 @@ class SyncServiceController < ApplicationController
   end
 
   def index
+		@users = User.where(["groups = ?",User::REMOTE_USER_GROUP])
 
-  end
+		respond_to do |format|
+			format.html # index.html.erb
+			format.json { render json: @users }
+		end
+	end
 
 	def sync
 		ops = params[:operation]
