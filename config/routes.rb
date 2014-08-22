@@ -42,6 +42,8 @@ Tracker::Application.routes.draw do
 
   resources :user_rights
 
+  resources :nodes
+
   resources :commits
 
   resources :issue_types

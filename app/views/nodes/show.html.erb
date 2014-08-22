@@ -1,0 +1,47 @@
+
+<h2>Nodes Detail</h2>
+
+<%= form_for @node do |f| %>
+<table class="std">
+	<tr>
+		<td class="field">Identifier : </td>
+		<td><%= @node.identifier %></td>
+	</tr>
+	<% if @subj.length > 0 %>
+	<tr>
+		<td class="field">Submitter Name : </td>
+		<td><%= @subj["CN"] %></td>
+	</tr>
+	<tr>
+		<td class="field">Submitter Email : </td>
+		<td><%= @subj["emailAddress"] %></td>
+	</tr>
+	<% end %>
+	<% if @cert != nil %>
+	<tr>
+		<td class="field">Public Key Hash : </td>
+		<td><%= Digest::SHA1.hexdigest(@cert.public_key.to_der) %></td>
+	</tr>
+	<% end %>
+	<tr>
+		<td class="field">Submitted On : </td>
+		<td><%= @node.created_at %></td>
+	</tr>
+	<tr>
+		<td class="field">Rights : </td>
+		<td><%= @node.rights %></td>
+	</tr>
+	<tr>
+		<td class="field">Status : </td>
+		<td>
+			<%= @node.state.titleize %>
+			<% @node.possible_events.each do |evt| %>
+				<%= f.submit "#{evt.to_s.titleize} Node" %>
+			<% end %>
+		</td>
+	</tr>
+</table>
+<% end %>
+
+<%= link_to "Back", nodes_path %> | 
+<%= link_to "Edit", edit_node_path(@node) %>

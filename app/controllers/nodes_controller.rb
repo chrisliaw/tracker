@@ -23,6 +23,78 @@ class NodesController < ApplicationController
     redirect_to projects_path
   end
 
+	def index
+		@nodes = Node.where(["id > 1"])
+
+		respond_to do |format|
+			format.html # index.html.erb
+			format.json { render json: @users }
+		end
+	end
+
+	def show
+		@node = Node.find(params[:id])
+		if @node.submitted_by != nil and not @node.submitted_by.empty?
+			@cert = AnCAL::X509::LoadCert.call(@node.submitted_by)
+			@subj = AnCAL::X509::ParseName.call(@cert.subject.to_s)
+		else
+			@cert = nil
+			@subj = {}
+		end
+	end
+
+	def new
+		@node = Node.new	
+	end
+
+	def create
+    @node = Node.new(params[:node])
+
+    respond_to do |format|
+      if @node.save
+        format.html { redirect_to @node, notice: 'User was successfully created.' }
+        format.json { render json: @node, status: :created, location: @node }
+      else
+        format.html { render action: "new" }
+        format.json { render json: @node.errors, status: :unprocessable_entity }
+      end
+    end
+	end
+
+	def edit
+		@node = Nodes.find(params[:id])
+	end
+
+	def update
+		@node = Nodes.find(params[:id])
+		commit = params[:commit]
+		sp = commit.split(" ")
+		if sp[1] == "Node"
+			@node.send "#{sp[0].downcase}!"
+		end
+
+		respond_to do |format|
+      if @node.update_attributes(params[:nodes])
+      #if @node.save
+        format.html { redirect_to nodes_path, notice: 'User was successfully updated.' }
+        format.json { head :no_content }
+      else
+        format.html { render action: "edit" }
+        format.json { render json: @node.errors, status: :unprocessable_entity }
+      end
+    end
+	end
+
+	def destroy
+		@node = Node.find params[:id]
+		@node.destroy
+
+		respond_to do |format|
+			format.html { redirect_to nodes_path, notice: 'User was successfully deleted.' }
+			format.json { head :no_content }
+		end
+	end
+
   private
   def generate_user_id(nodes)
     if nodes.id_path != nil

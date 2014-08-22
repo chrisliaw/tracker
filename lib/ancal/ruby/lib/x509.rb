@@ -36,6 +36,18 @@ module AnCAL
 			OpenSSL::X509::Certificate.new(cert)
 		end
 
+		ParseName = Proc.new do |name|
+			@res = {}
+			if name != nil and not name.empty?
+				sp = name.split("/")
+				sp.each do |v|
+					sp2 = v.split("=")
+					@res[sp2[0]] = sp2[1]
+				end
+			end
+			@res
+		end
+
 		GenerateCert = Proc.new do |cert_name, pkey, cert_length = 3, hashAlgo = CERT_HASH_SHA1, &block|
 			cert = OpenSSL::X509::Certificate.new
 			cert.version = 2

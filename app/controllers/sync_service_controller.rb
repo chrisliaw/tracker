@@ -5,7 +5,6 @@ class SyncServiceController < ApplicationController
 		node = Node.first
 		Struct.new("LoginStatus",:status, :status_message, :token, :server_id)
 
-		# TODO: Check if the node ID is in the list
 		detached,certs,signers = AnCAL::DataSign::PKCS7::ParseSignedData.call(clientNodeID)
 		if certs.length > 0
 			# find this cert in our user table?
@@ -21,26 +20,37 @@ class SyncServiceController < ApplicationController
 					end
 
 					if status
-						nodeSess = SecureRandom.uuid
-						user[0].validation_token = nodeSess
-						user[0].save
-						#session[:remote_user] = {} if session[:remote_user] == nil
-						#session[:remote_user][nodeSess] = user[0].id
-						#session[:node_session] = {} if session[:node_session] == nil
-						#session[:node_session][nodeSess] = p7.data # node id inside signature
+						aNode = Node.where(["identifier = ?",p7.data])
+						if aNode.length > 0
+							if aNode[0].state != "active"
+								retData = Struct::LoginStatus.new(500,"Node is not in active state","","")
+							else
+								nodeSess = SecureRandom.uuid
+								user[0].validation_token = nodeSess
+								user[0].save
 
-						# encrypt the session id
-						encSess = AnCAL::Cipher::PKCS7::EncryptData.call(certs[0],nodeSess)
-						# sign the node id
-						idUrl = File.join(Rails.root,"db","owner.id")
-						begin
-							pass = load_cache_password(node.identifier)
-							pkey,cert,chain = AnCAL::KeyFactory::FromP12Url.call(idUrl,pass)
-							signed = AnCAL::DataSign::PKCS7::SignData.call(pkey,cert,node.identifier,false)
-							retData = Struct::LoginStatus.new(200,"User authenticated",encSess.to_hex,signed.to_pem)
-						rescue Exception => ex
-							p ex
-							retData = Struct::LoginStatus.new(500,ex.message,"","")
+								# encrypt the session id
+								encSess = AnCAL::Cipher::PKCS7::EncryptData.call(certs[0],nodeSess)
+								# sign the node id
+								idUrl = File.join(Rails.root,"db","owner.id")
+								begin
+									pass = load_cache_password(node.identifier)
+									pkey,cert,chain = AnCAL::KeyFactory::FromP12Url.call(idUrl,pass)
+									signed = AnCAL::DataSign::PKCS7::SignData.call(pkey,cert,node.identifier,false)
+									retData = Struct::LoginStatus.new(200,"User authenticated",encSess.to_hex,signed.to_pem)
+								rescue Exception => ex
+									p ex
+									retData = Struct::LoginStatus.new(500,ex.message,"","")
+								end
+
+							end
+						else
+							node = Node.new
+							node.identifier = p7.data
+							node.rights = "NoAccess"
+							node.submitted_by = certs[0].to_pem
+							node.save
+							retData = Struct::LoginStatus.new(401,"Node is not authorized","","")
 						end
 					else
 						# data signature verification failed
@@ -92,13 +102,22 @@ class SyncServiceController < ApplicationController
 		Struct.new("SyncStatus",:status, :status_message)
 
 		if validate_token(token)
+			aNode = Node.where(["identifier = ?",nodeID])
 			if ops == "pull"
-				out = Distributable::GenerateDelta.call(nodeID,SyncLogs::PULL_REF,logger)
-				@out = Struct::SyncStatus.new(200,out)
-				#@out = pull(nodeID)
+				if aNode[0].rights != nil and not aNode[0].rights.empty? and (aNode[0].rights =~ /Pull/) != nil
+					out = Distributable::GenerateDelta.call(nodeID,SyncLogs::PULL_REF,logger)
+					@out = Struct::SyncStatus.new(200,out)
+					#@out = pull(nodeID)
+				else
+					@out = Struct::SyncStatus.new(401,"Your node is not allow to pull from this host")
+				end
 			else
-				out = handle_push(nodeID,token,uploaded)
-				@out = Struct::SyncStatus.new(200,out)
+				if aNode[0].rights != nil and not aNode[0].rights.empty? and (aNode[0].rights =~ /Push/) != nil
+					out = handle_push(nodeID,token,uploaded)
+					@out = Struct::SyncStatus.new(200,out)
+				else
+					@out = Struct::SyncStatus.new(401,"Your node is not allow to push to this host")
+				end
 			end
 		else
 			@out = Struct::SyncStatus.new(401,"Session ID invalid. Please login before call sync operation")
