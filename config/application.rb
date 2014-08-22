@@ -85,6 +85,7 @@ class Array
   end
 end
 
+require File.join(File.dirname(__FILE__),"..","lib","ancal","ancal.rb")
 require File.join(File.dirname(__FILE__),"..","lib","dist_credential.rb")
 require File.join(File.dirname(__FILE__),"..","lib","distributable.rb")
 require File.join(File.dirname(__FILE__),"..","lib","acts_as_variance_tree.rb")

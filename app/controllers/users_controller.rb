@@ -92,7 +92,7 @@ class UsersController < ApplicationController
     #  @store_bin = f.read
     #end
     begin
-      puts "pass #{params["user"]["password"]}"
+      #puts "pass #{params["user"]["password"]}"
       #u = DistCredential.load_keystore(@store_bin,params["user"]["password"])
 			idUrl = File.join(Rails.root,"db","owner.id")
 			u = DistCredential::PKCS12::LoadKeyStoreFromURL.call(idUrl,params["user"]["password"])
