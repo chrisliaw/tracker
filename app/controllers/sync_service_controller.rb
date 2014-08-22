@@ -39,7 +39,7 @@ class SyncServiceController < ApplicationController
 							signed = AnCAL::DataSign::PKCS7::SignData.call(pkey,cert,node.identifier,false)
 							retData = Struct::LoginStatus.new(200,"User authenticated",encSess.to_hex,signed.to_pem)
 						rescue Exception => ex
-							retData = Struct::LoginStatus.new(500,ex,"","")
+							retData = Struct::LoginStatus.new(500,ex.message,"","")
 						end
 					else
 						# data signature verification failed
@@ -383,14 +383,19 @@ class SyncServiceController < ApplicationController
 	def validate_token(token)
 		node = Node.first
 		idUrl = File.join(Rails.root,"db","owner.id")
-		pass = load_cache_password(node.identifier)
-		pkey,cert,chain = AnCAL::KeyFactory::FromP12Url.call(idUrl,pass)
-		nodeSess = AnCAL::Cipher::PKCS7::DecryptData.call(pkey,cert,token.hex_to_bin)
-		u = User.where(["validation_token = ?",nodeSess])
-		if u.length == 0
+		begin
+			pass = load_cache_password(node.identifier)
+			pkey,cert,chain = AnCAL::KeyFactory::FromP12Url.call(idUrl,pass)
+			nodeSess = AnCAL::Cipher::PKCS7::DecryptData.call(pkey,cert,token.hex_to_bin)
+			u = User.where(["validation_token = ?",nodeSess])
+			if u.length == 0
+				false
+			else
+				true
+			end
+		rescue Exception => ex
+			p ex
 			false
-		else
-			true
 		end
 	end
 end
