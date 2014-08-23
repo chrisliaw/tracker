@@ -105,16 +105,18 @@ class SyncServiceController < ApplicationController
 			aNode = Node.where(["identifier = ?",nodeID])
 			if ops == "pull"
 				if aNode[0].rights != nil and not aNode[0].rights.empty? and (aNode[0].rights =~ /Pull/) != nil
-					out = Distributable::GenerateDelta.call(nodeID,SyncLogs::PULL_REF,logger)
+					out,sl = Distributable::GenerateDelta.call(nodeID,SyncLogs::PULL_REF,logger)
 					@out = Struct::SyncStatus.new(200,out)
+					# make sync log permanant
+					sl.save if sl != nil
 					#@out = pull(nodeID)
 				else
 					@out = Struct::SyncStatus.new(401,"Your node is not allow to pull from this host")
 				end
 			else
 				if aNode[0].rights != nil and not aNode[0].rights.empty? and (aNode[0].rights =~ /Push/) != nil
-					out = handle_push(nodeID,token,uploaded)
-					@out = Struct::SyncStatus.new(200,out)
+					@out = handle_push(nodeID,token,uploaded)
+					#@out = Struct::SyncStatus.new(200,out)
 				else
 					@out = Struct::SyncStatus.new(401,"Your node is not allow to push to this host")
 				end
