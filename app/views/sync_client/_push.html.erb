@@ -1,3 +1,32 @@
+<h2>Sync Summary</h2>
 
-<h2>Push Result</h2>
-<%= @result %>
+<table class="std">
+	<tr>
+		<td class="field">Operation : </td>
+		<td><%= @ops.titleize %></td>
+	</tr>
+	<tr>
+		<td class="field">Host : </td>
+		<td><%= @host %></td>
+	</tr>
+	<% if @out != nil %>
+	<tr>
+		<td class="field">New Record Count : </td>
+		<td><%= @out.newRec.length %></td>
+	</tr>
+	<tr>
+		<td class="field">Deleted Record Count : </td>
+		<td><%= @out.delRec.length %></td>
+	</tr>
+	<tr>
+		<td class="field">Edited Record Count : </td>
+		<td><%= @out.changedRec.length %></td>
+	</tr>
+	<% end %>
+	<% if @result != nil %>
+	<tr bgcolor=<%= @result["status"] == 200 ? "#ODFF00" : "#FF0000" %>>
+		<td class="field">Push Result : </td>
+		<td bgcolor=<%= @result["status"] == 200 ? "#ODFF00" : "#FF0000" %>><%= @result["status"] == 200 ? "Success" : @result["status_message"] %></td>
+	</tr>
+	<% end %>
+</table>

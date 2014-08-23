@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20140822091511) do
+ActiveRecord::Schema.define(:version => 20140823084040) do
 
   create_table "attachments", :force => true do |t|
     t.string   "attachable_type"
@@ -150,6 +150,7 @@ ActiveRecord::Schema.define(:version => 20140822091511) do
     t.integer  "status"
     t.datetime "created_at",      :null => false
     t.datetime "updated_at",      :null => false
+    t.string   "host"
   end
 
   create_table "sync_logs", :force => true do |t|

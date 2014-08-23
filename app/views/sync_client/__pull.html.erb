@@ -1,0 +1,43 @@
+
+<h2>Synchronization Summary</h2>
+
+<table class="std">
+	<tr>
+		<td class="field">New Record : </td>
+		<td><%= @syncSummary[:newRecord].length %></td>
+	</tr>
+	<tr>
+		<td class="field">Deleted Record : </td>
+		<td><%= @syncSummary[:delRecord].length %></td>
+	</tr>
+	<tr>
+		<td class="field">Edited Record (No conflict) : </td>
+		<td><%= @syncSummary[:editedRecord].length %></td>
+	</tr>
+	<tr>
+		<td class="field">Edited Record (With conflict) : </td>
+		<td><%= @syncSummary[:crashed].length %></td>
+	</tr>
+</table>
+
+<% if @syncSummary[:crashed] != nil and @syncSummary[:crashed].length > 0 %>
+<%= link_to "Merge Conflicted Record", sync_merge_index_path %>
+<% end %>
+
+
+<%= @result %>
+<p>New Records:</p>
+<%= @newRecords %>
+<p>Deleted Records:</p>
+<%= @delRecords %>
+<p>Changed Records:</p>
+<%= @editRecords %>
+<br/>
+<p>Synced New Record:</p>
+<%= @syncSummary[:newRecord] %>
+<p>Synced Deleted Record:</p>
+<%= @syncSummary[:delRecord] %>
+<p>Synced Changed Record:</p>
+<%= @syncSummary[:editedRecord] %>
+<p>Crashed Record:</p>
+<%= @syncSummary[:crashed] %>
