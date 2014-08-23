@@ -34,7 +34,7 @@
 	<tr>
 		<td class="field">Status : </td>
 		<td>
-			<%= @node.state.titleize %>
+			<%= @node.state != nil ? @node.state.titleize : "" %>
 			<% @node.possible_events.each do |evt| %>
 				<%= f.submit "#{evt.to_s.titleize} Node" %>
 			<% end %>

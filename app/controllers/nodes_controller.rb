@@ -62,11 +62,11 @@ class NodesController < ApplicationController
 	end
 
 	def edit
-		@node = Nodes.find(params[:id])
+		@node = Node.find(params[:id])
 	end
 
 	def update
-		@node = Nodes.find(params[:id])
+		@node = Node.find(params[:id])
 		commit = params[:commit]
 		sp = commit.split(" ")
 		if sp[1] == "Node"
@@ -74,7 +74,7 @@ class NodesController < ApplicationController
 		end
 
 		respond_to do |format|
-      if @node.update_attributes(params[:nodes])
+      if @node.update_attributes(params[:node])
       #if @node.save
         format.html { redirect_to nodes_path, notice: 'User was successfully updated.' }
         format.json { head :no_content }

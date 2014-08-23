@@ -123,8 +123,17 @@ module Antrapol
 
     def initialize(*arg)
       super(*arg)
-      self.state = self.class.class_variable_get :@@initial
-			self.state = self.state.to_s if self.state != nil
+			# 23 Aug 2014 - guard is to handle migration
+			# If a model is not stateful but later it become stateful in subsequent migration script
+			# and at the same time, there are default data created in the initial migration
+			# script which creating new records. Migration will failed since there is no
+			# state column. State column only exist further down the migration.
+			# If the state field does not exist, just skipped that first. After all, it is not
+			# important by the time initial migration scirpt was run
+			if self.attributes.keys.include? "state"
+				self.state = self.class.class_variable_get :@@initial
+				self.state = self.state.to_s if self.state != nil
+			end
     end
 	end
 end
