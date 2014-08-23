@@ -1,0 +1,42 @@
+
+<h3><%= @rec.distributable_type.titleize  %></h3>
+
+<% @obj = eval("#{@rec.distributable_type.classify}.find(\"#{@rec.distributable_id}\")") %>
+<%= form_tag sync_merge_update_path do %>
+	<%= hidden_field_tag "sm_id", @rec.id %>
+<table class="std">
+	<tr>
+		<th></th>
+		<th>Local</th>
+		<th>Incoming</th>
+		<th></th>
+	</tr>
+	<tr>
+		<td class="field">Identifier : </td>
+		<td colspan="2"><%= @obj.identifier %></td>
+	</tr>
+	<% YAML.load(@rec.changeset).each do |f| %>
+	<tr class="crash_item">
+		<td class="field"><%= f[0].titleize %></td>
+		<% @colType = eval("#{@rec.distributable_type.classify}.columns_hash[\"#{f[0]}\"].type") %>
+		<% if @colType == :text %>
+			<td><%= text_area_tag "#{@rec.distributable_type}[#{f[0]}]", @obj.send(f[0]), :class => "tinymce", :rows => 8, :cols => 38 %></td>
+			<td><%= text_area_tag "#{@rec.distributable_type}[new_#{f[0]}]", f[1], :class => "tinymce", :rows => 8, :cols => 38 %></td>
+		<% elsif @colType == :string %>
+			<td><%= text_field_tag "#{@rec.distributable_type}[#{f[0]}]", @obj.send(f[0]), :cols => 38 %></td>
+			<td><%= text_field_tag "#{@rec.distributable_type}[new_#{f[0]}]", f[1], :cols => 38 %></td>
+		<% else %>
+			<td><%= @obj.send(f[0]) %><%= hidden_field_tag "#{@rec.distributable_type}[#{f[0]}]", @obj.send(f[0]) %></td>
+			<td><%= f[1] %> <%= hidden_field_tag "#{@rec.distributable_type}[new_#{f[0]}]", f[1] %></td>
+		<% end %>
+		<td></td>
+	</tr>
+	<% end %>
+	<tr>
+		<td class="field"></td>
+		<td><%= submit_tag "Accept Local" %></td>
+		<td><%= submit_tag "Accept Remote" %></td>
+		<td></td>
+	</tr>
+</table>
+<% end %>

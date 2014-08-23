@@ -4,14 +4,14 @@ class SyncClientController < ApplicationController
   end
 
 	def sync
-		host = params[:sync_client][:host]
+		@host = params[:sync_client][:host]
 		@ops = params[:sync_client][:operation]
 		node = Node.first
 
 		if @ops == "pull"
-			pull(node,host,session[:user][:pass])
+			pull(node,@host,session[:user][:pass])
 		else
-			push(node,host,session[:user][:pass])
+			push(node,@host,session[:user][:pass])
 		end # end of if-else
 
 	end
@@ -35,7 +35,7 @@ class SyncClientController < ApplicationController
 				history = SyncHistory.pending_sync_merges(@server_id)
 				if history.length == 0
 
-					@out = Distributable::GenerateDelta.call(@server_id,SyncLogs::PUSH_REF,logger)	
+					@out,@sl = Distributable::GenerateDelta.call(@server_id,SyncLogs::PUSH_REF,logger)	
 					logger.debug "Delta to push: #{@out.to_json}"
 					url = URI.join("#{host}","sync_service/sync.json")
 					Distributable::OpenWebService.call(url.to_s,:post,{"node_id" => node.identifier, "operation" => "push", "uploaded" => @out.to_json, "token" => @token }) do |res|
@@ -45,6 +45,8 @@ class SyncClientController < ApplicationController
 					logger.debug "Webservices push operation return #{@result}"	
 					if @result["status"] == 200
 						flash[:notice] = @result["status_message"]
+						# make the sync log changes permanent
+						@sl.save if @sl != nil
 					else
 						flash[:error] = @result["status_message"]
 					end
@@ -63,7 +65,7 @@ class SyncClientController < ApplicationController
 			render :action => "index"
 		end
 
-		redirect_to sync_client_index_path
+		#redirect_to sync_client_index_path
 
 	end
 
@@ -90,6 +92,7 @@ class SyncClientController < ApplicationController
 					@result = res
 				end	
 
+				logger.debug "Pull result is #{@result}"
 				if @result["status"] == 200
 					# store the @result in case error happened later
 					hist = SyncHistory.new
@@ -97,6 +100,7 @@ class SyncClientController < ApplicationController
 					hist.sync_session_id = @token
 					hist.sync_data = @result["status_message"].to_json
 					hist.status = SyncHistory::INCOMPLETE
+					hist.host = host
 					hist.save
 
 					@syncSummary = {}
@@ -104,6 +108,7 @@ class SyncClientController < ApplicationController
 					@syncSummary[:delRecord] = {}
 					@syncSummary[:editedRecord] = {}
 					@syncSummary[:crashed] = {}
+					@syncSummary[:incons] = {} # inconsistant record
 
 					ActiveRecord::Base.transaction do
 
@@ -262,6 +267,17 @@ class SyncClientController < ApplicationController
 											cond.add_condition!(["changed_fields like ? or changed_fields like ? or changed_fields like ? or changed_fields like ?","[%#{field}%]","[%,#{field},%]","[%#{field},%]","[%,#{field}]"])
 											crashed = ChangeLogs.where(cond).count
 											logger.debug "crashed count is #{crashed}"
+											# what if an record marked as changed but not in local database?
+											# This seems like data inconsistancy...Should back patch or ignore?
+											# Back patch:
+											# Pro : Fix data issue for user
+											# Cons : Might complicate handling of processing
+											#
+											# Ignore:
+											# Pro : Failed silently
+											# Cons : Record not being copied over. Data not consistant
+											#
+											# However if copied over, the project code might crashed as well!
 											obj = eval("#{k.classify}.find('#{id}')")
 											if crashed == 0
 												# no crash on the field changed...merge automatically
@@ -285,7 +301,8 @@ class SyncClientController < ApplicationController
 													@crashed[id] = [] if @crashed[id] == nil
 													@crashed[id] << [field,value]
 												end
-											end
+											end # end if crashed == 0
+
 										end
 									end
 
@@ -355,7 +372,7 @@ class SyncClientController < ApplicationController
 			#render :action => "index"
 		end
 
-		redirect_to sync_client_index_path
+		#redirect_to sync_client_index_path
 	end
 
 	private

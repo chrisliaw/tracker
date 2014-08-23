@@ -18,6 +18,7 @@ module Distributable
 	end
 
 	class DistributableRecord
+		attr_accessor :newRec, :delRec, :changedRec
 		def initialize
 			@newRec = {}
 			@delRec = {}

@@ -1,43 +1,39 @@
 
-<h2>Synchronization Summary</h2>
+<h2>Sync Summary</h2>
 
 <table class="std">
 	<tr>
-		<td class="field">New Record : </td>
+		<td class="field">Operation : </td>
+		<td><%= @ops.titleize %></td>
+	</tr>
+	<tr>
+		<td class="field">Host : </td>
+		<td><%= @host %></td>
+	</tr>
+	<tr>
+		<td class="field">New Record Count : </td>
 		<td><%= @syncSummary[:newRecord].length %></td>
 	</tr>
 	<tr>
-		<td class="field">Deleted Record : </td>
+		<td class="field">Deleted Record Count : </td>
 		<td><%= @syncSummary[:delRecord].length %></td>
 	</tr>
 	<tr>
-		<td class="field">Edited Record (No conflict) : </td>
+		<td class="field">Edited Record Count : </td>
 		<td><%= @syncSummary[:editedRecord].length %></td>
 	</tr>
 	<tr>
-		<td class="field">Edited Record (With conflict) : </td>
-		<td><%= @syncSummary[:crashed].length %></td>
+		<td class="field">Conflicted Record Count : </td>
+		<td>
+			<% if @syncSummary[:crashed].length > 0 %>
+				<%= link_to @syncSummary[:crashed].length, sync_merge_index_path %>
+			<% else %>
+				<%= @syncSummary[:crashed].length %>
+			<% end %>
+		</td>
+	</tr>
+	<tr>
+		<td class="field"></td>
+		<td></td>
 	</tr>
 </table>
-
-<% if @syncSummary[:crashed] != nil and @syncSummary[:crashed].length > 0 %>
-<%= link_to "Merge Conflicted Record", sync_merge_index_path %>
-<% end %>
-
-
-<%= @result %>
-<p>New Records:</p>
-<%= @newRecords %>
-<p>Deleted Records:</p>
-<%= @delRecords %>
-<p>Changed Records:</p>
-<%= @editRecords %>
-<br/>
-<p>Synced New Record:</p>
-<%= @syncSummary[:newRecord] %>
-<p>Synced Deleted Record:</p>
-<%= @syncSummary[:delRecord] %>
-<p>Synced Changed Record:</p>
-<%= @syncSummary[:editedRecord] %>
-<p>Crashed Record:</p>
-<%= @syncSummary[:crashed] %>
