@@ -55,12 +55,12 @@ module Distributable
 
 				end # end changed table loop
 
-				sl = SyncLogs.new
-				sl.node_id = nodeID
-				sl.last_change_log_id = cutOffChange.id
+				@sl = SyncLogs.new
+				@sl.node_id = nodeID
+				@sl.last_change_log_id = cutOffChange.id
 				#sl.direction = SyncLogs::PULL_REF
-				sl.direction = direction
-				sl.save
+				@sl.direction = direction
+				#@sl.save
 
 			else
 				# no ChangeLogs record means there is no changes being made...
@@ -114,12 +114,12 @@ module Distributable
 
 				end # end changed table loop
 
-				sl = syncHistory[0]
-				sl.node_id = nodeID
-				sl.last_change_log_id = cutOffChange.id
+				@sl = syncHistory[0]
+				@sl.node_id = nodeID
+				@sl.last_change_log_id = cutOffChange.id
 				#sl.direction = SyncLogs::PULL_REF
-				sl.direction = direction
-				sl.save
+				@sl.direction = direction
+				#@sl.save
 
 			else
 				# no ChangeLogs record means there is no changes being made...
@@ -127,7 +127,7 @@ module Distributable
 
 		end
 
-		@distRec
+		[@distRec,@sl]
 	end
 
 	OpenWebService = Proc.new do |url,method = :get,hash = {},&block|
