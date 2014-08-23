@@ -42,7 +42,11 @@ Tracker::Application.routes.draw do
 
   resources :user_rights
 
-  resources :nodes
+  resources :nodes do
+		collection do
+			get :setup
+		end
+	end
 
   resources :commits
 
