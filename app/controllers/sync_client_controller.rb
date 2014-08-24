@@ -427,6 +427,9 @@ class SyncClientController < ApplicationController
 					u.groups = User::REMOTE_HOST_GROUP
 					u.save
 					@newHost = u
+				else
+					u[0].validation_token = signedID
+					u[0].save
 				end
 				# generate token
 				tok = AnCAL::Cipher::PKCS7::EncryptData.call(certs[0],token)
