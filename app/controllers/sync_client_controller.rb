@@ -419,6 +419,7 @@ class SyncClientController < ApplicationController
 				u = User.where(["cert = ?",certs[0].to_pem])
 				if u.length == 0
 					u = User.new
+					u.login = certs[0].subject.to_s
 					u.cert = certs[0].to_pem
 					u.validation_token = signedID
 					u.state = "pending"
