@@ -53,10 +53,17 @@ class UsersController < ApplicationController
   # POST /users.json
   def create
     @user = User.new(params[:user])
+		cert = @user.upload_id.read
+		certObj = AnCAL::X509::LoadCert.call(cert)
+		@user.login = certObj.subject.to_s
+		@user.cert = certObj.to_pem
+		@user.validation_token = ""
+		@user.rights = ""
+		@user.groups = User::REMOTE_USER_GROUP
 
     respond_to do |format|
       if @user.save
-        format.html { redirect_to @user, notice: 'User was successfully created.' }
+        format.html { redirect_to users_path, notice: 'User was successfully created.' }
         format.json { render json: @user, status: :created, location: @user }
       else
         format.html { render action: "new" }
@@ -184,6 +191,14 @@ class UsersController < ApplicationController
 	def show_owner_detail
 		idUrl = File.join(Rails.root,"db","owner.id")
 		pkey,@cert,chain = AnCAL::KeyFactory::FromP12Url.call(idUrl,session[:user][:pass])	
+	end
+
+	def download_cert
+		idUrl = File.join(Rails.root,"db","owner.id")
+		pkey,@cert,chain = AnCAL::KeyFactory::FromP12Url.call(idUrl,session[:user][:pass])	
+		subj = AnCAL::X509::ParseName.call(@cert.subject.to_s)
+		p subj["emailAddress"]
+		send_data @cert.to_pem, :filename => "#{subj["emailAddress"]}.tid"
 	end
 
 	def cache_password(pass)

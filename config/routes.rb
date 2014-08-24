@@ -60,6 +60,7 @@ Tracker::Application.routes.draw do
       get :logout
       post :authenticate
 			get :show_owner_detail
+			get :download_cert
     end
   end
 

@@ -1,5 +1,6 @@
 class User < ActiveRecord::Base
-  attr_accessible :login, :cert, :cert_validation_token, :status
+  attr_accessible :login, :cert, :cert_validation_token, :status, :upload_id
+	attr_accessor :upload_id
 
   #validates :login, :presence => true, :uniqueness => true
 
