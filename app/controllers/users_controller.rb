@@ -224,6 +224,7 @@ class UsersController < ApplicationController
 						f.write ks.to_der
 					end
 					session[:user][:pass] = newPass
+					cache_password(newPass)
 					flash[:notice] = "Owner password changed successfully"
 					redirect_to show_owner_detail_users_path
 				rescue Exception => ex
