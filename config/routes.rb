@@ -61,6 +61,8 @@ Tracker::Application.routes.draw do
       post :authenticate
 			get :show_owner_detail
 			get :download_cert
+			get :change_password
+			post :update_password
     end
   end
 

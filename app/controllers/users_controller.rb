@@ -190,7 +190,7 @@ class UsersController < ApplicationController
 
 	def show_owner_detail
 		idUrl = File.join(Rails.root,"db","owner.id")
-		pkey,@cert,chain = AnCAL::KeyFactory::FromP12Url.call(idUrl,session[:user][:pass])	
+		pkey,@cert,chain = AnCAL::KeyFactory::FromP12Url.call(idUrl,session[:user][:pass])
 	end
 
 	def download_cert
@@ -201,6 +201,44 @@ class UsersController < ApplicationController
 		send_data @cert.to_pem, :filename => "#{subj["emailAddress"]}.tid"
 	end
 
+	def change_password
+		
+	end
+
+	def update_password
+		oldPass = params[:user][:old_pass]
+		newPass = params[:user][:pass]
+		newPass2 = params[:user][:pass_confirm]
+
+		idUrl = File.join(Rails.root,"db","owner.id")
+		begin
+			@pkey,@cert,@chain = AnCAL::KeyFactory::FromP12Url.call(idUrl,oldPass)
+			if newPass != newPass2
+				flash[:error] = "Password do not match. Please try again."
+				redirect_to change_password_users_path
+			else
+
+				begin
+					ks = @pkey.to_pkcs12(newPass,@cert,@chain,"")
+					File.open(idUrl,"wb") do |f|
+						f.write ks.to_der
+					end
+					session[:user][:pass] = newPass
+					flash[:notice] = "Owner password changed successfully"
+					redirect_to show_owner_detail_users_path
+				rescue Exception => ex
+					flash[:error] = "Change password exception. Error was #{ex}" 
+					redirect_to change_password_users_path
+				end
+			end
+		rescue Exception => ex
+			flash[:error] = "Old password does not matched. Please try again." 
+			redirect_to change_password_users_path
+		end
+
+	end
+
+	private
 	def cache_password(pass)
 		node = Node.first
 		bin,key = AnCAL::Cipher::PKCS5_PBKDF2::EncryptData.call(node.identifier,pass)

@@ -43,6 +43,7 @@ module AnCAL
 				@cont = f.read
 			end
 			ks = OpenSSL::PKCS12.new(@cont,pass)
+			# TODO: Support other then RSA key
 			pkey = OpenSSL::PKey::RSA.new ks.key
 			cert = ks.certificate
 			ca_certs = ks.ca_certs
