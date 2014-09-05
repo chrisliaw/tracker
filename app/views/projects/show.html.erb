@@ -35,16 +35,28 @@
     <td colspan="3"><%= @project.category_tags %></td>
 	</tr>
   <tr>
-    <td class="field">Variances : </td>
-		<td colspan="3"><%= @project.variances.collect { |v| v.name }.join(",") %></td>
+		<td class="field">
+			<%= link_to "Variances", project_variances_path(@project) %> : 
+		</td>
+		<td colspan="3">
+			<%= @project.variances.collect { |v| link_to v.name, [@project,v] }.join(",").html_safe %>
+		</td>
 	</tr>
   <tr>
-    <td class="field">Active Schedules : </td>
-		<td colspan="3"><%= @project.active_schedules.collect { |s| s.name }.join(",") %></td>
+		<td class="field">
+			<%= link_to "Active Schedules", project_schedules_path(@project) %> : 
+		</td>
+		<td colspan="3">
+			<%= @project.active_schedules.collect { |s| link_to s.name, [@project,s] }.join(",").html_safe %>
+		</td>
 	</tr>
   <tr>
-    <td class="field">Active Version Control : </td>
-		<td colspan="3"><%= @project.active_version_controls.collect { |vc| "#{vc.name} - #{vc.upstream_vcs_path}" }.join("<br/>").html_safe %></td>
+		<td class="field">
+			<%= link_to "Active Version Control", project_version_controls_path(@project) %> : 
+		</td>
+		<td colspan="3">
+			<%= @project.active_version_controls.collect { |vc| link_to "#{vc.name} - #{vc.upstream_vcs_path}", [@project,vc] }.join("<br/>").html_safe %>
+		</td>
 	</tr>
 </table>
 <p/>
@@ -54,9 +66,6 @@
 	| <%= link_to 'Delete', @project, :method => :delete, :confirm => "Are you sure to delete project '#{@project.name}'" %>
 <% end %>
 <br/>
-<%= link_to "Variances Management", project_variances_path(@project) %> <br/>
-<%= link_to "Schedule Management", project_schedules_path(@project) %> <br/>
-<%= link_to "Version Control", project_version_controls_path(@project) %>
 <br/>
 <% #link_to "Statistic", project_stat_project_path(@project), :remote => true, :update => 'stat' %>
 <div id="dev_stat">
