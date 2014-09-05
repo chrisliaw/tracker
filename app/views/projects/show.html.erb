@@ -33,7 +33,19 @@
   <tr>
     <td class="field">Category Tags : </td>
     <td colspan="3"><%= @project.category_tags %></td>
-  </tr>
+	</tr>
+  <tr>
+    <td class="field">Variances : </td>
+		<td colspan="3"><%= @project.variances.collect { |v| v.name }.join(",") %></td>
+	</tr>
+  <tr>
+    <td class="field">Active Schedules : </td>
+		<td colspan="3"><%= @project.active_schedules.collect { |s| s.name }.join(",") %></td>
+	</tr>
+  <tr>
+    <td class="field">Active Version Control : </td>
+		<td colspan="3"><%= @project.active_version_controls.collect { |vc| "#{vc.name} - #{vc.upstream_vcs_path}" }.join("<br/>").html_safe %></td>
+	</tr>
 </table>
 <p/>
 

@@ -18,6 +18,14 @@ class Project < ActiveRecord::Base
 		Schedule.where(["schedulable_type = 'Project' and schedulable_id = ? and schedules.state != 'released'", self.id])
 	end
 
+	def active_schedules
+		Schedule.where(["schedulable_type = 'Project' and schedulable_id = ? and schedules.state = 'active'", self.id])
+	end
+
+	def active_version_controls
+		VersionControl.where(["versionable_type = 'Project' and versionable_id = ? and version_controls.state = 'active'", self.id])
+	end
+
 	def released_schedules
 		Schedule.where(["schedulable_type = 'Project' and schedulable_id = ? and schedules.state = 'released'", self.id])
 	end
