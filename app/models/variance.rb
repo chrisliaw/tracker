@@ -9,6 +9,14 @@ class Variance < ActiveRecord::Base
 
   validates :name, :presence => true
 
+	def active_schedules
+		Schedule.where(["schedulable_type = 'Variance' and schedulable_id = ? and schedules.state = 'active'", self.id])
+	end
+
+	def active_version_controls
+		VersionControl.where(["versionable_type = 'Variance' and versionable_id = ? and version_controls.state = 'active'", self.id])
+	end
+
   distributable
 
   stateful :initial => :evaluation

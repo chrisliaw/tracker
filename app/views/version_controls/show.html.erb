@@ -4,9 +4,15 @@
 
 <table class="std">
   <tr>
-    <td class="field"><%= @version_control.versionable_type %></td>
-    <td><%= @version_control.versionable.name %></td>
-  </tr>
+    <td class="field">Project : </td>
+    <td><%= link_to @project.name, @project %></td>
+	</tr>
+	<% if @variance != nil %>
+  <tr>
+    <td class="field">Variance : </td>
+    <td><%= link_to @variance.name, [@project,@variance] %></td>
+	</tr>
+	<% end %>
   <tr>
     <td class="field">Name : </td>
     <td><%= @version_control.name %></td>

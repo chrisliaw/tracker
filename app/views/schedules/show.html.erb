@@ -7,7 +7,13 @@
   <tr>
     <td class="field">Project : </td>
     <td colspan="3"><%= link_to @project.name, @project %></td>
-  </tr>
+	</tr>
+	<% if @variance != nil %>
+  <tr>
+    <td class="field">Variance : </td>
+    <td colspan="3"><%= link_to @variance.name, [@project,@variance] %></td>
+	</tr>
+	<% end %>
   <tr>
     <td class="field">Name : </td>
     <td width="1%"><%= @schedule.name %></td>
