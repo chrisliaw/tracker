@@ -11,7 +11,7 @@
   <tr>
     <td><%= link_to project.name, project %></td>
     <td align="center"><%= project.state.titleize %></td>
-		<td align="center"><%= project.category_tags.empty? ? "" : project.category_tags.split(",").collect { |t| link_to(t,projects_path(:tag => t)) }.join(",").html_safe %></td>
+		<td align="center"><%= project.category_tags != nil ? "" : project.category_tags.split(",").collect { |t| link_to(t,projects_path(:tag => t)) }.join(",").html_safe %></td>
   </tr>
 <% end %>
 </table>
