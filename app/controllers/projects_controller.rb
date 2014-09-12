@@ -41,6 +41,7 @@ class ProjectsController < ApplicationController
     cats.sort.each do |st|
       opt << d.new(st,"#{st.titleize}")
     end 
+		opt << d.new(-1,"No Category")
     @category << opt
     # end category filter combo content
 
@@ -382,10 +383,19 @@ class ProjectsController < ApplicationController
 		@tag = params[:tag]
 		@filter_status = params[:status]
 		if @tag != nil and not @tag.empty?
-			if @filter_status != nil and not @filter_status.empty?
-				@projects = Project.where(["(category_tags like ? or category_tags like ? or category_tags like ? or category_tags like ?) and state = ?","#{@tag}","%,#{@tag},%","#{@tag},%","%,#{@tag}",@filter_status]).order(:name)
+			if @tag == "-1"
+				if @filter_status != nil and not @filter_status.empty?
+					@projects = Project.where(["(category_tags is null or category_tags = '') and state = ?",@filter_status]).order(:name)
+				else
+					@projects = Project.where(["(category_tags is null or category_tags = '')"]).order(:name)
+				end
+
 			else
-				@projects = Project.where(["category_tags like ? or category_tags like ? or category_tags like ? or category_tags like ?","#{@tag}","%,#{@tag},%","#{@tag},%","%,#{@tag}"]).order(:name)
+				if @filter_status != nil and not @filter_status.empty?
+					@projects = Project.where(["(category_tags like ? or category_tags like ? or category_tags like ? or category_tags like ?) and state = ?","#{@tag}","%,#{@tag},%","#{@tag},%","%,#{@tag}",@filter_status]).order(:name)
+				else
+					@projects = Project.where(["category_tags like ? or category_tags like ? or category_tags like ? or category_tags like ?","#{@tag}","%,#{@tag},%","#{@tag},%","%,#{@tag}"]).order(:name)
+				end
 			end
 		else
 			if @filter_status != nil and not @filter_status.empty?
@@ -422,6 +432,7 @@ class ProjectsController < ApplicationController
     cats.sort.each do |st|
       opt << d.new(st,"#{st.titleize}")
     end 
+		opt << d.new(-1,"No Category")
     @category << opt
     # end category filter combo content
 
