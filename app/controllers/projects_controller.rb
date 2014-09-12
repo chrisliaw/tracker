@@ -10,7 +10,7 @@ class ProjectsController < ApplicationController
 			if @filter_status != nil
 				@projects = Project.where(["state = ?",@filter_status])
 			else
-				@projects = Project.where(["state = ? and state = ?","active","evaluation"]).order(:name)
+				@projects = Project.where(["state = ? or state = ?","active","evaluation"]).order(:name)
 				@filter_status = -1
 			end
 		end
