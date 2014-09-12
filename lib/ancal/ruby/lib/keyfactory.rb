@@ -39,7 +39,7 @@ module AnCAL
 		end
 
 		FromP12Url = Proc.new do |url,pass|
-			File.open(url,"r") do |f|
+			File.open(url,"rb") do |f|
 				@cont = f.read
 			end
 			ks = OpenSSL::PKCS12.new(@cont,pass)
