@@ -5,7 +5,7 @@ gem 'rails', '3.2.13'
 # Bundle edge Rails instead:
 # gem 'rails', :git => 'git://github.com/rails/rails.git'
 
-gem 'sqlite3'
+gem 'sqlite3', '1.3.9'
 
 
 # Gems used only for assets and not required
@@ -41,7 +41,7 @@ gem 'bcrypt-ruby', '~> 3.0.0'
 gem 'acts_as_list'
 gem 'acts_as_tree'
 gem 'tinymce-rails'
-gem 'rugged'
+#gem 'rugged'
 gem 'git'
 gem 'kaminari'
 gem 'rest-open-uri'
