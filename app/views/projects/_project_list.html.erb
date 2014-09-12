@@ -1,0 +1,24 @@
+<div style="font-weight: bold;">Project Count : <%= @projects.length %></div>	
+<br />
+ <table class="std">
+  <tr>
+    <th width="30%">Name</th>
+    <th width="10%">Status</th>
+    <th width="10%">Category</th>
+  </tr>
+
+<% @projects.each do |project| %>
+  <tr>
+    <td><%= link_to project.name, project %></td>
+    <td align="center"><%= project.state.titleize %></td>
+		<td align="center"><%= project.category_tags.split(",").collect { |t| link_to(t,projects_path(:tag => t)) }.join(",").html_safe %></td>
+  </tr>
+<% end %>
+</table>
+
+<br />
+<div style="font-weight: bold;">Project Count : <%= @projects.length %></div>	
+ 
+<br />
+
+

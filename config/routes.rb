@@ -127,6 +127,9 @@ Tracker::Application.routes.draw do
 			get :issue_stat
     end
 
+		collection do
+			post :filter_project
+		end
   end
 
   get "nodes/setup"

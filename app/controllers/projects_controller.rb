@@ -3,11 +3,47 @@ class ProjectsController < ApplicationController
   # GET /projects.json
   def index
 		@tag = params[:tag]
+		@filter_status = params[:status]
 		if @tag != nil
 			@projects = Project.where(["category_tags like ? or category_tags like ? or category_tags like ? or category_tags like ?","#{@tag}","%,#{@tag},%","#{@tag},%","%,#{@tag}"]).order(:name)
 		else
-			@projects = Project.all :order => :name
+			if @filter_status != nil
+				@projects = Project.where(["state = ?",@filter_status])
+			else
+				@projects = Project.all :order => :name
+			end
 		end
+
+    # status filter combo content
+    @status = []
+    d = Struct.new(:id,:name)
+    opt = FilterType.new("No Filter")
+    opt << d.new(nil,"All Status")
+    @status << opt
+
+    opt = FilterType.new("Status")
+    statuses = Project.states.collect! {|e| e.to_s }
+    statuses.sort.each do |st|
+      opt << d.new(st,"#{st.titleize}")
+    end 
+    @status << opt
+    # end status filter combo content
+
+    # category filter combo content
+    @category = []
+    d = Struct.new(:id,:name)
+    opt = FilterType.new("No Filter")
+    opt << d.new(nil,"All Category")
+    @category << opt
+
+    opt = FilterType.new("Category")
+    cats = Project.tags.collect! {|e| e.to_s }
+    cats.sort.each do |st|
+      opt << d.new(st,"#{st.titleize}")
+    end 
+    @category << opt
+    # end category filter combo content
+
 
     respond_to do |format|
       format.html # index.html.erb
@@ -341,5 +377,60 @@ class ProjectsController < ApplicationController
 			format.html { render :partial => "issue_stat" }
 		end
 	end
+
+  def filter_project
+		@tag = params[:tag]
+		@filter_status = params[:status]
+		if @tag != nil and not @tag.empty?
+			if @filter_status != nil and not @filter_status.empty?
+				@projects = Project.where(["(category_tags like ? or category_tags like ? or category_tags like ? or category_tags like ?) and state = ?","#{@tag}","%,#{@tag},%","#{@tag},%","%,#{@tag}",@filter_status]).order(:name)
+			else
+				@projects = Project.where(["category_tags like ? or category_tags like ? or category_tags like ? or category_tags like ?","#{@tag}","%,#{@tag},%","#{@tag},%","%,#{@tag}"]).order(:name)
+			end
+		else
+			if @filter_status != nil and not @filter_status.empty?
+				@projects = Project.where(["state = ?",@filter_status])
+			else
+				@projects = Project.all :order => :name
+			end
+		end
+
+    # status filter combo content
+    @status = []
+    d = Struct.new(:id,:name)
+    opt = FilterType.new("No Filter")
+    opt << d.new(nil,"All Status")
+    @status << opt
+
+    opt = FilterType.new("Status")
+    statuses = Project.states.collect! {|e| e.to_s }
+    statuses.sort.each do |st|
+      opt << d.new(st,"#{st.titleize}")
+    end 
+    @status << opt
+    # end status filter combo content
+		#
+    # category filter combo content
+    @category = []
+    d = Struct.new(:id,:name)
+    opt = FilterType.new("No Filter")
+    opt << d.new(nil,"All Category")
+    @category << opt
+
+    opt = FilterType.new("Category")
+    cats = Project.tags.collect! {|e| e.to_s }
+    cats.sort.each do |st|
+      opt << d.new(st,"#{st.titleize}")
+    end 
+    @category << opt
+    # end category filter combo content
+
+    #respond_to do |format|
+    #  format.html # 
+    #  format.json { render json: @projects }
+    #end
+		render :layout => false
+  end
+
 
 end

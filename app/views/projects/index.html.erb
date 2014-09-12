@@ -2,25 +2,81 @@
   Projects
 <% end -%>
 
-<div style="font-weight: bold;">Project Count : <%= @projects.length %></div>	
-<br />
- <table class="std">
-  <tr>
-    <th width="30%">Name</th>
-    <th width="10%">Status</th>
-  </tr>
+<div class="filter">
+  Quick Filter <br/>
+Status :
+<% # select_tag last param is the default value -%>
+<%= select_tag "status_filter", option_groups_from_collection_for_select(@status,:options,:name,:id,:name,@filter_status) %>
+Category :
+<%= select_tag "category_filter", option_groups_from_collection_for_select(@category,:options,:name,:id,:name,@tag) %>
+</div>
+<% content_for :script do -%>
+	<script>
+	function getUrlParameter(sParam)
+	{
+		var sPageURL = window.location.search.substring(1);
+		var sURLVariables = sPageURL.split('&');
+		for (var i = 0; i < sURLVariables.length; i++) 
+		{
+			var sParameterName = sURLVariables[i].split('=');
+			if (sParameterName[0] == sParam) 
+			{
+				return sParameterName[1];
+			}
+		}
+	}         
 
-<% @projects.each do |project| %>
-  <tr>
-    <td><%= link_to project.name, project %></td>
-    <td align="center"><%= project.state.titleize %></td>
-  </tr>
+    jQuery(function($) {
+      // when the #search field changes
+      $("#status_filter").change(function(e) {
+        //alert(e.target.value);
+        cf = document.getElementById("category_filter")
+        //alert(o);
+        // make a POST call and replace the content
+        $.post("<%= url_for(:only_path => true, :controller => "projects", :action => "filter_project") %>", {status: e.target.value, tag: cf.value  })
+          .done(function(data) {
+          $("#dyn-sec").html(data);
+        });
+      });
+			})
+
+    jQuery(function($) {
+      // when the #search field changes
+      $("#category_filter").change(function(e) {
+        //alert(e.target.value);
+        st = document.getElementById("status_filter")
+        //alert(o);
+        // make a POST call and replace the content
+        $.post("<%= url_for(:only_path => true, :controller => "projects", :action => "filter_project") %>", {status: st.value, tag: e.target.value })
+          .done(function(data) {
+          $("#dyn-sec").html(data);
+        });
+      });
+    })
+
+
+    //jQuery(function($) {
+    //  // when the #search field changes
+    //  $("#quick_search_text").change(function(e) {
+    //    //alert(e.target.value);
+    //    sf = document.getElementById("status_filter");
+    //    cf = document.getElementById("class_filter")
+    //    schf = document.getElementById("schedule_filter")
+    //    varf = document.getElementById("variance_filter")
+    //    //alert(o);
+    //    // make a POST call and replace the content
+    //    $.post("<%# url_for(:only_path => true, :controller => "develements", :action => "filter_status", :project_id => @project.id) %>", {class: cf.value, status: sf.value, keyword: e.target.value, schedule: schf.value, variance: varf.value})
+    //      .done(function(data) {
+    //      $("#dyn-sec").html(data);
+    //    });
+    //  });
+    //})
+
+  </script>
 <% end %>
-</table>
 
-<br />
-<div style="font-weight: bold;">Project Count : <%= @projects.length %></div>	
- 
-<br />
-
+<%= link_to 'New Project', new_project_path %>
+<div id="dyn-sec">
+<%= render :partial => "project_list" %>
+</div>
 <%= link_to 'New Project', new_project_path %>
