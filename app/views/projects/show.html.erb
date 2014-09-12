@@ -27,8 +27,9 @@
     <td><%= @project.id %></td>
   </tr>
   <tr>
-    <td class="field">Description : </td>
-    <td colspan="3" width="80%"><%= @project.desc.html_safe %></td>
+		<td colspan="4" style="padding-left:100px">
+			<%= @project.desc.html_safe %>
+		</td>
   </tr>
   <tr>
     <td class="field">Category Tags : </td>
