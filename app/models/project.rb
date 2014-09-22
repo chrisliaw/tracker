@@ -19,7 +19,7 @@ class Project < ActiveRecord::Base
 	end
 
 	def active_schedules
-		Schedule.where(["schedulable_type = 'Project' and schedulable_id = ? and schedules.state = 'active'", self.id])
+		Schedule.where(["schedulable_type = 'Project' and schedulable_id = ? and (schedules.state = 'active' or schedules.state = 'stabilizing')", self.id])
 	end
 
 	def active_version_controls
