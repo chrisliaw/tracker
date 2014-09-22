@@ -179,6 +179,10 @@ class SchedulesController < ApplicationController
     event = params[:event]
     @schedule.send "#{event}!"
     @schedule.save
-    redirect_to project_schedule_path(@project,@schedule)
+    #redirect_to project_schedule_path(@project,@schedule)
+		respond_to do |format|
+			format.html { redirect_to project_schedule_path(@project,@schedule) }
+			format.json { head :no_content }
+		end
   end
 end

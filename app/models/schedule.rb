@@ -25,9 +25,14 @@ class Schedule < ActiveRecord::Base
     backward :activate
   end
 
+	transform :active => :stabilizing do
+		forward :stabilize
+		backward :reactivate
+	end
+
 	# once released, all changes should be made in branches (stabilization)
 	# All fixes shall be based on this branch
-  transform :active => :released do
+  transform :stabilizing => :released do
     forward :release
   end
 

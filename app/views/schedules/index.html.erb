@@ -10,8 +10,8 @@
 
 <table class="std" width="80%">
   <tr>
-    <th>Name</th>
-    <th>Desc</th>
+    <th>Identifier</th>
+    <th witdh="60%">Name</th>
     <th>State</th>
     <th></th>
   </tr>
@@ -19,11 +19,12 @@
 <% @schedules.each do |schedule| %>
   <tr>
     <% if @variance != nil %>
-      <td><%= link_to schedule.name, [@project,@variance,schedule] %></td>
+			<td><%= link_to schedule.identifier, [@project,@variance,schedule] %></td>
+			<td><%= link_to "#{schedule.name}", [@project,@variance,schedule] %></td>
     <% else %>
-      <td><%= link_to schedule.name, [@project,schedule] %></td>
+			<td><%= link_to schedule.identifier, [@project,schedule]  %></td>
+			<td><%= link_to "#{schedule.name}", [@project,schedule] %></td>
     <% end %>
-    <td><%= schedule.desc %></td>
     <td align="center"><%= schedule.state.titleize %></td>
     <td>
       <% if @variance != nil %>

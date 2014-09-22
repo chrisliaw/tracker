@@ -1,0 +1,7 @@
+
+branches
+++++++++
+master - Stable branch
+dev - Development branch
+iss-<id> - issue branch
+<schedule identifier> - specific version(schedule) branch
