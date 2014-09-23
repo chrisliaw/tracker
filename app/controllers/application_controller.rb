@@ -2,7 +2,7 @@
 #VCS_CLASS = {
 #  1 => "Git"
 #}
-VER="Untracked Release"
+VER="V0.1-stabilization-42f36ce74d2adc54272b84e9c6a77c57fbd5580b"
 
 class ApplicationController < ActionController::Base
   protect_from_forgery
