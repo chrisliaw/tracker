@@ -77,6 +77,13 @@ class SyncClientController < ApplicationController
 		#Distributable::OpenWebService.call(url.to_s,:post, {"node_id" => node.identifier}) do |res|
 		#	@result = res
 		#end
+					@syncSummary = {}
+					@syncSummary[:newRecord] = {}
+					@syncSummary[:delRecord] = {}
+					@syncSummary[:editedRecord] = {}
+					@syncSummary[:crashed] = {}
+					@syncSummary[:incons] = {} # inconsistant record
+
 
 		if @result["status"] == 200
 			@token = @result["token"]
@@ -103,12 +110,12 @@ class SyncClientController < ApplicationController
 					hist.host = host
 					hist.save
 
-					@syncSummary = {}
-					@syncSummary[:newRecord] = {}
-					@syncSummary[:delRecord] = {}
-					@syncSummary[:editedRecord] = {}
-					@syncSummary[:crashed] = {}
-					@syncSummary[:incons] = {} # inconsistant record
+					#@syncSummary = {}
+					#@syncSummary[:newRecord] = {}
+					#@syncSummary[:delRecord] = {}
+					#@syncSummary[:editedRecord] = {}
+					#@syncSummary[:crashed] = {}
+					#@syncSummary[:incons] = {} # inconsistant record
 
 					ActiveRecord::Base.transaction do
 
