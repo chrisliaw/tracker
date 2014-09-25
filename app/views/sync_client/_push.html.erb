@@ -12,15 +12,15 @@
 	<% if @out != nil %>
 	<tr>
 		<td class="field">New Record Count : </td>
-		<td><%= @out.newRec.length %></td>
+		<td><%= @out.new_record_count %></td>
 	</tr>
 	<tr>
 		<td class="field">Deleted Record Count : </td>
-		<td><%= @out.delRec.length %></td>
+		<td><%= @out.deleted_record_count %></td>
 	</tr>
 	<tr>
 		<td class="field">Edited Record Count : </td>
-		<td><%= @out.changedRec.length %></td>
+		<td><%= @out.edited_record_count %></td>
 	</tr>
 	<% end %>
 	<% if @result != nil %>

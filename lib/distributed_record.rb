@@ -33,11 +33,27 @@ module Distributable
 			@newRec[tblName] << rec
 		end
 
+		def new_record_count
+			@cnt = 0
+			@newRec.each do |k,v|
+				@cnt = @cnt + v.length
+			end
+			@cnt
+		end
+
 		def add_deleted_record(table,key)
 			if @delRec[table] == nil
 				@delRec[table] = []
 			end
 			@delRec[table] << key
+		end
+
+		def deleted_record_count
+			@cnt = 0
+			@delRec.each do |k,v|
+				@cnt = @cnt + v.length
+			end
+			@cnt
 		end
 
 		def add_edited_record(rec,changes)
@@ -50,6 +66,14 @@ module Distributable
 				changeFields[c] = eval("rec.#{c}") 
 			end
 			@changedRec[tblName] << [rec.identifier,changeFields]
+		end
+
+		def edited_record_count
+			@cnt = 0
+			@changedRec.each do |k,v|
+				@cnt = @cnt + v.length
+			end
+			@cnt
 		end
 	end
 end
