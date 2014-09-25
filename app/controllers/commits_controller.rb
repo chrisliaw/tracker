@@ -119,8 +119,10 @@ class CommitsController < ApplicationController
 
 	private
 	def format_git_changes(changes)
-		#formatted = changes.gsub("\n","<br/>")
-		formatted = changes
+		changes = ERB::Util.html_escape(changes)
+		p changes
+		formatted = changes.gsub("\n","<br/>")
+		p formatted
 		formatted
 	end
 end
