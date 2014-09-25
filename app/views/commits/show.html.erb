@@ -33,7 +33,7 @@
 <br/>
 <table class="std">
 	<tr>
-		<td><%= @changes.html_safe %></td>
+		<td><%= @changes #.html_safe %></td>
 	</tr>
 	<% if @commit.repository_url == nil or (@commit.repository_url != nil and not Dir.exist?(@commit.repository_url)) %>
 		<tr>
