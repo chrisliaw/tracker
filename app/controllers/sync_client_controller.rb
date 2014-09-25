@@ -267,10 +267,11 @@ class SyncClientController < ApplicationController
 									@edited = []
 									v.each do |rec|
 										id = rec[0]
-										@conds.add_condition!(["table_name = ? and key = ?",k,id])
+										#@conds.add_condition!(["table_name = ? and key = ?",k,id])
 										changesSet = rec[1]
 										changesSet.each do |field,value|
 											cond = @conds.clone
+											cond.add_condition!(["table_name = ? and key = ?",k,id])
 											cond.add_condition!(["changed_fields like ? or changed_fields like ? or changed_fields like ? or changed_fields like ?","[%#{field}%]","[%,#{field},%]","[%#{field},%]","[%,#{field}]"])
 											crashed = ChangeLogs.where(cond).count
 											logger.debug "crashed count is #{crashed}"
