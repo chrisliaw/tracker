@@ -119,7 +119,8 @@ class CommitsController < ApplicationController
 
 	private
 	def format_git_changes(changes)
-		formatted = changes.gsub("\n","<br/>")
+		#formatted = changes.gsub("\n","<br/>")
+		formatted = changes
 		formatted
 	end
 end
