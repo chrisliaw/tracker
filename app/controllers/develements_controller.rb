@@ -150,7 +150,7 @@ class DevelementsController < ApplicationController
       else
 				p @develement.errors
         format.html { render action: "new" }
-        format.json { render json: @develement.errors, status: :unprocessable_entity }
+				format.json { render json: @develement.errors.full_messages, status: :unprocessable_entity }
       end
     end
   end

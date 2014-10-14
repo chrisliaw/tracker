@@ -9,6 +9,7 @@ class Develement < ActiveRecord::Base
   has_many :commits, :as => :committables, :order => :created_at
 
   validates :name, :presence => true
+	validates_uniqueness_of :name, :scope => :project_id
 
   distributable
   acts_as_tree :foreign_key => "variance_parent_id", :parent_name => "variance_parent", :children_name => "variance_children", :prefix => "variance_" 
