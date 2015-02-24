@@ -12,6 +12,7 @@
 		<% if @project.variances.length > 0 %>
 			<th>Variance</th>
 		<% end %>
+		<th>Package</th>
   </tr>
 
 <% @develements.each do |develement| %>
@@ -24,6 +25,7 @@
 		<% if @project.variances.length > 0 %>
 			<td align="center"><%= develement.variance_children.length > 0 ? develement.variance_children.collect { |d| d.variance.name }.join(",") : develement.variance == nil ? "-" : develement.variance.name %></td>
 		<% end %>
+		<td><%= develement.package == nil ? "" : develement.package.name %></td>
   </tr>
 <% end %>
 </table>

@@ -1,5 +1,5 @@
 class Develement < ActiveRecord::Base
-  attr_accessible :code, :desc, :develement_type_id, :name, :project_id, :state, :schedule_id, :identifier, :created_by, :variance_parent_id, :variance_id
+  attr_accessible :code, :desc, :develement_type_id, :name, :project_id, :state, :schedule_id, :identifier, :created_by, :variance_parent_id, :variance_id, :package_id
   belongs_to :develement_type
   belongs_to :project
   belongs_to :schedule
@@ -10,6 +10,7 @@ class Develement < ActiveRecord::Base
 
   validates :name, :presence => true
 	validates_uniqueness_of :name, :scope => :project_id
+	belongs_to :package
 
   distributable
   acts_as_tree :foreign_key => "variance_parent_id", :parent_name => "variance_parent", :children_name => "variance_children", :prefix => "variance_" 

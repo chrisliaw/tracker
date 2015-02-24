@@ -60,6 +60,19 @@
 			<%= @project.active_version_controls.collect { |vc| link_to "#{vc.name} - #{vc.upstream_vcs_path}", [@project,vc] }.join("<br/>").html_safe %>
 		</td>
 	</tr>
+  <tr>
+		<td class="field">
+			Project Packages : 
+		</td>
+		<td colspan="3">
+			<%= link_to "[ Add ]", new_project_package_path(@project) %><br/>
+			<% @project.packages.each do |pg| %>
+				<%= link_to pg.name, edit_project_package_path(@project,pg) %>
+				<%= link_to " [X],", [@project,pg], :method => :delete, :data => { :confirm => "Delete package '#{pg.name}'?"} %>
+			<% end %>
+		</td>
+	</tr>
+
 </table>
 <p/>
 

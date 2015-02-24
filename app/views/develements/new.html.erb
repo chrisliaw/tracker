@@ -57,7 +57,16 @@
           <% end -%>
         </td>
       </tr>
-    <% end %>
+		<% end %>
+
+		<% if @project.packages.size > 0 %>
+			<tr>
+				<td class="field">Packages : </td>
+				<td>
+					<%= f.select :package_id, @project.packages.collect { |p| [p.name,p.id] }, :include_blank => true %>
+				</td>
+			</tr>
+		<% end %>
 
     <tr>
       <td></td>

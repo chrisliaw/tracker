@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20140823084040) do
+ActiveRecord::Schema.define(:version => 20150224141627) do
 
   create_table "attachments", :force => true do |t|
     t.string   "attachable_type"
@@ -71,6 +71,7 @@ ActiveRecord::Schema.define(:version => 20140823084040) do
     t.string   "parent_id"
     t.datetime "created_at",         :null => false
     t.datetime "updated_at",         :null => false
+    t.string   "package_id"
   end
 
   create_table "dvcs_configs", :force => true do |t|
@@ -115,6 +116,23 @@ ActiveRecord::Schema.define(:version => 20140823084040) do
     t.string   "state"
     t.string   "rights"
     t.string   "submitted_by"
+  end
+
+  create_table "packages", :force => true do |t|
+    t.string   "identifier"
+    t.string   "name"
+    t.string   "data_hash"
+    t.datetime "created_at", :null => false
+    t.datetime "updated_at", :null => false
+  end
+
+  create_table "project_packages", :force => true do |t|
+    t.string   "identifier"
+    t.string   "project_id"
+    t.string   "package_id"
+    t.string   "data_hash"
+    t.datetime "created_at", :null => false
+    t.datetime "updated_at", :null => false
   end
 
   create_table "projects", :force => true do |t|

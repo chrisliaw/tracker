@@ -458,5 +458,4 @@ class ProjectsController < ApplicationController
 		render :layout => false
   end
 
-
 end

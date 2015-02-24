@@ -1,5 +1,7 @@
 Tracker::Application.routes.draw do
 
+
+
   get "sync_merge/index"
 
   get "sync_merge/show"
@@ -67,6 +69,7 @@ Tracker::Application.routes.draw do
   end
 
   resources :projects do
+		resources :packages
 		resources :attachments
     resources :commits
     resources :issues do

@@ -12,6 +12,9 @@ class Project < ActiveRecord::Base
   has_many :schedules, :as => :schedulable
   has_many :commits, :as => :committable
 
+	has_many :project_packages
+	has_many :packages, :through => :project_packages
+
   validates :code, :presence => true, :uniqueness => { :case_sensitive => false } #, :on => :create
 
 	def open_schedules
