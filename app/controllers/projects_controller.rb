@@ -8,7 +8,7 @@ class ProjectsController < ApplicationController
 			@projects = Project.where(["category_tags like ? or category_tags like ? or category_tags like ? or category_tags like ?","#{@tag}","%,#{@tag},%","#{@tag},%","%,#{@tag}"]).order(:name)
 		else
 			if @filter_status != nil
-				@projects = Project.where(["state = ?",@filter_status])
+				@projects = Project.where(["state = ?",@filter_status]).order(:name)
 			else
 				@projects = Project.where(["state = ? or state = ?","active","evaluation"]).order(:name)
 				@filter_status = -1
@@ -410,9 +410,9 @@ class ProjectsController < ApplicationController
 		else
 			if @filter_status != nil and not @filter_status.empty?
 				if @filter_status == "-1"
-					@projects = Project.where(["state = ? or state = ?","active","evaluation"])
+					@projects = Project.where(["state = ? or state = ?","active","evaluation"]).order(:name)
 				else
-					@projects = Project.where(["state = ?",@filter_status])
+					@projects = Project.where(["state = ?",@filter_status]).order(:name)
 				end
 			else
 				@projects = Project.all :order => :name
