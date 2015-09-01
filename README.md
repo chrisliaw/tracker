@@ -47,7 +47,7 @@ Client node is the node which intended to pull records from servicing node.
 Servicing node is the ndoe which allow client incoming connection for records synchronization
 
 1. When a node wants to pull record from other node, it has become a client node
-2. *[Client Node]* User go to Data Sync -> Sync Client. From the GUI, the Server Host is the root url of the servicing node. The URL shall need to include the port for example http://10.0.1.1:3010 as Server Host. For initial, client node should be using Pull Operation.
+2. **[Client Node]** User go to Data Sync -> Sync Client. From the GUI, the Server Host is the root url of the servicing node. The URL shall need to include the port for example http://10.0.1.1:3010 as Server Host. For initial, client node should be using Pull Operation.
 3. [Client Node] For first invocation, the client node shall receive error message indicating failed to login to host and this is normal. This is due to servicing node need to authenticate the client node. All the client information including unique node ID and user ID is sent to servicing node for authentication on the first invocation.
 4. [Client Node] Client node now has to wait for the servicing node to authorize the client node.
 5. [Servicing Node] User go to Data Sync -> Sync Service. From the Synchronization User list, the user should see there is a user with status 'Pending'. Click on the user ID and servicing node user can verify new user by click on Verified User. Verified user shall changed the status to 'Active'. Once the user ID is active, the client node can now sync with the servicing node. Remote user is said has been authorized to access the servicing node.
