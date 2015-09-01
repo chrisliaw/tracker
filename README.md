@@ -43,20 +43,17 @@ The operation of the node is similar to git model.
 
 ### Sync Process
 
-Client node is by default each node is since each node started as no issue created. When node is client node, user can Data Sync -> Sync Client. From the GUI, the Server GUI is the root url of the servicing node. The URL shall need to include the port for example http://10.0.1.1:3010 as server URL. 
+Client node is the node which intended to pull records from servicing node.
+Servicing node is the ndoe which allow client incoming connection for records synchronization
 
-For initial, client node should be using Pull Operation.
+1. When a node wants to pull record from other node, it has become a client node
+2. [Client Node] User go to Data Sync -> Sync Client. From the GUI, the Server Host is the root url of the servicing node. The URL shall need to include the port for example http://10.0.1.1:3010 as Server Host. For initial, client node should be using Pull Operation.
+3. [Client Node] For first invocation, the client node shall receive error message indicating failed to login to host and this is normal. This is due to servicing node need to authenticate the client node. All the client information including unique node ID and user ID is sent to servicing node for authentication on the first invocation.
+4. [Client Node] Client node now has to wait for the servicing node to authorize the client node.
+5. [Servicing Node] User go to Data Sync -> Sync Service. From the Synchronization User list, the user should see there is a user with status 'Pending'. Click on the user ID and servicing node user can verify new user by click on Verified User. Verified user shall changed the status to 'Active'. Once the user ID is active, the client node can now sync with the servicing node. Remote user is said has been authorized to access the servicing node.
+6. [Servicing Node] User go to Data Sync -> Nodes and there should be a new node with status 'Pending' in the list. The identifier value is the same as the client node identifier. This client node identifier is located at the footer of the client node GUI. The servicing user can verify this with client node. After verified with client node, servicing node user can click on 'Verified Node' to authorize the client node to access.
+7. [Servicing Node] After verify and authorize the client node, servicing node user shall need to click on 'Edit' to define if the particular client node is allow to pull, push and pull or no access. Servicing user can define what this client node user can do from this servicing node.
+8. [Client Node] Client node now again go to Data Sync -> Sync Client and enter the same servicing node URL into the Server Host field. Select 'Pull Operation' and click 'Start' and client shall sync all the issues from servicing node to client node. It might take a long time if the client node first time sync with servicing node.
 
-For first invocation, the client node shall receive error message indicating failed to login to host. This is due to servicing node need to authenticate the client node. All the client information including unique node ID and user ID is sent to servicing node for authentication.
+In a nutshell, servicing node is verifying user at two levels, user (via public private keypair) and node unique ID, together with operation that can be performed by the node.
 
-Client node now has to wait for the servicing node to authorize the client node to access.
-
-From the servicing node, the servicing node user has to go to Data Sync -> Sync Service. From the Synchronization User list, the user should see there is a user with status 'Pending'. Click on the user ID and servicing node user can verify user by click on Verified User. Verified user shall changed the status to 'Active'. Once the user ID is active, the client node can not sync with the servicing node. Now the user has been authorized to sync with the servicing node.
-
-From servicing node as well, user has to go to Data Sync -> Nodes and there should be a new node with status 'Pending' in the list. The identifier value is the same as the client node identifier, located at the footer of the client node GUI after the Node ID. The servicing user can verify this with client node via other channels. After verified with client node, servicing node user can click on 'Verified Node' to authorize the client node to access.
-
-After verify and authorize the client node, servicing node user shall need to click on 'Edit' to define if the particular client node is allow to pull, push and pull or no access. Servicing user can define what this client node user can do from this servicing node.
-
-In nutshell, servicing node is verifying user on two levels, user ID (via public private keypair) and node ID unique ID, together with operation that can be performed by the node.
-
-Client node now again go to Data Sync -> Sync Client and enter the same servicing node URL into the Server Host field. Select 'Pull Operation' and click 'Start' and client shall sync all the issues from servicing node to client node. For this time pull, it might take a long time if the client node first time sync with servicing node.
