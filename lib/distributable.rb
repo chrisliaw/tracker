@@ -18,8 +18,8 @@ module Distributable
       before_create :generate_identifier 
       after_save :generate_hash  # log new and update changes inside this 
 
-      #after_create :log_new_change
-      #after_update :log_update_change
+      after_create :log_new_change
+      after_update :log_update_change
       after_destroy :log_destroy_change
 
       validates options[:distribution_key].to_sym, :uniqueness => true
@@ -98,7 +98,9 @@ module Distributable
     end
 
     def generate_hash
-      if @hash_generated == nil or @hash_generated != true
+			hash = self.send("#{self.class.options[:hash_field_name]}")
+      #if @hash_generated == nil or @hash_generated != true
+			if hash == nil 
 
         #if self.class.options[:hash_list] != nil and self.class.options[:hash_list].is_a?(Array)
         #  data = []
@@ -112,11 +114,12 @@ module Distributable
         #end
 
       #else
-        if self.send("#{self.class.options[:hash_field_name]}") == nil
-          log_new_change
-        else
-          log_update_change
-        end
+				# This check might not be reliable as data sync from other notes might have the hash field!
+        #if self.send("#{self.class.options[:hash_field_name]}") == nil
+        #  log_new_change
+        #else
+        #  log_update_change
+        #end
 
         cols = []
         self.class.columns.each do |c|
@@ -128,7 +131,7 @@ module Distributable
           data << self.send(c.to_sym) if self.class.options[:skippedCols] != nil and !self.class.options[:skippedCols].include?(c)
         end
         self.send("#{self.class.options[:hash_field_name]}=",Digest::SHA1.hexdigest("#{data.join}"))
-        @hash_generated = true # make sure second time call (save statement after this line) it stops and will not fall into infinite loop
+        #@hash_generated = true # make sure second time call (save statement after this line) it stops and will not fall into infinite loop
         self.save!
       end
     end
