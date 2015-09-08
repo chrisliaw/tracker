@@ -109,7 +109,11 @@ class SyncServiceController < ApplicationController
 					out,sl = Distributable::GenerateDelta.call(nodeID,SyncLogs::PULL_REF,logger)
 					@out = Struct::SyncStatus.new(200,out)
 					# make sync log permanant
-					sl.save if sl != nil
+					if sl != nil
+						sl.last_sync_from = request.remote_ip
+						sl.save
+					end
+					#sl.save if sl != nil
 					#@out = pull(nodeID)
 				else
 					@out = Struct::SyncStatus.new(401,"Your node is not allow to pull from this host")
@@ -138,6 +142,11 @@ class SyncServiceController < ApplicationController
 		# TODO : Can this node and user id push?
 		@syncHistory = SyncLogs.where(["node_id = ? and direction = ?",nodeID,SyncLogs::PULL_REF])
 		cutOffChange = ChangeLogs.last
+		# when this node is virgin node...
+		if cutOffChange == nil
+			cutOffChange = ChangeLogs.new
+			cutOffChange.id = 0
+		end
 		if @syncHistory.length > 0 and cutOffChange.id == @syncHistory[0].last_change_log_id # this show the client node is in sync with my node
 
 			# store the result in case error happened later
@@ -190,9 +199,22 @@ class SyncServiceController < ApplicationController
 							@newRecords[mas.to_s].each do |rec|
 								obj = eval("#{mas.to_s.classify}.new")
 								rec.each do |k,v|
-									obj.send("#{k}=",v) if ignoredFields[mas.to_s] != nil and ignoredFields[mas.to_s].include?(k)
+									puts "processing : #{v}"
+									#obj.send("#{k}=",v) if ignoredFields[mas.to_s] != nil and not ignoredFields[mas.to_s].include?(k)
+									if ignoredFields[mas] != nil and not ignoredFields[mas].include?(k)
+										obj.send("#{k}=",v)
+										puts "#{k} field set!"
+									else
+										if ignoredFields[:default] != nil and not ignoredFields[:default].include?(k)
+											obj.send("#{k}=",v)
+											puts "#{k} field set!"
+										else
+											puts "#{k} field skipped!"
+										end
+									end
 								end
 
+								p obj
 								save_new_object(obj,mas.to_s,hist,log)
 								#if obj.identifier != nil and obj.identifier.empty?
 								#	dup = eval("#{mas.to_s.classify}.where([\"identifier = ?\",obj.identifier])")
@@ -499,7 +521,7 @@ class SyncServiceController < ApplicationController
 	end
 
 	def save_new_object(object,class_name,history,log)
-		if object.identifier != nil and object.identifier.empty?
+		if object.identifier != nil and not object.identifier.empty?
 			dup = eval("#{class_name.to_s.classify}.where([\"identifier = ?\",object.identifier])")
 			if dup.length > 0
 				# Identifier duplicated between remote and local node
