@@ -64,6 +64,14 @@ module Distributable
 
 			else
 				# no ChangeLogs record means there is no changes being made...
+				# Still need to keep to make the use case new node being pushed from remote workable
+				@sl = SyncLogs.new
+				@sl.node_id = nodeID
+				@sl.last_change_log_id = 0
+				#sl.direction = SyncLogs::PULL_REF
+				@sl.direction = direction
+				#@sl.save
+
 			end # end if cutOffChange != nil
 
 		else
@@ -122,7 +130,7 @@ module Distributable
 				#@sl.save
 
 			else
-				# no ChangeLogs record means there is no changes being made...
+				# no ChangeLogs record means there is no changes being made here...
 			end # end if cutOffChange != nil
 
 		end
