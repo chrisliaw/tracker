@@ -1,0 +1,15 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/Fixtures.html
+
+one:
+  sync_history_id: 1
+  table_name: MyString
+  identifier: MyString
+  operation: 1
+  status: 1
+
+two:
+  sync_history_id: 1
+  table_name: MyString
+  identifier: MyString
+  operation: 1
+  status: 1
