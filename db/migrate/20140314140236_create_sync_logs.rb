@@ -1,5 +1,7 @@
 class CreateSyncLogs < ActiveRecord::Migration
   def change
+		# Keep track of local pointer where has this remote
+		# node sync with local node
     create_table :sync_logs do |t|
       t.string  :node_id
       t.string  :user_id
