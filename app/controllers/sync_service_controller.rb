@@ -12,6 +12,7 @@ class SyncServiceController < ApplicationController
 			if user.length > 0
 				if user[0].state == "active"
 					status,p7 = AnCAL::DataSign::PKCS7::VerifyData.call(certs[0],clientNodeID) do |ok,ctx|
+						# TODO Verify signed field instead
 						if ctx.current_cert != nil and ctx.current_cert.to_pem == user[0].cert
 							true
 						else
