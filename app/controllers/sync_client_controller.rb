@@ -84,13 +84,6 @@ class SyncClientController < ApplicationController
 					@syncSummary[:crashed] = {}
 					@syncSummary[:incons] = {} # inconsistant record
 
-		# for report purposes
-		@newCount = 0
-		@delCount = 0
-		@editCount = 0
-		@crashCount = 0
-		@errCount = 0
-
 		if @result["status"] == 200
 			@token = @result["token"]
 			@server_id = @result["server_id"]
