@@ -155,15 +155,16 @@ class SyncClientController < ApplicationController
 												end
 											end
 
-											st = obj.save
+											save_new_object(obj,mas.to_s,hist,log)
+											#st = obj.save
 
 											log.debug "#{mas.to_s} / #{obj.identifier} created as new"
-											shd = SyncHistoryDetail.new
-											shd.table_name = mas.to_s
-											shd.identifier = obj.identifier
-											shd.operation = SyncHistoryDetail::NEW_RECORD
-											shd.status = st
-											hist.sync_history_details << shd
+											#shd = SyncHistoryDetail.new
+											#shd.table_name = mas.to_s
+											#shd.identifier = obj.identifier
+											#shd.operation = SyncHistoryDetail::NEW_RECORD
+											#shd.status = st
+											#hist.sync_history_details << shd
 
 											@syncSummary[:newRecord][mas] = [] if @syncSummary[:newRecord][mas] == nil
 											@syncSummary[:newRecord][mas] << obj.id
@@ -190,15 +191,17 @@ class SyncClientController < ApplicationController
 											end
 										end
 
-										res = obj.save
-											shd = SyncHistoryDetail.new
-											shd.table_name = type
-											shd.identifier = obj.identifier
-											shd.operation = SyncHistoryDetail::NEW_RECORD
-											shd.status = res
-											hist.sync_history_details << shd
+										save_new_object(obj,type,hist,log)
+										#res = obj.save
+										#	shd = SyncHistoryDetail.new
+										#	shd.table_name = type
+										#	shd.identifier = obj.identifier
+										#	shd.operation = SyncHistoryDetail::NEW_RECORD
+										#	shd.status = res
+										#	shd.notes = obj.errors.full_messages.join(" / ") if res == false
+										#	hist.sync_history_details << shd
 
-										log.debug "#{type} / #{obj.identifier} created as new (#{res})"
+										#log.debug "#{type} / #{obj.identifier} created as new (#{res})"
 
 										@syncSummary[:newRecord][type.to_sym] = [] if @syncSummary[:newRecord][type.to_sym] == nil
 										@syncSummary[:newRecord][type.to_sym] << obj.id
@@ -339,6 +342,13 @@ class SyncClientController < ApplicationController
 								# should local delete because remote node deleted the record?? hmm...
 								# If there is not changes at local, i.e. no commits, no changes, no record depending on this, can be removed...
 								v.each do |id|
+									log.debug "#{k} / #{v} is found deleted at remote node"
+									shd = SyncHistoryDetail.new
+									shd.table_name = k
+									shd.identifier = id
+									shd.operation = SyncHistoryDetail::DEL_RECORD
+									hist.sync_history_details << shd
+
 									begin
 										obj = eval("#{k.classify}.find('#{id}')")
 										@syncSummary[:delRecord][k.to_sym] = [] if @syncSummary[:delRecord][k.to_sym] == nil
@@ -348,12 +358,12 @@ class SyncClientController < ApplicationController
 										next
 									end
 
-									log.debug "#{k} / #{v} is considered deleted record"
-											shd = SyncHistoryDetail.new
-											shd.table_name = k
-											shd.identifier = id
-											shd.operation = SyncHistoryDetail::DEL_RECORD
-											hist.sync_history_details << shd
+									#log.debug "#{k} / #{v} is considered deleted record"
+									#		shd = SyncHistoryDetail.new
+									#		shd.table_name = k
+									#		shd.identifier = id
+									#		shd.operation = SyncHistoryDetail::DEL_RECORD
+									#		hist.sync_history_details << shd
 								end
 							end
 							# done deleted record processing
@@ -408,12 +418,14 @@ class SyncClientController < ApplicationController
 
 											res = obj.save
 											@edited << id
-										log.debug "#{k.classify} / #{obj.identifier} is edited record with no crashing"
+
+											log.debug "#{k.classify} / #{obj.identifier} is edited record with no crashing"
 											shd = SyncHistoryDetail.new
 											shd.table_name = k
 											shd.identifier = obj.identifier
 											shd.operation = SyncHistoryDetail::UPDATE_RECORD
 											shd.status = res
+											shd.notes = res.errors.full_messages.join(" / ") if res == false
 											hist.sync_history_details << shd
 									end
 
@@ -487,6 +499,7 @@ class SyncClientController < ApplicationController
 													shd.identifier = objj.identifier
 													shd.operation = SyncHistoryDetail::UPDATE_RECORD
 													shd.status = res
+													shd.notes = res.errors.full_messages.join(" / ") if res == false
 													shd.crash_flag = SyncHistoryDetail::NO_CRASH
 													hist.sync_history_details << shd
 												else
@@ -707,5 +720,38 @@ class SyncClientController < ApplicationController
 			# target node cert not avail in the signature!
 			[false,"Target node did not provide any valid token to further processing"]
 		end
+	end
+
+	def save_new_object(object,class_name,history,log)
+		if object.identifier != nil and not object.identifier.empty?
+			dup = eval("#{class_name.to_s.classify}.where([\"identifier = ?\",object.identifier])")
+			if dup.length > 0
+				# Identifier duplicated between remote and local node
+				shd = SyncHistoryDetail.new
+				shd.table_name = class_name.to_s
+				shd.identifier = object.identifier
+				shd.operation = SyncHistoryDetail::NEW_RECORD
+				shd.crash_flag = SyncHistoryDetail::CRASHED
+				shd.notes = "Record #{object.inspect} has duplicate identifier with #{dup[0].inspect} (#{dup.length})"
+				history.sync_history_details << shd
+			else
+				st = object.save
+				shd = SyncHistoryDetail.new
+				shd.table_name = class_name.to_s
+				shd.identifier = object.identifier
+				shd.operation = SyncHistoryDetail::NEW_RECORD
+				shd.status = st
+				shd.notes = object.errors.full_messages.join(" / ") if st == false
+				history.sync_history_details << shd
+
+				log.debug "#{class_name.classify} / #{object.identifier} created as new (#{st})"
+			end
+
+		else
+			log.error "Incoming record #{object.inspect} has null/empty identifier. Issue at remote node. Data pull shall abort."
+			# Incoming record has null/empty identifier??
+			raise Exception, "Incoming record #{object.inspect} has null/empty identifier. Issue at remote node. Data pull shall abort."
+		end
+
 	end
 end

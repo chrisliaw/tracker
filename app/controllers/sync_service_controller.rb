@@ -146,7 +146,11 @@ class SyncServiceController < ApplicationController
 			hist.sync_session_id = token
 			hist.sync_data = uploaded
 			hist.status = SyncHistory::INCOMPLETE
+			hist.host = request.remote_ip
+			hist.direction = SyncLogs::PUSH_REF
 			hist.save
+
+			log = Logger.new File.join(Rails.root,"log","sync_push.log"), 'daily'
 
 			@syncSummary = {}
 			@syncSummary[:newRecord] = {}
@@ -177,25 +181,79 @@ class SyncServiceController < ApplicationController
 					@delRecords = @result["delRec"]
 					@editRecords = @result["changedRec"]
 
-					# for new record, check project first since there is the root of all linkage
-					if @newRecords["projects"] != nil
-						@newRecords["projects"].each do |rec|
-							proj = Project.new
-							rec.each do |k,v|
-								proj.send("#{k}=",v) if ignoredFields[:projects] != nil and not ignoredFields[:projects].include?(k)
+					# These are the master tables which needs to be created the data first before 
+					# subsequent data can be created due to field linkages
+					master = [:projects, :schedules, :variances, :version_controls, :packages]
+					# Start transaction for master record only
+					master.each do |mas|
+						if @newRecords[mas.to_s] != nil
+							@newRecords[mas.to_s].each do |rec|
+								obj = eval("#{mas.to_s.classify}.new")
+								rec.each do |k,v|
+									obj.send("#{k}=",v) if ignoredFields[mas.to_s] != nil and ignoredFields[mas.to_s].include?(k)
+								end
+
+								save_new_object(obj,mas.to_s,hist,log)
+								#if obj.identifier != nil and obj.identifier.empty?
+								#	dup = eval("#{mas.to_s.classify}.where([\"identifier = ?\",obj.identifier])")
+								#	if dup.length > 0
+								#		# Identifier duplicated between remote and local node
+								#		shd = SyncHistoryDetail.new
+								#		shd.table_name = mas.to_s
+								#		shd.identifier = obj.identifier
+								#		shd.operation = SyncHistoryDetail::NEW_RECORD
+								#		shd.crash_flag = SyncHistoryDetail::CRASHED
+								#		shd.notes = "Record #{obj.inspect} has duplicate identifier with #{dup[0].inspect} (#{dup.length})"
+								#		hist.sync_history_details << shd
+								#	else
+								#		st = obj.save
+								#		shd = SyncHistoryDetail.new
+								#		shd.table_name = mas.to_s
+								#		shd.identifier = obj.identifier
+								#		shd.operation = SyncHistoryDetail::NEW_RECORD
+								#		shd.status = st
+								#		shd.notes = obj.errors.full_messages.join(" / ") if st == false
+								#		hist.sync_history_details << shd
+								#	end
+
+								#else
+								#	log.error "Incoming record #{obj.inspect} has null/empty identifier. Issue at remote node. Data pull shall abort."
+								#	# Incoming record has null/empty identifier??
+								#	raise Exception, "Incoming record #{obj.inspect} has null/empty identifier. Issue at remote node. Data pull shall abort."
+								#end
+								## check for duplicate identifier
+								#dupProj = Project.where(["identifier = ?",proj.identifier])
+								#if dupProj.length > 0
+								#	# DUPLICATED?????? DAMN!!
+								#	#proj.identifier = "#{proj.identifier}-d"
+								#else
+
+								#end
+								#proj.save
 							end
-							# check for duplicate identifier?
-							dupProj = Project.where(["identifier = ?",proj.identifier])
-							if dupProj.length > 0
-								# DUPLICATED?????? DAMN!!
-								proj.identifier = "#{proj.identifier}-d"
-							end
-							proj.save
 						end
+
 					end
 
+					#if @newRecords["projects"] != nil
+					#	@newRecords["projects"].each do |rec|
+					#		proj = Project.new
+					#		rec.each do |k,v|
+					#			proj.send("#{k}=",v) if ignoredFields[:projects] != nil and not ignoredFields[:projects].include?(k)
+					#		end
+					#		# check for duplicate identifier?
+					#		dupProj = Project.where(["identifier = ?",proj.identifier])
+					#		if dupProj.length > 0
+					#			# DUPLICATED?????? DAMN!!
+					#			proj.identifier = "#{proj.identifier}-d"
+					#		end
+					#		proj.save
+					#	end
+					#end
+
 					@newRecords.keys.each do |type|
-						next if type.to_sym == :projects
+						#next if type.to_sym == :projects
+						next if master.include?(type.to_sym) # == :projects
 						@newRecords[type].each do |rec|
 							obj = eval("#{type.classify}.new")
 							rec.each do |k,v|
@@ -210,7 +268,8 @@ class SyncServiceController < ApplicationController
 								end
 							end
 
-							obj.save
+							#obj.save
+							save_new_object(obj,type,hist,log)
 
 							@syncSummary[:newRecord][type.to_sym] = [] if @syncSummary[:newRecord][type.to_sym] == nil
 							@syncSummary[:newRecord][type.to_sym] << obj.id
@@ -222,6 +281,13 @@ class SyncServiceController < ApplicationController
 						# should local delete because remote node deleted the record?? hmm...
 						# If there is not changes at local, i.e. no commits, no changes, no record depending on this, can be removed...
 						v.each do |id|
+							log.debug "#{k} / #{v} is found deleted at remote node"
+							shd = SyncHistoryDetail.new
+							shd.table_name = k
+							shd.identifier = id
+							shd.operation = SyncHistoryDetail::DEL_RECORD
+							hist.sync_history_details << shd
+
 							begin
 								obj = eval("#{k.classify}.find('#{id}')")
 								@syncSummary[:delRecord][k.to_sym] = [] if @syncSummary[:delRecord][k.to_sym] == nil
@@ -233,7 +299,12 @@ class SyncServiceController < ApplicationController
 						end
 					end
 
-					# All changes just merged with local record
+					# All changes just merge with local record
+					# No crash check is done here due to:
+					# 1. Before push by remote node, they should already pull and merge with their local data.
+					# 	 Hence the remote data already merged wth local data and is considered in sync 
+					# 	 before push can be done from remote node.
+					# This is borrow from git workflow...
 					@edited = []
 					@editRecords.each do |k,v|
 						v.each do |rec|
@@ -426,4 +497,36 @@ class SyncServiceController < ApplicationController
 			false
 		end
 	end
+
+	def save_new_object(object,class_name,history,log)
+		if object.identifier != nil and object.identifier.empty?
+			dup = eval("#{class_name.to_s.classify}.where([\"identifier = ?\",object.identifier])")
+			if dup.length > 0
+				# Identifier duplicated between remote and local node
+				shd = SyncHistoryDetail.new
+				shd.table_name = class_name.to_s
+				shd.identifier = object.identifier
+				shd.operation = SyncHistoryDetail::NEW_RECORD
+				shd.crash_flag = SyncHistoryDetail::CRASHED
+				shd.notes = "Record #{object.inspect} has duplicate identifier with #{dup[0].inspect} (#{dup.length})"
+				history.sync_history_details << shd
+			else
+				st = object.save
+				shd = SyncHistoryDetail.new
+				shd.table_name = class_name.to_s
+				shd.identifier = object.identifier
+				shd.operation = SyncHistoryDetail::NEW_RECORD
+				shd.status = st
+				shd.notes = object.errors.full_messages.join(" / ") if st == false
+				history.sync_history_details << shd
+			end
+
+		else
+			log.error "Incoming record #{object.inspect} has null/empty identifier. Issue at remote node. Data pull shall abort."
+			# Incoming record has null/empty identifier??
+			raise Exception, "Incoming record #{object.inspect} has null/empty identifier. Issue at remote node. Data pull shall abort."
+		end
+
+	end
+
 end
