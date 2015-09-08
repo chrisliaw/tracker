@@ -12,28 +12,66 @@
 	</tr>
 	<tr>
 		<td class="field">New Record Count : </td>
-		<td><%= @syncSummary[:newRecord].length %></td>
-	</tr>
-	<tr>
-		<td class="field">Deleted Record Count : </td>
-		<td><%= @syncSummary[:delRecord].length %></td>
+		<% if @history != nil %>
+		<td><%= SyncHistoryDetail.where(["sync_history_id = ? and operation = ?",@history.id,SyncHistoryDetail::NEW_RECORD]).length %></td>
+		<% else %>
+			<td>0</td>
+		<% end %>
 	</tr>
 	<tr>
 		<td class="field">Edited Record Count : </td>
-		<td><%= @syncSummary[:editedRecord].length %></td>
+		<% if @history != nil %>
+		<td><%= SyncHistoryDetail.where(["sync_history_id = ? and operation = ? and crash_flag != ?",@history.id,SyncHistoryDetail::UPDATE_RECORD,SyncHistoryDetail::IGNORED]).length %></td>
+		<% else %>
+			<td>0</td>
+		<% end %>
+	</tr>
+	<tr>
+		<td class="field">Ignored Record Count : </td>
+		<% if @history != nil %>
+		<td><%= SyncHistoryDetail.where(["sync_history_id = ? and operation = ? and crash_flag = ?",@history.id,SyncHistoryDetail::UPDATE_RECORD,SyncHistoryDetail::IGNORED]).length %></td>
+		<% else %>
+			<td>0</td>
+		<% end %>
 	</tr>
 	<tr>
 		<td class="field">Conflicted Record Count : </td>
-		<td>
-			<% if @syncSummary[:crashed].length > 0 %>
-				<%= link_to @syncSummary[:crashed].length, sync_merge_index_path %>
+		<% if @history != nil %>
+			<% cnt = SyncHistoryDetail.where(["sync_history_id = ? and operation = ? and crash_flag = ?",@history.id,SyncHistoryDetail::UPDATE_RECORD,SyncHistoryDetail::CRASHED]).length %>
+			<% if cnt > 0 %>
+				<td><%= link_to cnt, sync_merge_index_path %></td>
 			<% else %>
-				<%= @syncSummary[:crashed].length %>
+				<td>0</td>
 			<% end %>
-		</td>
+		<% else %>
+				<td>0</td>
+		<% end %>
 	</tr>
 	<tr>
-		<td class="field"></td>
-		<td></td>
+		<td class="field">Failed to create record count : </td>
+		<% if @history != nil %>
+			<% cnt = SyncHistoryDetail.where(["sync_history_id = ? and operation = ? and status = 0",@history.id,SyncHistoryDetail::NEW_RECORD]).length %>
+			<% if cnt > 0 %>
+				<td><%= link_to cnt, sync_merge_index_path %></td>
+			<% else %>
+				<td>0</td>
+			<% end %>
+		<% else %>
+				<td>0</td>
+		<% end %>
 	</tr>
+	<tr>
+		<td class="field">Failed to update record count : </td>
+		<% if @history != nil %>
+			<% cnt = SyncHistoryDetail.where(["sync_history_id = ? and operation = ? and status = 0",@history.id,SyncHistoryDetail::UPDATE_RECORD]).length %>
+			<% if cnt > 0 %>
+				<td><%= link_to cnt, sync_merge_index_path %></td>
+			<% else %>
+				<td>0</td>
+			<% end %>
+		<% else %>
+				<td>0</td>
+		<% end %>
+	</tr>
+
 </table>

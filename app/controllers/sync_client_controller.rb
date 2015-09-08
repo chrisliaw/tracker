@@ -84,6 +84,12 @@ class SyncClientController < ApplicationController
 					@syncSummary[:crashed] = {}
 					@syncSummary[:incons] = {} # inconsistant record
 
+		# for report purposes
+		@newCount = 0
+		@delCount = 0
+		@editCount = 0
+		@crashCount = 0
+		@errCount = 0
 
 		if @result["status"] == 200
 			@token = @result["token"]
@@ -108,25 +114,174 @@ class SyncClientController < ApplicationController
 					hist.sync_data = @result["status_message"].to_json
 					hist.status = SyncHistory::INCOMPLETE
 					hist.host = host
+					hist.direction = SyncLogs::PULL_REF
 					hist.save
 
-					#@syncSummary = {}
-					#@syncSummary[:newRecord] = {}
-					#@syncSummary[:delRecord] = {}
-					#@syncSummary[:editedRecord] = {}
-					#@syncSummary[:crashed] = {}
-					#@syncSummary[:incons] = {} # inconsistant record
+					log = Logger.new File.join(Rails.root,"log","sync_pull.log"), 'daily'
 
 					ActiveRecord::Base.transaction do
+
+						# These are the master tables which needs to be created the data first before 
+						# subsequent data can be created due to field linkages
+						master = [:projects, :schedules, :variances, :version_controls, :packages]
+						# Start transaction for master record only
+						#ActiveRecord::Base.transaction do
+
+							# ignore the code field...
+							ignoredFields = {}
+							ignoredFields[:default] = %W(created_at updated_id id)
+							master.each do |ma|
+								ignoredFields[ma] = ignoredFields[:default]
+							end
+							#ignoredFields[:projects] = ignoredFields[:default]
+							ignoredFields[:projects] += %W(category_tags)
+							#ignoredFields[:schedules] = ignoredFields[:default]
+
+							# check is there any old history which is not yet completed...
+							pending = SyncHistory.where(["status = ?",SyncHistory::INCOMPLETE])
+							# New record is saved before come here hence there is at least one incomplete record...
+							pending.each do |pend|
+								@result = JSON.parse(pend.sync_data)
+								logger.debug "Processing new data for master first #{@result}"
+								@newRecords = @result["newRec"] 
+
+								master.each do |mas|
+									if @newRecords[mas.to_s] != nil
+										@newRecords[mas.to_s].each do |rec|
+
+											obj = eval("#{mas.to_s.classify}.new")
+											rec.each do |k,v|
+												if ignoredFields[mas.to_s] != nil
+													if not ignoredFields[mas.to_s].include?(k)
+														obj.send("#{k}=",v)
+													end
+												else
+													if not ignoredFields[:default].include?(k)
+														obj.send("#{k}=",v)
+													end
+												end
+											end
+
+											st = obj.save
+
+											log.debug "#{mas.to_s} / #{obj.identifier} created as new"
+											shd = SyncHistoryDetail.new
+											shd.table_name = mas.to_s
+											shd.identifier = obj.identifier
+											shd.operation = SyncHistoryDetail::NEW_RECORD
+											shd.status = st
+											hist.sync_history_details << shd
+
+											@syncSummary[:newRecord][mas] = [] if @syncSummary[:newRecord][mas] == nil
+											@syncSummary[:newRecord][mas] << obj.id
+
+										end  # end 
+									end
+
+								end # end looping master tables
+
+								# continue other new record
+								@newRecords.keys.each do |type|
+									next if master.include?(type.to_sym) # == :projects or type.to_sym == :schedules
+									@newRecords[type].each do |rec|
+										obj = eval("#{type.classify}.new")
+										rec.each do |k,v|
+											if ignoredFields[type.to_sym] != nil
+												if not ignoredFields[type.to_sym].include?(k)
+													obj.send("#{k}=",v)
+												end
+											else
+												if not ignoredFields[:default].include?(k)
+													obj.send("#{k}=",v)
+												end
+											end
+										end
+
+										res = obj.save
+											shd = SyncHistoryDetail.new
+											shd.table_name = type
+											shd.identifier = obj.identifier
+											shd.operation = SyncHistoryDetail::NEW_RECORD
+											shd.status = res
+											hist.sync_history_details << shd
+
+										log.debug "#{type} / #{obj.identifier} created as new (#{res})"
+
+										@syncSummary[:newRecord][type.to_sym] = [] if @syncSummary[:newRecord][type.to_sym] == nil
+										@syncSummary[:newRecord][type.to_sym] << obj.id
+									end
+								end
+								# done looping new record from remote node
+
+
+								## for new record, check project first since there is the root of all linkage...
+								## Project has to commit first due to later there are references needs valid project data in database
+								#if @newRecords["projects"] != nil
+								#	@newRecords["projects"].each do |rec|
+								#		puts "New project from upstream #{rec}"
+								#		proj = Project.new
+								#		rec.each do |k,v|
+								#			proj.send("#{k}=",v) if ignoredFields[:projects] != nil and not ignoredFields[:projects].include?(k)
+								#		end
+								#		# check for duplicate identifier?
+								#		dupProj = Project.where(["identifier = ?",proj.identifier])
+								#		if dupProj.length > 0
+								#			# DUPLICATED?????? DAMN!!
+								#			logger.warn "Duplicated project identifier? #{proj.identifier}"
+								#			#proj.identifier = "#{proj.identifier}-d"
+								#		else
+								#			proj.save
+
+								#			@syncSummary[:newRecord][:projects] = [] if @syncSummary[:newRecord][:projects] == nil
+								#			@syncSummary[:newRecord][:projects] << proj.id
+								#		end  # end duplicate project check
+								#	end  # end new record on project looping
+								#end
+								## done looping new project from remote node
+								#
+								## for new record, check schedule second since there is the develement/issues might bind to schedule as well
+								## Schedule has to commit next due to later there are references needs valid schedule data in database
+								#if @newRecords["schedules"] != nil
+								#	@newRecords["schedules"].each do |rec|
+								#		puts "New schedule from upstream #{rec}"
+								#		schedule = Schedule.new
+								#		rec.each do |k,v|
+								#			schedule.send("#{k}=",v) if ignoredFields[:schedules] != nil and not ignoredFields[:schedules].include?(k)
+								#		end
+								#		# check for duplicate identifier?
+								#		dupSche = Schedule.where(["identifier = ?",schedule.identifier])
+								#		if dupSche.length > 0
+								#			# DUPLICATED?????? DAMN!!
+								#			logger.warn "Duplicated schedule identifier? #{schedule.identifier}"
+								#			# this is wrong! all child data link to crashed identifier
+								#			#proj.identifier = "#{schedule.identifier}-d"
+								#		else
+								#			schedule.save
+
+								#			@syncSummary[:newRecord][:schedules] = [] if @syncSummary[:newRecord][:schedules] == nil
+								#			@syncSummary[:newRecord][:schedules] << schedule.id
+								#		end  # end if duplicate check
+								#	end # end new schedule data set
+
+
+								#end
+								## done looping new project from remote node
+
+							end # end looping sync history record
+
+						#end # end transaction for new project
+
+
 
 						# ignore the code field...
 						ignoredFields = {}
 						ignoredFields[:default] = %W(created_at updated_id id)
 						ignoredFields[:develements] = ignoredFields[:default] 
 						ignoredFields[:develements] += %W(code)
-						ignoredFields[:issues] = ignoredFields[:develements]
-						ignoredFields[:projects] = ignoredFields[:default]
-						ignoredFields[:projects] += %W(category_tags)
+						ignoredFields[:issues] = ignoredFields[:default]
+						ignoredFields[:issues] += %W(code)
+						#ignoredFields[:projects] = ignoredFields[:default]
+						#ignoredFields[:projects] += %W(category_tags)
 						ignoredFields[:dvcs_configs] = ignoredFields[:default]
 						ignoredFields[:dvcs_configs] += %W(path)
 
@@ -141,48 +296,50 @@ class SyncClientController < ApplicationController
 							@editRecords = @result["changedRec"]
 
 							# for new record, check project first since there is the root of all linkage
-							if @newRecords["projects"] != nil
-								@newRecords["projects"].each do |rec|
-									proj = Project.new
-									rec.each do |k,v|
-										proj.send("#{k}=",v) if ignoredFields[:projects] != nil and not ignoredFields[:projects].include?(k)
-									end
-									# check for duplicate identifier?
-									dupProj = Project.where(["identifier = ?",proj.identifier])
-									if dupProj.length > 0
-										# DUPLICATED?????? DAMN!!
-										logger.warn "Duplicated project identifier? #{proj.identifier}"
-										proj.identifier = "#{proj.identifier}-d"
-									end
-									proj.save
-								end
-							end
+							#if @newRecords["projects"] != nil
+							#	@newRecords["projects"].each do |rec|
+							#		proj = Project.new
+							#		rec.each do |k,v|
+							#			proj.send("#{k}=",v) if ignoredFields[:projects] != nil and not ignoredFields[:projects].include?(k)
+							#		end
+							#		# check for duplicate identifier?
+							#		dupProj = Project.where(["identifier = ?",proj.identifier])
+							#		if dupProj.length > 0
+							#			# DUPLICATED?????? DAMN!!
+							#			logger.warn "Duplicated project identifier? #{proj.identifier}"
+							#			proj.identifier = "#{proj.identifier}-d"
+							#		end
+							#		proj.save
+							#	end
+							#end
 							# done looping new project from remote node
 
-							# continue other new record
-							@newRecords.keys.each do |type|
-								next if type.to_sym == :projects
-								@newRecords[type].each do |rec|
-									obj = eval("#{type.classify}.new")
-									rec.each do |k,v|
-										if ignoredFields[type.to_sym] != nil
-											if not ignoredFields[type.to_sym].include?(k)
-												obj.send("#{k}=",v)
-											end
-										else
-											if not ignoredFields[:default].include?(k)
-												obj.send("#{k}=",v)
-											end
-										end
-									end
+							## continue other new record
+							#@newRecords.keys.each do |type|
+							#	next if master.include?(type.to_sym) # == :projects or type.to_sym == :schedules
+							#	@newRecords[type].each do |rec|
+							#		obj = eval("#{type.classify}.new")
+							#		rec.each do |k,v|
+							#			if ignoredFields[type.to_sym] != nil
+							#				if not ignoredFields[type.to_sym].include?(k)
+							#					obj.send("#{k}=",v)
+							#				end
+							#			else
+							#				if not ignoredFields[:default].include?(k)
+							#					obj.send("#{k}=",v)
+							#				end
+							#			end
+							#		end
 
-									obj.save
+							#		obj.save
 
-									@syncSummary[:newRecord][type.to_sym] = [] if @syncSummary[:newRecord][type.to_sym] == nil
-									@syncSummary[:newRecord][type.to_sym] << obj.id
-								end
-							end
-							# done looping new record from remote node
+							#		log.debug "#{type} / #{obj.identifier} created as new"
+
+							#		@syncSummary[:newRecord][type.to_sym] = [] if @syncSummary[:newRecord][type.to_sym] == nil
+							#		@syncSummary[:newRecord][type.to_sym] << obj.id
+							#	end
+							#end
+							## done looping new record from remote node
 
 							# Now analyze deleted record...
 							@delRecords.each do |k,v|
@@ -197,6 +354,13 @@ class SyncClientController < ApplicationController
 										# ignore
 										next
 									end
+
+									log.debug "#{k} / #{v} is considered deleted record"
+											shd = SyncHistoryDetail.new
+											shd.table_name = k
+											shd.identifier = id
+											shd.operation = SyncHistoryDetail::DEL_RECORD
+											hist.sync_history_details << shd
 								end
 							end
 							# done deleted record processing
@@ -230,9 +394,10 @@ class SyncClientController < ApplicationController
 								@editRecords.each do |k,v|
 									v.each do |rec|
 										id = rec[0]
+										obj = eval("#{k.classify}.find('#{id}')")
+
 										changes = rec[1]
 										changes.each do |field,value|
-											obj = eval("#{k.classify}.find('#{id}')")
 
 											if ignoredFields[k.to_sym] != nil
 												if not ignoredFields[k.to_sym].include?(field)
@@ -244,9 +409,19 @@ class SyncClientController < ApplicationController
 												end
 											end
 											#obj.send("#{field}=",value)
-											obj.save
+											#obj.save
+											#@edited << id
+										end # done setting all the changed value
+
+											res = obj.save
 											@edited << id
-										end
+										log.debug "#{k.classify} / #{obj.identifier} is edited record with no crashing"
+											shd = SyncHistoryDetail.new
+											shd.table_name = k
+											shd.identifier = obj.identifier
+											shd.operation = SyncHistoryDetail::UPDATE_RECORD
+											shd.status = res
+											hist.sync_history_details << shd
 									end
 
 									@syncSummary[:editedRecord][k] = {} if @syncSummary[:editedRecord][k] == nil
@@ -267,6 +442,11 @@ class SyncClientController < ApplicationController
 									@edited = []
 									v.each do |rec|
 										id = rec[0]
+										#obj = eval("#{k.classify}.find('#{id}')")
+										# Change from find to where is to prevent error if the edited record is new record
+										# which not yet exist at local yet...Those record only shows up AFTER the transaction
+										obj = eval("#{k.classify}.where(\"identifier = '#{id}'\")")
+										logger.debug "Selected obj is #{obj.inspect}"
 										#@conds.add_condition!(["table_name = ? and key = ?",k,id])
 										changesSet = rec[1]
 										changesSet.each do |field,value|
@@ -286,30 +466,104 @@ class SyncClientController < ApplicationController
 											# Cons : Record not being copied over. Data not consistant
 											#
 											# However if copied over, the project code might crashed as well!
-											obj = eval("#{k.classify}.find('#{id}')")
-											if crashed == 0
-												# no crash on the field changed...merge automatically
-												if ignoredFields[k.to_sym] != nil
-													if not ignoredFields[k.to_sym].include?(field)
-														obj.send("#{field}=",value)
+											#obj = eval("#{k.classify}.find('#{id}')")
+											# Change from find to where is to prevent error if the edited record is new record
+											# which not yet exist at local yet...Those record only shows up AFTER the transaction
+											#obj = eval("#{k.classify}.where(\"identifier = '#{id}'\")")
+											# if the record already exist!
+											if obj.length > 0
+												objj = obj[0]
+												if crashed == 0
+													# no crash on the field changed...merge automatically
+													if ignoredFields[k.to_sym] != nil
+														if not ignoredFields[k.to_sym].include?(field)
+															objj.send("#{field}=",value)
+														end
+													else
+														if not ignoredFields[:default].include?(field)
+															objj.send("#{field}=",value)
+														end
 													end
-												else
-													if not ignoredFields[:default].include?(field)
-														obj.send("#{field}=",value)
-													end
-												end
 
-												obj.save
-												@edited << id
+													res = objj.save
+													@edited << id
+
+													log.debug "#{k.classify} / #{objj.identifier} is edited record with no crashing"
+													shd = SyncHistoryDetail.new
+													shd.table_name = k
+													shd.identifier = objj.identifier
+													shd.operation = SyncHistoryDetail::UPDATE_RECORD
+													shd.status = res
+													shd.crash_flag = SyncHistoryDetail::NO_CRASH
+													hist.sync_history_details << shd
+												else
+													realCrash = false
+													if ignoredFields[k.to_sym] != nil
+														if not ignoredFields[k.to_sym].include?(field)
+															# CRASHED!
+															logger.debug "Crashed on #{id} and field #{field}"
+															curVal = objj.send("#{field}")
+															if curVal != value
+																@crashed[id] = [] if @crashed[id] == nil
+																@crashed[id] << [field,value]
+																realCrash = true
+															end
+															#obj.send("#{field}=",value)
+														end
+													else
+														if not ignoredFields[:default].include?(field)
+															# CRASHED!
+															logger.debug "Crashed on #{id} and field #{field}"
+															curVal = objj.send("#{field}")
+															if curVal != value
+																@crashed[id] = [] if @crashed[id] == nil
+																@crashed[id] << [field,value]
+																realCrash = true
+															end
+
+															#obj.send("#{field}=",value)
+														end
+													end
+
+													if realCrash
+														log.debug "#{k.classify} / #{objj.identifier} is edited record with crashed fields #{field}"
+														shd = SyncHistoryDetail.new
+														shd.table_name = k
+														shd.identifier = objj.identifier
+														shd.operation = SyncHistoryDetail::UPDATE_RECORD
+														shd.crash_flag = SyncHistoryDetail::CRASHED
+														hist.sync_history_details << shd
+													end
+													# CRASHED!
+													#logger.debug "Crashed on #{id} and field #{field}"
+													#curVal = obj.send("#{field}")
+													#if curVal != value
+													#	@crashed[id] = [] if @crashed[id] == nil
+													#	@crashed[id] << [field,value]
+													#end
+												end # end if crashed == 0
+
 											else
-												logger.debug "Crashed on #{id} and field #{field}"
-												# CRASHED!
-												curVal = obj.send("#{field}")
-												if curVal != value
-													@crashed[id] = [] if @crashed[id] == nil
-													@crashed[id] << [field,value]
-												end
-											end # end if crashed == 0
+												# Record with this identifier not found locally
+												# Remote node indicated the operation done on that remote node
+												# is edit operation.
+												# If it is generated on that remote node, it would have been 
+												# capture by the above logic to create new record.
+												# Now remote node saying it was edited but not exist locally...hmm...
+												# One conditions of this found during dev is that the remote node
+												# has no change_log function implement yet. Record was created without
+												# logging into change_log database. It was only registered as edit
+												# after change_log function is activated
+												# Current handling : Ignored and no future action will be done
+												# Most likely this only happen during development stage.
+												log.debug "#{k.classify} / #{id} is ignored edited record"
+													shd = SyncHistoryDetail.new
+													shd.table_name = k
+													shd.identifier = id
+													shd.operation = SyncHistoryDetail::UPDATE_RECORD
+													shd.crash_flag = SyncHistoryDetail::IGNORED
+													hist.sync_history_details << shd
+											end  # end if obj.length > 0
 
 										end
 									end
@@ -358,6 +612,11 @@ class SyncClientController < ApplicationController
 						end # end looping sync history record
 
 					end # end transaction
+
+					# Save the history details
+					hist.save
+					@history = hist
+
 					if @syncSummary[:crashed] != nil and @syncSummary[:crashed].size > 0
 						flash[:notice] = %Q[There are conflicted record for the pull operation. Please click <a href="#{sync_merge_index_path(:node_id => @server_id)}">here</a> to resolve the conflict].html_safe
 					else
@@ -406,13 +665,17 @@ class SyncClientController < ApplicationController
 	def generate_server_token(encToken,signedID)
 		#p encToken
 		#p signedID
+		# Load local node key
 		idUrl = File.join(Rails.root,"db","owner.id")
 		pkey,cert,chain = AnCAL::KeyFactory::FromP12Url.call(idUrl,session[:user][:pass])
 
+		# Decrypt session key generated by server side
 		token = AnCAL::Cipher::PKCS7::DecryptData.call(pkey,cert,encToken.hex_to_bin)
+		# Verify signature generated by remote node
 		detached,certs,signers = AnCAL::DataSign::PKCS7::ParseSignedData.call(signedID)
 		if certs.length > 0
 			# TODO verify remote node certificate
+			# Verify signature by using the remote node certificate as input data
 			status,p7 = AnCAL::DataSign::PKCS7::VerifyData.call(certs[0],signedID) do |ok,ctx|
 				if ctx.current_cert != nil
 					true
@@ -440,6 +703,8 @@ class SyncClientController < ApplicationController
 					u[0].save
 				end
 				# generate token
+				# Basically pass back the session key given by remote node to prove that we 
+				# have the private key to decrypt the data and proves our identity
 				tok = AnCAL::Cipher::PKCS7::EncryptData.call(certs[0],token)
 				[true,tok.to_hex,p7.data,@newHost]
 			else
