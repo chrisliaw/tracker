@@ -69,6 +69,7 @@ class SyncClientController < ApplicationController
 
 	end
 
+	# This local node pull from remote node
 	def pull(node,host,pass)
 
 		@result = node_login(host,node,pass)
@@ -144,8 +145,8 @@ class SyncClientController < ApplicationController
 
 											obj = eval("#{mas.to_s.classify}.new")
 											rec.each do |k,v|
-												if ignoredFields[mas.to_s] != nil
-													if not ignoredFields[mas.to_s].include?(k)
+												if ignoredFields[mas] != nil
+													if not ignoredFields[mas].include?(k)
 														obj.send("#{k}=",v)
 													end
 												else
